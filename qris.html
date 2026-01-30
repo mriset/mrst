@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Pengaturan dasar dokumen HTML -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic QRIS Generator</title>
+
+    <!-- Memuat library Tailwind CSS untuk styling (tampilan) halaman -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat library qrcode.min.js untuk MEMBUAT gambar QR Code dari string -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    <!-- Memuat library jsQR untuk MEMBACA QR Code dari gambar -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <!-- Memuat font "Inter" dari Google Fonts untuk tampilan teks yang lebih modern -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Kustom untuk Tampilan Modern */
+        body {
+            font-family: 'Inter', sans-serif; /* Mengatur font default untuk seluruh halaman */
+            background-color: #f3f4f6; /* Abu-abu muda sebagai latar belakang halaman */
+        }
+        /* Transisi halus untuk semua elemen agar perubahan terlihat mulus */
+        * {
+            transition: all 0.2s ease-in-out;
+        }
+        /* Gaya kustom untuk radio button agar terlihat seperti tombol toggle modern */
+        .fee-toggle-label {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db; /* Garis tepi abu-abu */
+            color: #4b5563; /* Warna teks abu-abu tua */
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        /* Mengatur sudut tombol pertama dalam grup toggle */
+        .fee-toggle-label:first-of-type {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        /* Mengatur sudut tombol terakhir dalam grup toggle */
+        .fee-toggle-label:last-of-type {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left-width: 0; /* Hapus garis tepi kiri agar menyatu */
+        }
+        /* Gaya untuk tombol toggle yang sedang aktif/dipilih */
+        input[name="feeType"]:checked + .fee-toggle-label {
+            background-color: #3b82f6; /* Warna latar biru premium */
+            color: white; /* Warna teks putih */
+            border-color: #3b82f6; /* Warna garis tepi biru */
+            z-index: 10; /* Pastikan tombol aktif berada di lapisan paling atas */
+        }
+        /* Menyembunyikan radio button asli karena kita menggunakan label sebagai tombolnya */
+        input[name="feeType"] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Kontainer utama aplikasi dengan desain baru: bayangan, sudut membulat, dan padding. -->
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl shadow-gray-300/30 p-6 md:p-10 space-y-8">
+        
+        <!-- Bagian Header: Judul dan deskripsi aplikasi -->
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">QRIS Generator</h1>
+            <p class="text-gray-500 mt-2 text-base">Buat dan pindai QRIS dinamis dengan mudah.</p>
+        </div>
+
+        <!-- Bagian Form Input: Wadah untuk semua elemen input pengguna -->
+        <div class="space-y-6">
+            <!-- Tombol Upload & Scan QR Code -->
+            <div>
+                <!-- Label ini dibuat agar terlihat seperti tombol. Saat diklik, akan memicu input file yang tersembunyi. -->
+                <label for="qrUploader" class="w-full cursor-pointer bg-blue-50 border-2 border-dashed border-blue-200 text-blue-700 font-semibold py-3 px-4 rounded-xl hover:bg-blue-100 hover:border-blue-500 transition-all duration-300 flex items-center justify-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Unggah & Pindai Gambar QRIS</span>
+                </label>
+                <!-- Input file yang sebenarnya, disembunyikan dari tampilan. Hanya menerima file gambar. -->
+                <input type="file" id="qrUploader" class="hidden" accept="image/*">
+            </div>
+
+            <!-- Garis pemisah dengan teks "ATAU" di tengah -->
+            <div class="relative flex items-center">
+                <hr class="w-full border-gray-200">
+                <span class="absolute left-1/2 -translate-x-1/2 bg-white px-3 text-sm font-medium text-gray-400">ATAU</span>
+            </div>
+
+            <!-- Input QRIS Static String secara manual -->
+            <div>
+                <label for="qrisStaticInput" class="block text-sm font-medium text-gray-600 mb-2">
+                    Masukkan String QRIS Manual
+                </label>
+                <textarea id="qrisStaticInput" rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="String QRIS akan muncul di sini..."></textarea>
+            </div>
+
+            <!-- Input Nominal Transaksi -->
+            <div>
+                <label for="nominalInput" class="block text-sm font-medium text-gray-600 mb-2">
+                    Nominal Transaksi
+                </label>
+                <div class="relative"> <!-- Div ini diperlukan untuk memposisikan simbol "Rp" -->
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">Rp</span>
+                    <input type="number" id="nominalInput" class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="50.000" min="1" />
+                </div>
+            </div>
+
+            <!-- Input Biaya Layanan dengan Toggle Modern -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-2">
+                    Biaya Layanan (Opsional)
+                </label>
+                <div class="flex"> <!-- Wadah untuk menyatukan tombol toggle dan input nilai -->
+                    <div class="flex"> <!-- Grup untuk tombol toggle Rupiah dan Persen -->
+                        <input type="radio" name="feeType" value="fixed" id="feeTypeFixed">
+                        <label for="feeTypeFixed" class="fee-toggle-label">Rupiah</label>
+                        <input type="radio" name="feeType" value="percent" id="feeTypePercent">
+                        <label for="feeTypePercent" class="fee-toggle-label">Persen</label>
+                    </div>
+                    <!-- Input untuk nilai biaya, awalnya dinonaktifkan -->
+                    <input type="number" id="feeInput" class="flex-grow w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-r-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-gray-200/50" placeholder="0" min="0" disabled />
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Hasil: Menampilkan QR Code dan rincian. Awalnya tersembunyi. -->
+        <div id="qrisResult" class="hidden opacity-0 transition-opacity duration-500 space-y-6 pt-6 border-t border-gray-200">
+            <!-- Kontainer QR Code -->
+            <div id="qrcodeContainer" class="bg-white p-4 rounded-xl border border-gray-200 shadow-md mx-auto w-full max-w-xs h-auto">
+                <div id="qrcode" class="flex justify-center items-center"></div>
+            </div>
+            
+            <!-- Rincian Pembayaran dengan Desain Baru -->
+            <div id="paymentBreakdown" class="text-base text-gray-800 bg-gray-50 p-5 rounded-xl space-y-3 border">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Nominal Transaksi</span>
+                    <span id="displayBaseNominal" class="font-medium">Rp 0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Biaya Layanan</span>
+                    <span id="displayServiceFee" class="font-medium">Rp 0</span>
+                </div>
+                <hr class="border-dashed">
+                <div class="flex justify-between items-center font-bold text-lg">
+                    <span>Total Pembayaran</span>
+                    <span id="displayTotalNominal" class="text-blue-600">Rp 0</span>
+                </div>
+            </div>
+
+            <!-- Tombol Unduh -->
+            <div class="text-center">
+                <button id="downloadButton" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-300 shadow-lg shadow-green-500/20">
+                    Simpan Gambar QRIS
+                </button>
+            </div>
+            
+            <!-- String QRIS Dinamis yang dihasilkan -->
+            <div class="text-center">
+                 <p class="text-xs text-gray-400 break-all" id="displayDynamicString"></p>
+            </div>
+        </div>
+
+        <!-- Area Pesan Error -->
+        <div id="errorMessage" class="hidden text-center text-red-600 bg-red-100 p-3 rounded-xl"></div>
+    </div>
+
+    <!-- Script JavaScript Utama Aplikasi -->
+    <script>
+        // Menjalankan script setelah seluruh konten halaman (DOM) selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- DEKLARASI VARIABEL ---
+            // Mengambil referensi elemen HTML berdasarkan ID-nya untuk dimanipulasi oleh JavaScript
+            const downloadButton = document.getElementById('downloadButton');
+            const qrisStaticInput = document.getElementById('qrisStaticInput');
+            const nominalInput = document.getElementById('nominalInput');
+            const qrisResult = document.getElementById('qrisResult');
+            const qrcodeContainer = document.getElementById('qrcode');
+            const displayDynamicString = document.getElementById('displayDynamicString');
+            const errorMessage = document.getElementById('errorMessage');
+            const qrUploader = document.getElementById('qrUploader');
+            const feeTypeRadios = document.querySelectorAll('input[name="feeType"]');
+            const feeInput = document.getElementById('feeInput');
+            const displayBaseNominal = document.getElementById('displayBaseNominal');
+            const displayServiceFee = document.getElementById('displayServiceFee');
+            const displayTotalNominal = document.getElementById('displayTotalNominal');
+
+            // --- EVENT LISTENERS ---
+            // Menambahkan "pendengar acara" ke elemen-elemen. Fungsi akan dijalankan saat acara terjadi.
+            downloadButton.addEventListener('click', downloadQrisImage);
+            nominalInput.addEventListener('input', generateDynamicQris);
+            qrisStaticInput.addEventListener('input', generateDynamicQris);
+            feeInput.addEventListener('input', generateDynamicQris);
+            qrUploader.addEventListener('change', handleQrUpload);
+
+            // Loop untuk setiap tombol radio (Rupiah/Persen)
+            feeTypeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    feeInput.disabled = false; // Aktifkan input nilai biaya
+                    // Ubah placeholder sesuai tipe yang dipilih
+                    feeInput.placeholder = radio.value === 'fixed' ? 'Contoh: 2500' : 'Contoh: 0.7';
+                    feeInput.focus(); // Langsung fokuskan kursor ke input nilai
+                    generateDynamicQris(); // Hitung ulang QRIS
+                });
+            });
+
+            /**
+             * Menangani proses upload dan pemindaian gambar QRIS.
+             * @param {Event} event - Objek event yang berisi file yang diunggah.
+             */
+            function handleQrUpload(event) {
+                const file = event.target.files[0]; // Ambil file pertama yang diunggah
+                if (!file) return; // Jika tidak ada file, hentikan fungsi
+
+                const reader = new FileReader(); // Buat objek untuk membaca file
+                reader.onload = e => { // Fungsi yang dijalankan setelah file berhasil dibaca
+                    const image = new Image(); // Buat objek gambar
+                    image.onload = () => { // Fungsi yang dijalankan setelah gambar berhasil dimuat
+                        // Buat elemen canvas sementara untuk menggambar dan membaca data piksel dari gambar
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d', { willReadFrequently: true });
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        context.drawImage(image, 0, 0, image.width, image.height);
+                        const imageData = context.getImageData(0, 0, image.width, image.height);
+                        
+                        // Gunakan library jsQR untuk memindai data piksel dari canvas
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                        if (code) {
+                            // Jika kode QR ditemukan, masukkan datanya ke dalam textarea
+                            qrisStaticInput.value = code.data;
+                            // Picu event 'input' secara manual agar QR dinamis langsung ter-update
+                            qrisStaticInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            showError(''); // Bersihkan pesan error jika ada
+                        } else {
+                            // Jika tidak ada kode QR yang ditemukan dalam gambar
+                            showError("Tidak dapat menemukan kode QR pada gambar yang diunggah.");
+                        }
+                    };
+                    image.src = e.target.result; // Atur sumber gambar dari hasil pembacaan file
+                };
+                reader.readAsDataURL(file); // Mulai membaca file sebagai URL data
+                event.target.value = ''; // Reset input file agar bisa mengunggah file yang sama lagi
+            }
+
+            /**
+             * Fungsi utama untuk menghasilkan QRIS dinamis secara real-time.
+             */
+            function generateDynamicQris() {
+                const qrisStatic = qrisStaticInput.value.trim();
+                const baseNominalStr = nominalInput.value.trim();
+
+                // Sembunyikan hasil sebelumnya dan reset tampilan
+                qrisResult.classList.add('hidden');
+                qrisResult.classList.add('opacity-0');
+                qrcodeContainer.innerHTML = '';
+
+                // Hentikan jika input dasar belum terisi
+                if (!qrisStatic || !baseNominalStr) return;
+                
+                // Validasi input
+                if (isNaN(baseNominalStr) || Number(baseNominalStr) <= 0) {
+                    showError("Nominal transaksi harus berupa angka dan lebih besar dari 0.");
+                    return;
+                }
+                if (qrisStatic.length < 50) {
+                    showError("String QRIS Statis tidak valid.");
+                    return;
+                }
+                
+                showError(''); // Bersihkan pesan error jika validasi dasar lolos
+                
+                // Kalkulasi biaya layanan dan total nominal
+                const baseNominal = Number(baseNominalStr);
+                let serviceFee = 0;
+                const feeType = document.querySelector('input[name="feeType"]:checked');
+                const feeValueStr = feeInput.value.trim();
+
+                if (feeType && feeValueStr && Number(feeValueStr) >= 0) {
+                    const feeValue = Number(feeValueStr);
+                    serviceFee = feeType.value === 'percent' ? (baseNominal * feeValue) / 100 : feeValue;
+                }
+                
+                serviceFee = Math.ceil(serviceFee); // Bulatkan biaya ke atas
+                const totalNominal = baseNominal + serviceFee;
+
+                try {
+                    // Buat string QRIS dinamis
+                    const qrisDinamis = createDynamicQrisString(qrisStatic, { nominal: totalNominal });
+
+                    // Buat gambar QR code
+                    QRCode.toCanvas(qrisDinamis, {
+                        width: 256, margin: 1, errorCorrectionLevel: 'H'
+                    }, (err, canvas) => {
+                        if (err) {
+                            console.error("QR Code generation error:", err);
+                            showError("Gagal membuat gambar QR Code.");
+                            return;
+                        }
+                        canvas.style.width = "100%";
+                        canvas.style.height = "auto";
+                        qrcodeContainer.appendChild(canvas);
+                        
+                        // Tampilkan rincian pembayaran
+                        displayBaseNominal.textContent = formatRupiah(baseNominal);
+                        displayServiceFee.textContent = formatRupiah(serviceFee);
+                        displayTotalNominal.textContent = formatRupiah(totalNominal);
+                        displayDynamicString.textContent = qrisDinamis;
+                        
+                        // Tampilkan area hasil dengan efek fade-in
+                        qrisResult.classList.remove('hidden');
+                        setTimeout(() => qrisResult.classList.remove('opacity-0'), 10);
+                    });
+
+                } catch (e) {
+                    console.error("QRIS logic error:", e.message);
+                    showError(e.message);
+                }
+            }
+            
+            /**
+             * Menangani proses pengunduhan gambar QRIS sebagai file PNG.
+             */
+            function downloadQrisImage() {
+                const canvas = qrcodeContainer.querySelector('canvas');
+                const totalNominal = displayTotalNominal.textContent.replace(/\D/g, ''); // Ambil angka dari total
+                if (!canvas) {
+                    showError("Tidak ada gambar QRIS untuk disimpan.");
+                    return;
+                }
+                const link = document.createElement('a'); // Buat link sementara
+                link.download = `qris-${totalNominal || 'generated'}.png`; // Atur nama file
+                link.href = canvas.toDataURL("image/png"); // Konversi canvas ke URL data
+                document.body.appendChild(link);
+                link.click(); // Picu download
+                document.body.removeChild(link); // Hapus link
+            }
+
+            /**
+             * Fungsi inti yang memodifikasi string QRIS statis menjadi dinamis.
+             */
+            function createDynamicQrisString(qris, { nominal }) {
+                if (!qris) throw new Error('Parameter "qris" (string QRIS statis) dibutuhkan.');
+                if (nominal === undefined) throw new Error('Parameter "nominal" dibutuhkan.');
+
+                let qrisModified = qris.slice(0, -4).replace("010211", "010212");
+                const nominalStr = String(Math.round(nominal)); // Pastikan nominal adalah integer
+                const amountLength = nominalStr.length < 10 ? "0" + nominalStr.length : nominalStr.length.toString();
+                const amountPart = "54" + amountLength + nominalStr;
+                
+                if (!qrisModified.includes("5802ID")) {
+                    throw new Error("Format string QRIS tidak dikenali (tidak ditemukan '5802ID').");
+                }
+                let finalQris = qrisModified.replace("5802ID", amountPart + "5802ID");
+                const crc = toCRC16(finalQris);
+                return finalQris + crc;
+            }
+
+            /**
+             * Menghitung checksum CRC-16/CCITT-FALSE.
+             */
+            function toCRC16(input) {
+                let crc = 0xFFFF;
+                for (let i = 0; i < input.length; i++) {
+                    crc ^= input.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
+                    }
+                }
+                return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            }
+
+            /**
+             * Memformat angka menjadi format mata uang Rupiah.
+             */
+            function formatRupiah(amount) {
+                return amount.toLocaleString("id-ID", {
+                    style: "currency",
+                    currency: "IDR",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+
+            /**
+             * Menampilkan atau menyembunyikan pesan error.
+             */
+            function showError(message) {
+                if (message) {
+                    errorMessage.textContent = message;
+                    errorMessage.classList.remove('hidden');
+                } else {
+                    errorMessage.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
