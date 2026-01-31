@@ -437,6 +437,31 @@
             }
         }
 
+        /* Speed Overlay */
+        .speed-overlay {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+        }
+
+        .speed-overlay.show {
+            opacity: 1;
+        }
+
         /* Modal */
         .modal {
             position: fixed;
@@ -590,9 +615,9 @@
 
         @media (max-width: 640px) {
             .control-btn {
-                min-width: 32px;
-                min-height: 32px;
-                padding: 6px;
+                min-width: 44px;
+                min-height: 44px;
+                padding: 10px;
             }
 
             .video-controls {
@@ -605,7 +630,9 @@
                 font-size: 24px;
             }
 
-            #pipBtn {
+            #pipBtn,
+            #backwardBtn,
+            #forwardBtn {
                 display: none;
             }
 
@@ -694,6 +721,11 @@
                         </div>
                         <div id="skipRight" class="skip-animation right">
                             <i class="fas fa-forward"></i>
+                        </div>
+
+                        <!-- Speed Overlay -->
+                        <div id="speedOverlay" class="speed-overlay">
+                            <i class="fas fa-forward"></i> 2x Speed
                         </div>
 
                         <!-- Video Controls -->
@@ -932,6 +964,7 @@
             notification: document.getElementById('notification'),
             skipLeft: document.getElementById('skipLeft'),
             skipRight: document.getElementById('skipRight'),
+            speedOverlay: document.getElementById('speedOverlay'),
 
             // Input
             videoUrlInput: document.getElementById('videoUrlInput'),
@@ -1687,50 +1720,163 @@
         // Mobile tap to show/hide controls
         const checkMobile = () => window.matchMedia('(max-width: 1024px)').matches;
 
-        let tapCount = 0;
-        let tapTimeout;
-        let lastTouchTime = 0;
+        // ==================== TOUCH GESTURES ====================
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let lastTapTime = 0;
+        let touchTimeout;
+        let longPressTimeout;
+        let isLongPress = false;
+        let isSwiping = false;
+        let initialVolume = 1;
+        let initialBrightness = 1;
+        let currentBrightness = 1;
 
         elements.videoContainer.addEventListener('touchstart', (e) => {
-            // Prevent default zoom behavior
-            const now = Date.now();
-            if (now - lastTouchTime < 300) {
+            // Prevent default zoom
+            if (e.touches.length > 1) {
                 e.preventDefault();
+                return;
             }
-            lastTouchTime = now;
 
             if (e.target.closest('.video-controls')) return;
 
-            tapCount++;
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            isSwiping = false;
+            isLongPress = false;
 
-            if (tapCount === 1) {
-                tapTimeout = setTimeout(() => {
-                    // Single tap - toggle controls
-                    if (elements.videoControls.classList.contains('hide')) {
-                        resetControlsTimeout();
-                    } else {
-                        if (isFullscreen && !elements.video.paused) {
-                            hideControls();
-                        } else if (!isFullscreen && checkMobile()) {
-                            // Non-fullscreen mobile: toggle
-                            if (!elements.video.paused) {
-                                if (elements.videoControls.classList.contains('hide')) {
-                                    showControls();
-                                } else {
-                                    hideControls();
-                                }
-                            }
-                        }
-                    }
-                    tapCount = 0;
-                }, 300);
-            } else if (tapCount === 2) {
-                clearTimeout(tapTimeout);
-                e.preventDefault();
-                handleDoubleClick(e);
-                tapCount = 0;
+            // Long Press Timer
+            longPressTimeout = setTimeout(() => {
+                if (!isSwiping) {
+                    isLongPress = true;
+                    handleLongPressStart();
+                }
+            }, 500);
+
+        }, { passive: false });
+
+        elements.videoContainer.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.video-controls')) return;
+
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+
+            // If moved significantly, cancel long press and tap
+            if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+                clearTimeout(longPressTimeout);
+                if (!isSwiping) {
+                    isSwiping = true;
+                    initialVolume = elements.video.volume;
+                    initialBrightness = currentBrightness;
+                }
+            }
+
+            if (isSwiping) {
+                e.preventDefault(); // Prevent scroll
+                handleSwipe(deltaX, deltaY);
             }
         }, { passive: false });
+
+        elements.videoContainer.addEventListener('touchend', (e) => {
+            if (e.target.closest('.video-controls')) return;
+
+            clearTimeout(longPressTimeout);
+
+            if (isLongPress) {
+                handleLongPressEnd();
+                return;
+            }
+
+            if (isSwiping) {
+                // Swipe ended
+                return;
+            }
+
+            // Tap Logic
+            const currentTime = Date.now();
+            const tapLength = currentTime - lastTapTime;
+
+            if (tapLength < 300 && tapLength > 0) {
+                // Double Tap
+                clearTimeout(touchTimeout);
+                handleDoubleTap(touchStartX);
+                lastTapTime = 0;
+                e.preventDefault();
+            } else {
+                // Potential Single Tap
+                touchTimeout = setTimeout(() => {
+                    handleSingleTap();
+                }, 300);
+                lastTapTime = currentTime;
+            }
+        });
+
+        function handleSingleTap() {
+            // Toggle Controls
+            if (elements.videoControls.classList.contains('hide')) {
+                resetControlsTimeout();
+            } else {
+                if (!elements.video.paused) {
+                    hideControls();
+                }
+            }
+        }
+
+        function handleDoubleTap(x) {
+            const rect = elements.videoContainer.getBoundingClientRect();
+            const width = rect.width;
+            const relativeX = x - rect.left;
+
+            if (relativeX < width * 0.35) {
+                // Left: Rewind
+                skipTime(-10);
+            } else if (relativeX > width * 0.65) {
+                // Right: Forward
+                skipTime(10);
+            } else {
+                // Center: Play/Pause
+                togglePlayPause();
+            }
+        }
+
+        let previousSpeed = 1;
+
+        function handleLongPressStart() {
+            previousSpeed = elements.video.playbackRate;
+            elements.video.playbackRate = 2.0;
+            elements.speedOverlay.classList.add('show');
+        }
+
+        function handleLongPressEnd() {
+            elements.video.playbackRate = previousSpeed;
+            elements.speedOverlay.classList.remove('show');
+        }
+
+        function handleSwipe(dx, dy) {
+            // Vertical Swipe Priority
+            if (Math.abs(dy) > Math.abs(dx)) {
+                const rect = elements.videoContainer.getBoundingClientRect();
+                const percent = -dy / (rect.height * 0.8); // Sensitivity
+                const relativeX = touchStartX - rect.left;
+
+                if (relativeX > rect.width / 2) {
+                    // Right Side: Volume
+                    const newVol = Math.max(0, Math.min(1, initialVolume + percent));
+                    setVolume(newVol);
+                    showNotification(`Volume ${Math.round(newVol * 100)}%`);
+                } else {
+                    // Left Side: Brightness
+                    // Range 0.2 to 1.8 (dim to bright)
+                    const newBright = Math.max(0.2, Math.min(1.8, initialBrightness + percent));
+                    currentBrightness = newBright;
+                    elements.video.style.filter = `brightness(${newBright})`;
+                    showNotification(`Kecerahan ${Math.round(newBright * 100)}%`);
+                }
+            }
+        }
 
         // Double click for desktop
         elements.videoContainer.addEventListener('dblclick', (e) => {
