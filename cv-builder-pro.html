@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Builder Pro</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== ROOT VARIABLES ===== */
+:root {
+  --font-body: 'Satoshi', 'Inter', sans-serif;
+  --font-display: 'Cabinet Grotesk', 'Satoshi', sans-serif;
+  --font-serif: 'Playfair Display', 'Georgia', serif;
+  --color-bg: #f4f3f0;
+  --color-surface: #ffffff;
+  --color-border: #e0ddd8;
+  --color-text: #28251d;
+  --color-text-muted: #7a7974;
+  --color-primary: #01696f;
+  --sp1: 0.25rem; --sp2: 0.5rem; --sp3: 0.75rem; --sp4: 1rem;
+  --sp5: 1.25rem; --sp6: 1.5rem; --sp8: 2rem;
+  --a4-w: 794px; --a4-h: 1123px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); min-height: 100vh; display: flex; flex-direction: column; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+input, textarea, select { font: inherit; color: inherit; }
+
+/* ===== APP HEADER ===== */
+.app-header {
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; }
+.logo-text { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--color-text); }
+.logo-badge { font-size: 0.65rem; background: #e8f4f4; color: var(--color-primary); padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+
+.tmpl-tabs { display: flex; gap: 4px; background: #f0ede8; padding: 4px; border-radius: 9px; }
+.tmpl-tab {
+  padding: 6px 16px; border-radius: 6px; font-size: 0.8125rem; font-weight: 500;
+  color: var(--color-text-muted); transition: all 160ms ease; white-space: nowrap;
+}
+.tmpl-tab.active { background: white; color: var(--color-text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.tmpl-tab:hover:not(.active) { color: var(--color-text); }
+
+.btn-print {
+  background: var(--color-primary); color: white; padding: 7px 18px;
+  border-radius: 7px; font-size: 0.8125rem; font-weight: 600;
+  display: flex; align-items: center; gap: 6px; transition: background 160ms;
+}
+.btn-print:hover { background: #0c4e54; }
+
+/* ===== APP LAYOUT ===== */
+.app-body { display: flex; flex: 1; height: calc(100vh - 53px); overflow: hidden; }
+
+/* ===== EDITOR PANEL ===== */
+.editor {
+  width: 340px; min-width: 300px; background: var(--color-surface);
+  border-right: 1px solid var(--color-border); overflow-y: auto;
+  padding: 20px 16px; display: flex; flex-direction: column; gap: 20px;
+}
+.editor::-webkit-scrollbar { width: 3px; }
+.editor::-webkit-scrollbar-thumb { background: #d0cdc8; border-radius: 4px; }
+
+.esec-title {
+  font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--color-text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+}
+.btn-tiny {
+  padding: 2px 10px; background: #f0fafa; color: var(--color-primary);
+  border: 1px solid #c5dede; border-radius: 4px; font-size: 0.6875rem; font-weight: 600;
+}
+.btn-tiny:hover { background: #e0f2f2; }
+
+.fg { display: flex; flex-direction: column; gap: 3px; }
+.fg label { font-size: 0.7rem; font-weight: 600; color: var(--color-text-muted); }
+.fg input, .fg textarea, .fg select {
+  width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: 6px;
+  font-size: 0.8125rem; background: #fafaf8; transition: border-color 160ms, background 160ms;
+}
+.fg input:focus, .fg textarea:focus { outline: none; border-color: var(--color-primary); background: white; }
+.fg textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Photo upload */
+.photo-row { display: flex; align-items: center; gap: 14px; }
+.photo-circle {
+  width: 68px; height: 68px; border-radius: 50%; flex-shrink: 0;
+  background: #f0ede8; border: 2px dashed var(--color-border);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #ccc;
+}
+.photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+.photo-btns { display: flex; flex-direction: column; gap: 6px; }
+.btn-upload { padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.75rem; font-weight: 500; color: var(--color-text-muted); text-align: center; cursor: pointer; }
+.btn-upload:hover { background: #f0ede8; }
+.btn-del-photo { padding: 5px 12px; border: 1px solid #fcd; border-radius: 5px; font-size: 0.75rem; font-weight: 500; color: #c44; }
+.btn-del-photo:hover { background: #fff0f0; }
+
+/* Dynamic items */
+.ditem {
+  background: #faf9f7; border: 1px solid var(--color-border); border-radius: 8px;
+  overflow: hidden; margin-bottom: 6px;
+}
+.ditem-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; cursor: pointer; user-select: none;
+}
+.ditem-label { font-size: 0.8rem; font-weight: 600; color: var(--color-text); }
+.ditem-actions { display: flex; align-items: center; gap: 6px; }
+.ditem-toggle { font-size: 0.7rem; color: var(--color-text-muted); }
+.ditem-body { padding: 10px; border-top: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 7px; }
+.ditem-body.hidden { display: none; }
+.btn-del { width: 20px; height: 20px; border-radius: 4px; background: #fee2e2; color: #dc2626; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.btn-del:hover { background: #fca5a5; }
+
+/* Skill row */
+.skill-row { display: grid; grid-template-columns: 1fr 72px 24px; gap: 6px; align-items: center; }
+.skill-row input[type="text"] { padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.8rem; background: white; }
+.skill-row input[type="range"] { accent-color: var(--color-primary); width: 100%; }
+.lang-row { display: grid; grid-template-columns: 1fr 100px 24px; gap: 6px; align-items: center; }
+.lang-row input, .lang-row select { padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.8rem; background: white; }
+
+/* ===== PREVIEW PANEL ===== */
+.preview {
+  flex: 1; overflow: auto; background: #d8d5d0;
+  padding: 32px 24px; display: flex; justify-content: center; align-items: flex-start;
+}
+.cv-wrapper { position: relative; }
+.cv-page {
+  width: var(--a4-w); min-height: var(--a4-h);
+  background: white; box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+  overflow: hidden; position: relative;
+}
+.cv-tmpl { display: none; width: var(--a4-w); min-height: var(--a4-h); }
+.cv-tmpl.active { display: block; }
+
+/* ========================================
+   TEMPLATE 1 — MINIMALIST CLASSIC
+   Left sidebar gray + Right white + teal
+   ======================================== */
+.t1 { display: grid; grid-template-columns: 210px 1fr; min-height: var(--a4-h); font-family: 'Satoshi', sans-serif; }
+.t1-side { background: #f3f2ef; padding: 30px 18px; display: flex; flex-direction: column; gap: 22px; }
+.t1-main { padding: 30px 26px; display: flex; flex-direction: column; gap: 0; }
+
+/* T1 sidebar elements */
+.t1-photo { width: 84px; height: 84px; border-radius: 50%; margin: 0 auto; overflow: hidden; background: #e0ddd8; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #bbb; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.t1-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.t1-sh { font-size: 6.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #01696f; border-bottom: 1.5px solid #01696f; padding-bottom: 4px; margin-bottom: 8px; }
+.t1-ci { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 5px; }
+.t1-ci svg { width: 10px; height: 10px; color: #01696f; flex-shrink: 0; margin-top: 2px; }
+.t1-ci span { font-size: 7pt; color: #4a4845; line-height: 1.4; }
+
+.t1-sk { margin-bottom: 7px; }
+.t1-sk-name { font-size: 7pt; color: #28251d; display: flex; justify-content: space-between; margin-bottom: 3px; }
+.t1-sk-bar { height: 3px; background: #dedad5; border-radius: 2px; }
+.t1-sk-fill { height: 100%; background: #01696f; border-radius: 2px; }
+
+.t1-la { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.t1-la-name { font-size: 7pt; color: #28251d; }
+.t1-la-lv { font-size: 6pt; background: #e4e2de; color: #7a7974; padding: 1px 6px; border-radius: 10px; }
+
+/* T1 main elements */
+.t1-name { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20pt; font-weight: 800; color: #1a1814; line-height: 1.1; letter-spacing: -0.02em; }
+.t1-jobtitle { font-size: 9.5pt; color: #01696f; font-weight: 500; margin-top: 4px; letter-spacing: 0.01em; }
+.t1-divider { height: 2px; background: #01696f; margin: 10px 0 16px; border-radius: 1px; }
+
+.t1-sec { margin-bottom: 16px; }
+.t1-sec-title { font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #28251d; margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+.t1-sec-title::after { content: ''; flex: 1; height: 1px; background: #e8e5e0; }
+
+.t1-summary { font-size: 8pt; color: #4a4845; line-height: 1.65; }
+
+.t1-exp { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f2f0ec; display: grid; grid-template-columns: 1fr auto; gap: 4px; }
+.t1-exp:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t1-exp-pos { font-size: 8.5pt; font-weight: 700; color: #1a1814; }
+.t1-exp-co { font-size: 7.5pt; color: #01696f; font-weight: 500; }
+.t1-exp-period { font-size: 7pt; color: #7a7974; text-align: right; white-space: nowrap; }
+.t1-exp-desc { font-size: 7.5pt; color: #4a4845; line-height: 1.55; margin-top: 3px; grid-column: 1 / -1; }
+
+.t1-edu { margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px solid #f2f0ec; }
+.t1-edu:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t1-edu-deg { font-size: 8.5pt; font-weight: 700; color: #1a1814; }
+.t1-edu-inst { font-size: 7.5pt; color: #01696f; font-weight: 500; }
+.t1-edu-meta { font-size: 7pt; color: #7a7974; }
+
+.t1-cert { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.t1-cert-name { font-size: 7.5pt; font-weight: 600; color: #1a1814; }
+.t1-cert-meta { font-size: 7pt; color: #7a7974; }
+
+/* ========================================
+   TEMPLATE 2 — MODERN BOLD (Dark Sidebar)
+   Navy sidebar + White content + Gold accent
+   ======================================== */
+.t2 { display: grid; grid-template-columns: 248px 1fr; min-height: var(--a4-h); font-family: 'Satoshi', sans-serif; }
+.t2-side { background: #1b2c42; padding: 32px 20px; display: flex; flex-direction: column; gap: 26px; }
+.t2-main { padding: 32px 28px; background: white; display: flex; flex-direction: column; gap: 22px; }
+
+/* T2 sidebar */
+.t2-photo { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto; overflow: hidden; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: rgba(255,255,255,0.35); border: 3px solid rgba(255,255,255,0.18); }
+.t2-photo img { width: 100%; height: 100%; object-fit: cover; }
+.t2-name { font-family: 'Cabinet Grotesk', sans-serif; font-size: 15pt; font-weight: 800; color: white; line-height: 1.15; text-align: center; letter-spacing: -0.01em; margin-top: 10px; }
+.t2-jobtitle { font-size: 7.5pt; color: #e2b96e; font-weight: 600; text-align: center; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+
+.t2-sh { font-size: 6.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #e2b96e; margin-bottom: 9px; display: flex; align-items: center; gap: 7px; }
+.t2-sh::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
+.t2-ci { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 6px; }
+.t2-ci svg { width: 10px; height: 10px; color: #e2b96e; flex-shrink: 0; margin-top: 2px; }
+.t2-ci span { font-size: 7pt; color: rgba(255,255,255,0.78); line-height: 1.4; }
+
+.t2-sk { margin-bottom: 8px; }
+.t2-sk-name { font-size: 7pt; color: rgba(255,255,255,0.82); display: flex; justify-content: space-between; margin-bottom: 3px; }
+.t2-sk-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+.t2-sk-fill { height: 100%; background: #e2b96e; border-radius: 2px; }
+
+.t2-la { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.t2-la-name { font-size: 7pt; color: rgba(255,255,255,0.82); }
+.t2-la-lv { font-size: 6pt; background: #e2b96e; color: #1b2c42; padding: 1px 7px; border-radius: 10px; font-weight: 700; }
+
+/* T2 main */
+.t2-msh { font-size: 9pt; font-weight: 800; color: #1b2c42; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.t2-msh-bar { width: 20px; height: 3px; background: #e2b96e; border-radius: 2px; }
+
+.t2-summary { font-size: 8pt; color: #4a4845; line-height: 1.65; padding: 11px 13px; background: #f8f7f4; border-left: 3px solid #e2b96e; border-radius: 0 5px 5px 0; }
+
+.t2-exp { margin-bottom: 13px; padding-bottom: 13px; border-bottom: 1px solid #f0ede9; padding-left: 11px; position: relative; }
+.t2-exp:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t2-exp::before { content: ''; position: absolute; left: 0; top: 6px; width: 5px; height: 5px; border-radius: 50%; background: #e2b96e; }
+.t2-exp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px; }
+.t2-exp-pos { font-size: 8.5pt; font-weight: 700; color: #1b2c42; }
+.t2-exp-period { font-size: 6.5pt; background: #1b2c42; color: white; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.t2-exp-co { font-size: 7.5pt; color: #b8922c; font-weight: 600; margin-bottom: 4px; }
+.t2-exp-desc { font-size: 7.5pt; color: #4a4845; line-height: 1.55; }
+
+.t2-edu { margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px solid #f0ede9; }
+.t2-edu:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t2-edu-deg { font-size: 8.5pt; font-weight: 700; color: #1b2c42; }
+.t2-edu-inst { font-size: 7.5pt; color: #b8922c; font-weight: 500; }
+.t2-edu-meta { font-size: 7pt; color: #7a7974; }
+
+.t2-cert { font-size: 7.5pt; color: #28251d; margin-bottom: 5px; padding-left: 10px; position: relative; }
+.t2-cert::before { content: '▸'; position: absolute; left: 0; color: #e2b96e; font-size: 7pt; }
+.t2-cert-meta { color: #7a7974; font-size: 6.5pt; }
+
+/* ========================================
+   TEMPLATE 3 — EXECUTIVE SERIF
+   Rich header + Two-column + Serif fonts
+   ======================================== */
+.t3 { min-height: var(--a4-h); background: white; font-family: 'Satoshi', sans-serif; }
+.t3-header { background: linear-gradient(135deg, #2c1a18 0%, #74292e 55%, #9c3b40 100%); padding: 32px 36px 26px; color: white; position: relative; overflow: hidden; }
+.t3-header::before { content: ''; position: absolute; top: -50%; right: -8%; width: 55%; height: 200%; background: rgba(255,255,255,0.04); border-radius: 50%; pointer-events: none; }
+.t3-header::after { content: ''; position: absolute; bottom: -30%; left: 25%; width: 40%; height: 150%; background: rgba(255,255,255,0.025); border-radius: 50%; pointer-events: none; }
+
+.t3-header-inner { position: relative; display: flex; align-items: center; gap: 24px; }
+.t3-photo { width: 82px; height: 82px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); overflow: hidden; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+.t3-photo img { width: 100%; height: 100%; object-fit: cover; }
+.t3-header-text { flex: 1; }
+.t3-name { font-family: 'Playfair Display', serif; font-size: 23pt; font-weight: 700; color: white; line-height: 1.1; letter-spacing: -0.01em; }
+.t3-jobtitle { font-family: 'Playfair Display', serif; font-size: 9.5pt; color: rgba(255,255,255,0.75); font-style: italic; margin-top: 5px; }
+
+.t3-contact-chips { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+.t3-chip { display: flex; align-items: center; gap: 5px; font-size: 7pt; color: rgba(255,255,255,0.82); }
+.t3-chip svg { width: 9px; height: 9px; flex-shrink: 0; }
+
+.t3-summary-bar { padding: 14px 36px; border-bottom: 1px solid #ede9e4; }
+.t3-summary-text { font-size: 8pt; color: #4a4845; line-height: 1.68; }
+
+.t3-body { display: grid; grid-template-columns: 1fr 220px; gap: 0; padding: 22px 36px; column-gap: 30px; }
+.t3-left { padding-right: 16px; border-right: 1px solid #ede9e4; }
+.t3-right { padding-left: 16px; }
+.t3-sec { margin-bottom: 20px; }
+.t3-sec:last-child { margin-bottom: 0; }
+
+.t3-sh { font-family: 'Playfair Display', serif; font-size: 10pt; font-weight: 700; color: #74292e; border-bottom: 1.5px solid #74292e; padding-bottom: 5px; margin-bottom: 11px; }
+
+.t3-exp { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f3f0ec; }
+.t3-exp:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t3-exp-period { font-size: 6.5pt; color: #7a7974; font-style: italic; margin-bottom: 1px; }
+.t3-exp-pos { font-size: 8.5pt; font-weight: 700; color: #1a1814; }
+.t3-exp-co { font-size: 7.5pt; color: #74292e; font-style: italic; font-weight: 500; margin-bottom: 3px; }
+.t3-exp-desc { font-size: 7.5pt; color: #4a4845; line-height: 1.55; }
+
+.t3-edu { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f3f0ec; }
+.t3-edu:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t3-edu-deg { font-size: 8.5pt; font-weight: 700; color: #1a1814; }
+.t3-edu-inst { font-size: 7.5pt; color: #74292e; font-style: italic; }
+.t3-edu-meta { font-size: 7pt; color: #7a7974; }
+
+.t3-sk { margin-bottom: 8px; }
+.t3-sk-name { font-size: 7pt; color: #28251d; display: flex; justify-content: space-between; margin-bottom: 3px; }
+.t3-sk-bar { height: 3px; background: #e8e5e0; border-radius: 2px; }
+.t3-sk-fill { height: 100%; background: #74292e; border-radius: 2px; }
+
+.t3-la { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; margin-bottom: 5px; border-bottom: 1px solid #f5f3f0; }
+.t3-la:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.t3-la-name { font-size: 7.5pt; color: #28251d; }
+.t3-la-lv { font-size: 6.5pt; color: #7a7974; font-style: italic; }
+
+.t3-cert { margin-bottom: 7px; }
+.t3-cert-name { font-size: 7.5pt; font-weight: 600; color: #1a1814; display: flex; align-items: flex-start; gap: 5px; }
+.t3-cert-name::before { content: '◆'; color: #74292e; font-size: 5pt; margin-top: 2px; flex-shrink: 0; }
+.t3-cert-meta { font-size: 6.5pt; color: #7a7974; padding-left: 11px; }
+
+/* ===== PRINT ===== */
+@media print {
+  *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .app-header, .editor { display: none !important; }
+  .app-body { height: auto; overflow: visible; }
+  .preview { padding: 0; background: white; display: block; overflow: visible; }
+  .cv-page { box-shadow: none; width: 210mm; min-height: 297mm; }
+  .t1, .t2, .t3 { min-height: 297mm; }
+  .cv-tmpl:not(.active) { display: none !important; }
+  @page { size: A4 portrait; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none" aria-label="CV Builder">
+      <rect x="1" y="1" width="30" height="30" rx="5" fill="#e8f4f4" stroke="#01696f" stroke-width="1.5"/>
+      <rect x="5" y="6" width="14" height="2" rx="1" fill="#01696f"/>
+      <rect x="5" y="11" width="22" height="1.5" rx="0.75" fill="#28251d" opacity="0.5"/>
+      <rect x="5" y="14.5" width="22" height="1.5" rx="0.75" fill="#28251d" opacity="0.5"/>
+      <rect x="5" y="18" width="16" height="1.5" rx="0.75" fill="#28251d" opacity="0.4"/>
+      <circle cx="23" cy="23" r="6" fill="#01696f"/>
+      <path d="M21 23l1.5 1.5L25.5 21" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">CV Builder Pro</span>
+    <span class="logo-badge">A4</span>
+  </div>
+  <div class="tmpl-tabs">
+    <button class="tmpl-tab active" onclick="switchTmpl(1)">① Classic Minimal</button>
+    <button class="tmpl-tab" onclick="switchTmpl(2)">② Modern Bold</button>
+    <button class="tmpl-tab" onclick="switchTmpl(3)">③ Executive Serif</button>
+  </div>
+  <button class="btn-print" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print / Save PDF
+  </button>
+</header>
+
+<!-- BODY -->
+<div class="app-body">
+
+  <!-- EDITOR -->
+  <aside class="editor">
+
+    <!-- Photo & Personal -->
+    <div>
+      <div class="esec-title">Informasi Personal</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="photo-row">
+          <div class="photo-circle" id="photoCircle">📷</div>
+          <div class="photo-btns">
+            <label class="btn-upload">📷 Upload Foto<input type="file" accept="image/*" style="display:none" onchange="uploadPhoto(this)"></label>
+            <button class="btn-del-photo" onclick="delPhoto()">✕ Hapus Foto</button>
+          </div>
+        </div>
+        <div class="fg"><label>Nama Lengkap</label><input type="text" id="f-name" value="Ahmad Rizky Pratama" oninput="render()"></div>
+        <div class="fg"><label>Jabatan / Posisi</label><input type="text" id="f-jobtitle" value="Senior Product Designer" oninput="render()"></div>
+        <div class="fg"><label>Ringkasan Profesional</label><textarea id="f-summary" oninput="render()">Product designer berpengalaman 6 tahun dengan keahlian dalam UX research, interaction design, dan design systems. Passionate membangun produk digital yang berdampak dan berpusat pada pengguna.</textarea></div>
+        <div class="row2">
+          <div class="fg"><label>Email</label><input type="email" id="f-email" value="ahmad.rizky@email.com" oninput="render()"></div>
+          <div class="fg"><label>Telepon</label><input type="text" id="f-phone" value="+62 812-3456-7890" oninput="render()"></div>
+        </div>
+        <div class="fg"><label>Kota / Alamat</label><input type="text" id="f-address" value="Jakarta Selatan, DKI Jakarta" oninput="render()"></div>
+        <div class="row2">
+          <div class="fg"><label>LinkedIn / Website</label><input type="text" id="f-website" value="linkedin.com/in/ahmadrizky" oninput="render()"></div>
+          <div class="fg"><label>Portfolio</label><input type="text" id="f-portfolio" value="ahmadrizky.design" oninput="render()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experience -->
+    <div>
+      <div class="esec-title">Pengalaman Kerja <button class="btn-tiny" onclick="addExp()">+ Tambah</button></div>
+      <div id="exp-list"></div>
+    </div>
+
+    <!-- Education -->
+    <div>
+      <div class="esec-title">Pendidikan <button class="btn-tiny" onclick="addEdu()">+ Tambah</button></div>
+      <div id="edu-list"></div>
+    </div>
+
+    <!-- Skills -->
+    <div>
+      <div class="esec-title">Keahlian <button class="btn-tiny" onclick="addSkill()">+ Tambah</button></div>
+      <div id="skill-list"></div>
+    </div>
+
+    <!-- Languages -->
+    <div>
+      <div class="esec-title">Bahasa <button class="btn-tiny" onclick="addLang()">+ Tambah</button></div>
+      <div id="lang-list"></div>
+    </div>
+
+    <!-- Certifications -->
+    <div>
+      <div class="esec-title">Sertifikasi <button class="btn-tiny" onclick="addCert()">+ Tambah</button></div>
+      <div id="cert-list"></div>
+    </div>
+
+  </aside>
+
+  <!-- PREVIEW -->
+  <div class="preview">
+    <div class="cv-wrapper">
+      <div class="cv-page" id="cvPage">
+
+        <!-- ===== TEMPLATE 1: CLASSIC MINIMAL ===== -->
+        <div class="cv-tmpl active" id="t1-wrap">
+          <div class="t1">
+            <div class="t1-side">
+              <div class="t1-photo" id="t1-photo">📷</div>
+              <div>
+                <div class="t1-sh">Kontak</div>
+                <div class="t1-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span id="t1-email"></span></div>
+                <div class="t1-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.7 2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 6a16 16 0 006 6l.22-.22a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><span id="t1-phone"></span></div>
+                <div class="t1-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="t1-address"></span></div>
+                <div class="t1-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span id="t1-website"></span></div>
+                <div class="t1-ci" id="t1-portfolio-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><span id="t1-portfolio"></span></div>
+              </div>
+              <div>
+                <div class="t1-sh">Keahlian</div>
+                <div id="t1-skills"></div>
+              </div>
+              <div>
+                <div class="t1-sh">Bahasa</div>
+                <div id="t1-langs"></div>
+              </div>
+            </div>
+            <div class="t1-main">
+              <div class="t1-name" id="t1-name"></div>
+              <div class="t1-jobtitle" id="t1-jobtitle"></div>
+              <div class="t1-divider"></div>
+              <div class="t1-sec" id="t1-sum-sec">
+                <div class="t1-sec-title">Profil Profesional</div>
+                <p class="t1-summary" id="t1-summary"></p>
+              </div>
+              <div class="t1-sec">
+                <div class="t1-sec-title">Pengalaman Kerja</div>
+                <div id="t1-exp"></div>
+              </div>
+              <div class="t1-sec">
+                <div class="t1-sec-title">Pendidikan</div>
+                <div id="t1-edu"></div>
+              </div>
+              <div class="t1-sec" id="t1-cert-sec">
+                <div class="t1-sec-title">Sertifikasi & Penghargaan</div>
+                <div id="t1-certs"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TEMPLATE 2: MODERN BOLD ===== -->
+        <div class="cv-tmpl" id="t2-wrap">
+          <div class="t2">
+            <div class="t2-side">
+              <div>
+                <div class="t2-photo" id="t2-photo">👤</div>
+                <div class="t2-name" id="t2-name"></div>
+                <div class="t2-jobtitle" id="t2-jobtitle"></div>
+              </div>
+              <div>
+                <div class="t2-sh">Kontak</div>
+                <div class="t2-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span id="t2-email"></span></div>
+                <div class="t2-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.7 2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 6a16 16 0 006 6l.22-.22a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><span id="t2-phone"></span></div>
+                <div class="t2-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="t2-address"></span></div>
+                <div class="t2-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span id="t2-website"></span></div>
+              </div>
+              <div>
+                <div class="t2-sh">Keahlian</div>
+                <div id="t2-skills"></div>
+              </div>
+              <div>
+                <div class="t2-sh">Bahasa</div>
+                <div id="t2-langs"></div>
+              </div>
+            </div>
+            <div class="t2-main">
+              <div>
+                <div class="t2-msh"><span class="t2-msh-bar"></span>Profil Profesional</div>
+                <div class="t2-summary" id="t2-summary"></div>
+              </div>
+              <div>
+                <div class="t2-msh"><span class="t2-msh-bar"></span>Pengalaman Kerja</div>
+                <div id="t2-exp"></div>
+              </div>
+              <div>
+                <div class="t2-msh"><span class="t2-msh-bar"></span>Pendidikan</div>
+                <div id="t2-edu"></div>
+              </div>
+              <div id="t2-cert-sec">
+                <div class="t2-msh"><span class="t2-msh-bar"></span>Sertifikasi</div>
+                <div id="t2-certs"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TEMPLATE 3: EXECUTIVE SERIF ===== -->
+        <div class="cv-tmpl" id="t3-wrap">
+          <div class="t3">
+            <div class="t3-header">
+              <div class="t3-header-inner">
+                <div class="t3-photo" id="t3-photo">👤</div>
+                <div class="t3-header-text">
+                  <div class="t3-name" id="t3-name"></div>
+                  <div class="t3-jobtitle" id="t3-jobtitle"></div>
+                  <div class="t3-contact-chips">
+                    <div class="t3-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span id="t3-email"></span></div>
+                    <div class="t3-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.7 2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 6a16 16 0 006 6l.22-.22a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><span id="t3-phone"></span></div>
+                    <div class="t3-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="t3-address"></span></div>
+                    <div class="t3-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span id="t3-website"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="t3-summary-bar">
+              <div class="t3-summary-text" id="t3-summary"></div>
+            </div>
+            <div class="t3-body">
+              <div class="t3-left">
+                <div class="t3-sec">
+                  <div class="t3-sh">Pengalaman Kerja</div>
+                  <div id="t3-exp"></div>
+                </div>
+              </div>
+              <div class="t3-right">
+                <div class="t3-sec">
+                  <div class="t3-sh">Pendidikan</div>
+                  <div id="t3-edu"></div>
+                </div>
+                <div class="t3-sec">
+                  <div class="t3-sh">Keahlian</div>
+                  <div id="t3-skills"></div>
+                </div>
+                <div class="t3-sec">
+                  <div class="t3-sh">Bahasa</div>
+                  <div id="t3-langs"></div>
+                </div>
+                <div class="t3-sec" id="t3-cert-sec">
+                  <div class="t3-sh">Sertifikasi</div>
+                  <div id="t3-certs"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let data = {
+  exp: [
+    { company:'Tokopedia', position:'Senior Product Designer', period:'2021 – Sekarang', desc:'Memimpin desain produk untuk fitur pembayaran dengan 10+ juta pengguna aktif. Berkolaborasi dengan tim engineering dan product untuk meningkatkan konversi checkout sebesar 23%.' },
+    { company:'Gojek', position:'Product Designer', period:'2018 – 2021', desc:'Merancang UI/UX untuk aplikasi GoFood dan GoRide. Melakukan user research, prototyping, dan A/B testing untuk mengoptimalkan user experience.' },
+    { company:'Freelance', position:'UI/UX Designer', period:'2016 – 2018', desc:'Mengerjakan proyek desain untuk berbagai startup teknologi, fintech, dan e-commerce lokal.' }
+  ],
+  edu: [
+    { inst:'Universitas Indonesia', degree:'S1 Desain Komunikasi Visual', year:'2012 – 2016', gpa:'IPK 3.82/4.00' },
+    { inst:'Google UX Design', degree:'Professional Certificate', year:'2020', gpa:'' }
+  ],
+  skills: [
+    { name:'Figma / Adobe XD', lvl:95 },
+    { name:'UX Research', lvl:88 },
+    { name:'Prototyping', lvl:90 },
+    { name:'Design Systems', lvl:85 },
+    { name:'HTML / CSS', lvl:72 }
+  ],
+  langs: [
+    { name:'Bahasa Indonesia', lvl:'Native' },
+    { name:'English', lvl:'Professional' },
+    { name:'Mandarin', lvl:'Basic' }
+  ],
+  certs: [
+    { name:'Google UX Design Professional', issuer:'Google / Coursera', year:'2020' },
+    { name:'AWS Certified Cloud Practitioner', issuer:'Amazon Web Services', year:'2022' }
+  ]
+};
+let photoSrc = null;
+
+// ===== HELPERS =====
+function esc(s){ return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function ev(s){ return s ? String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;') : ''; }
+function $id(id){ return document.getElementById(id); }
+function setText(id, v){ const e = $id(id); if(e) e.textContent = v||''; }
+function setHTML(id, h){ const e = $id(id); if(e) e.innerHTML = h; }
+
+// ===== TEMPLATE SWITCH =====
+function switchTmpl(n){
+  document.querySelectorAll('.cv-tmpl').forEach((el,i) => el.classList.toggle('active', i+1===n));
+  document.querySelectorAll('.tmpl-tab').forEach((el,i) => el.classList.toggle('active', i+1===n));
+}
+
+// ===== PHOTO =====
+function uploadPhoto(inp){
+  if(!inp.files[0]) return;
+  const r = new FileReader();
+  r.onload = e => { photoSrc = e.target.result; applyPhoto(); };
+  r.readAsDataURL(inp.files[0]);
+}
+function delPhoto(){ photoSrc = null; applyPhoto(); }
+function applyPhoto(){
+  const imgH = photoSrc ? `<img src="${photoSrc}" alt="Photo">` : '📷';
+  $id('photoCircle').innerHTML = photoSrc ? `<img src="${photoSrc}" alt="Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : '📷';
+  ['t1-photo','t2-photo','t3-photo'].forEach(id => { $id(id).innerHTML = photoSrc ? `<img src="${photoSrc}" alt="Photo">` : (id==='t1-photo'?'📷':'👤'); });
+}
+
+// ===== RENDER EDITOR LISTS =====
+function renderExpList(){
+  const c = $id('exp-list'); c.innerHTML = '';
+  data.exp.forEach((e,i) => {
+    const d = document.createElement('div'); d.className = 'ditem';
+    d.innerHTML = `
+      <div class="ditem-head" onclick="toggleDItem(this)">
+        <span class="ditem-label">${esc(e.company)||'Perusahaan '+(i+1)}</span>
+        <div class="ditem-actions"><span class="ditem-toggle">▾</span><button class="btn-del" onclick="event.stopPropagation();rmExp(${i})">✕</button></div>
+      </div>
+      <div class="ditem-body">
+        <div class="fg"><label>Perusahaan</label><input type="text" value="${ev(e.company)}" oninput="data.exp[${i}].company=this.value;render();updateLabel(this)" placeholder="Nama Perusahaan"></div>
+        <div class="fg"><label>Jabatan</label><input type="text" value="${ev(e.position)}" oninput="data.exp[${i}].position=this.value;render()" placeholder="Jabatan/Posisi"></div>
+        <div class="fg"><label>Periode</label><input type="text" value="${ev(e.period)}" oninput="data.exp[${i}].period=this.value;render()" placeholder="2020 – Sekarang"></div>
+        <div class="fg"><label>Deskripsi</label><textarea oninput="data.exp[${i}].desc=this.value;render()">${esc(e.desc)}</textarea></div>
+      </div>`;
+    c.appendChild(d);
+  });
+}
+function renderEduList(){
+  const c = $id('edu-list'); c.innerHTML = '';
+  data.edu.forEach((e,i) => {
+    const d = document.createElement('div'); d.className = 'ditem';
+    d.innerHTML = `
+      <div class="ditem-head" onclick="toggleDItem(this)">
+        <span class="ditem-label">${esc(e.inst)||'Institusi '+(i+1)}</span>
+        <div class="ditem-actions"><span class="ditem-toggle">▾</span><button class="btn-del" onclick="event.stopPropagation();rmEdu(${i})">✕</button></div>
+      </div>
+      <div class="ditem-body">
+        <div class="fg"><label>Institusi/Universitas</label><input type="text" value="${ev(e.inst)}" oninput="data.edu[${i}].inst=this.value;render();updateLabel(this)" placeholder="Nama Universitas"></div>
+        <div class="fg"><label>Gelar/Jurusan</label><input type="text" value="${ev(e.degree)}" oninput="data.edu[${i}].degree=this.value;render()" placeholder="S1 Teknik Informatika"></div>
+        <div class="row2">
+          <div class="fg"><label>Tahun</label><input type="text" value="${ev(e.year)}" oninput="data.edu[${i}].year=this.value;render()" placeholder="2016 – 2020"></div>
+          <div class="fg"><label>IPK (opsional)</label><input type="text" value="${ev(e.gpa)}" oninput="data.edu[${i}].gpa=this.value;render()" placeholder="3.80 / 4.00"></div>
+        </div>
+      </div>`;
+    c.appendChild(d);
+  });
+}
+function renderSkillList(){
+  const c = $id('skill-list'); c.innerHTML = '';
+  data.skills.forEach((s,i) => {
+    const d = document.createElement('div'); d.className = 'ditem'; d.style.padding = '8px 10px';
+    d.innerHTML = `<div class="skill-row">
+      <input type="text" value="${ev(s.name)}" oninput="data.skills[${i}].name=this.value;render()" placeholder="Nama skill" style="padding:5px 8px;border:1px solid #e0ddd8;border-radius:5px;font-size:0.8rem;background:white;">
+      <input type="range" min="0" max="100" value="${s.lvl}" oninput="data.skills[${i}].lvl=+this.value;render()">
+      <button class="btn-del" onclick="rmSkill(${i})">✕</button>
+    </div>`;
+    c.appendChild(d);
+  });
+}
+function renderLangList(){
+  const c = $id('lang-list'); c.innerHTML = '';
+  data.langs.forEach((l,i) => {
+    const d = document.createElement('div'); d.className = 'ditem'; d.style.padding = '8px 10px';
+    d.innerHTML = `<div class="lang-row">
+      <input type="text" value="${ev(l.name)}" oninput="data.langs[${i}].name=this.value;render()" placeholder="Nama bahasa" style="padding:5px 8px;border:1px solid #e0ddd8;border-radius:5px;font-size:0.8rem;background:white;">
+      <select onchange="data.langs[${i}].lvl=this.value;render()" style="padding:5px 6px;border:1px solid #e0ddd8;border-radius:5px;font-size:0.75rem;background:white;">
+        <option ${l.lvl==='Native'?'selected':''}>Native</option>
+        <option ${l.lvl==='Professional'?'selected':''}>Professional</option>
+        <option ${l.lvl==='Intermediate'?'selected':''}>Intermediate</option>
+        <option ${l.lvl==='Basic'?'selected':''}>Basic</option>
+      </select>
+      <button class="btn-del" onclick="rmLang(${i})">✕</button>
+    </div>`;
+    c.appendChild(d);
+  });
+}
+function renderCertList(){
+  const c = $id('cert-list'); c.innerHTML = '';
+  data.certs.forEach((cert,i) => {
+    const d = document.createElement('div'); d.className = 'ditem';
+    d.innerHTML = `
+      <div class="ditem-head" onclick="toggleDItem(this)">
+        <span class="ditem-label">${esc(cert.name)||'Sertifikasi '+(i+1)}</span>
+        <div class="ditem-actions"><span class="ditem-toggle">▾</span><button class="btn-del" onclick="event.stopPropagation();rmCert(${i})">✕</button></div>
+      </div>
+      <div class="ditem-body">
+        <div class="fg"><label>Nama Sertifikasi</label><input type="text" value="${ev(cert.name)}" oninput="data.certs[${i}].name=this.value;render();updateLabel(this)" placeholder="Nama sertifikasi"></div>
+        <div class="row2">
+          <div class="fg"><label>Lembaga</label><input type="text" value="${ev(cert.issuer)}" oninput="data.certs[${i}].issuer=this.value;render()" placeholder="Nama lembaga"></div>
+          <div class="fg"><label>Tahun</label><input type="text" value="${ev(cert.year)}" oninput="data.certs[${i}].year=this.value;render()" placeholder="2023"></div>
+        </div>
+      </div>`;
+    c.appendChild(d);
+  });
+}
+
+function toggleDItem(head){
+  const body = head.nextElementSibling;
+  const tog = head.querySelector('.ditem-toggle');
+  const hidden = body.classList.toggle('hidden');
+  tog.textContent = hidden ? '▸' : '▾';
+}
+function updateLabel(inp){
+  const label = inp.closest('.ditem')?.querySelector('.ditem-label');
+  if(label) label.textContent = inp.value || label.textContent;
+}
+
+// ===== ADD/REMOVE =====
+function addExp(){ data.exp.push({company:'',position:'',period:'',desc:''}); renderExpList(); render(); }
+function rmExp(i){ data.exp.splice(i,1); renderExpList(); render(); }
+function addEdu(){ data.edu.push({inst:'',degree:'',year:'',gpa:''}); renderEduList(); render(); }
+function rmEdu(i){ data.edu.splice(i,1); renderEduList(); render(); }
+function addSkill(){ data.skills.push({name:'',lvl:75}); renderSkillList(); render(); }
+function rmSkill(i){ data.skills.splice(i,1); renderSkillList(); render(); }
+function addLang(){ data.langs.push({name:'',lvl:'Intermediate'}); renderLangList(); render(); }
+function rmLang(i){ data.langs.splice(i,1); renderLangList(); render(); }
+function addCert(){ data.certs.push({name:'',issuer:'',year:''}); renderCertList(); render(); }
+function rmCert(i){ data.certs.splice(i,1); renderCertList(); render(); }
+
+// ===== RENDER ALL TEMPLATES =====
+function render(){
+  const name     = $id('f-name').value;
+  const jobtitle = $id('f-jobtitle').value;
+  const summary  = $id('f-summary').value;
+  const email    = $id('f-email').value;
+  const phone    = $id('f-phone').value;
+  const address  = $id('f-address').value;
+  const website  = $id('f-website').value;
+  const portfolio= $id('f-portfolio').value;
+
+  // Skills HTML builders
+  const t1Skills = data.skills.map(s => `<div class="t1-sk"><div class="t1-sk-name"><span>${esc(s.name)}</span><span>${s.lvl}%</span></div><div class="t1-sk-bar"><div class="t1-sk-fill" style="width:${s.lvl}%"></div></div></div>`).join('');
+  const t2Skills = data.skills.map(s => `<div class="t2-sk"><div class="t2-sk-name"><span>${esc(s.name)}</span><span>${s.lvl}%</span></div><div class="t2-sk-bar"><div class="t2-sk-fill" style="width:${s.lvl}%"></div></div></div>`).join('');
+  const t3Skills = data.skills.map(s => `<div class="t3-sk"><div class="t3-sk-name"><span>${esc(s.name)}</span><span>${s.lvl}%</span></div><div class="t3-sk-bar"><div class="t3-sk-fill" style="width:${s.lvl}%"></div></div></div>`).join('');
+
+  const t1Langs = data.langs.map(l => `<div class="t1-la"><span class="t1-la-name">${esc(l.name)}</span><span class="t1-la-lv">${esc(l.lvl)}</span></div>`).join('');
+  const t2Langs = data.langs.map(l => `<div class="t2-la"><span class="t2-la-name">${esc(l.name)}</span><span class="t2-la-lv">${esc(l.lvl)}</span></div>`).join('');
+  const t3Langs = data.langs.map(l => `<div class="t3-la"><span class="t3-la-name">${esc(l.name)}</span><span class="t3-la-lv">${esc(l.lvl)}</span></div>`).join('');
+
+  const t1Exp = data.exp.map(e => `<div class="t1-exp"><div><div class="t1-exp-pos">${esc(e.position)}</div><div class="t1-exp-co">${esc(e.company)}</div></div><div class="t1-exp-period">${esc(e.period)}</div><div class="t1-exp-desc">${esc(e.desc)}</div></div>`).join('');
+  const t2Exp = data.exp.map(e => `<div class="t2-exp"><div class="t2-exp-head"><div class="t2-exp-pos">${esc(e.position)}</div><div class="t2-exp-period">${esc(e.period)}</div></div><div class="t2-exp-co">${esc(e.company)}</div><div class="t2-exp-desc">${esc(e.desc)}</div></div>`).join('');
+  const t3Exp = data.exp.map(e => `<div class="t3-exp"><div class="t3-exp-period">${esc(e.period)}</div><div class="t3-exp-pos">${esc(e.position)}</div><div class="t3-exp-co">${esc(e.company)}</div><div class="t3-exp-desc">${esc(e.desc)}</div></div>`).join('');
+
+  const t1Edu = data.edu.map(e => `<div class="t1-edu"><div class="t1-edu-deg">${esc(e.degree)}</div><div class="t1-edu-inst">${esc(e.inst)}</div><div class="t1-edu-meta">${esc(e.year)}${e.gpa?' · '+esc(e.gpa):''}</div></div>`).join('');
+  const t2Edu = data.edu.map(e => `<div class="t2-edu"><div class="t2-edu-deg">${esc(e.degree)}</div><div class="t2-edu-inst">${esc(e.inst)}</div><div class="t2-edu-meta">${esc(e.year)}${e.gpa?' · '+esc(e.gpa):''}</div></div>`).join('');
+  const t3Edu = data.edu.map(e => `<div class="t3-edu"><div class="t3-edu-deg">${esc(e.degree)}</div><div class="t3-edu-inst">${esc(e.inst)}</div><div class="t3-edu-meta">${esc(e.year)}${e.gpa?' · '+esc(e.gpa):''}</div></div>`).join('');
+
+  const t1Certs = data.certs.map(c => `<div class="t1-cert"><span class="t1-cert-name">${esc(c.name)}</span><span class="t1-cert-meta">${esc(c.issuer)} · ${esc(c.year)}</span></div>`).join('');
+  const t2Certs = data.certs.map(c => `<div class="t2-cert">${esc(c.name)} <span class="t2-cert-meta">— ${esc(c.issuer)}, ${esc(c.year)}</span></div>`).join('');
+  const t3Certs = data.certs.map(c => `<div class="t3-cert"><div class="t3-cert-name">${esc(c.name)}</div><div class="t3-cert-meta">${esc(c.issuer)} · ${esc(c.year)}</div></div>`).join('');
+
+  // TEMPLATE 1
+  setText('t1-name', name); setText('t1-jobtitle', jobtitle);
+  setText('t1-email', email); setText('t1-phone', phone); setText('t1-address', address); setText('t1-website', website); setText('t1-portfolio', portfolio);
+  setText('t1-summary', summary);
+  setHTML('t1-skills', t1Skills); setHTML('t1-langs', t1Langs);
+  setHTML('t1-exp', t1Exp); setHTML('t1-edu', t1Edu); setHTML('t1-certs', t1Certs);
+  const pr = $id('t1-portfolio-row'); if(pr) pr.style.display = portfolio ? '' : 'none';
+  const cs1 = $id('t1-cert-sec'); if(cs1) cs1.style.display = data.certs.length ? '' : 'none';
+
+  // TEMPLATE 2
+  setText('t2-name', name); setText('t2-jobtitle', jobtitle);
+  setText('t2-email', email); setText('t2-phone', phone); setText('t2-address', address); setText('t2-website', website);
+  setText('t2-summary', summary);
+  setHTML('t2-skills', t2Skills); setHTML('t2-langs', t2Langs);
+  setHTML('t2-exp', t2Exp); setHTML('t2-edu', t2Edu); setHTML('t2-certs', t2Certs);
+  const cs2 = $id('t2-cert-sec'); if(cs2) cs2.style.display = data.certs.length ? '' : 'none';
+
+  // TEMPLATE 3
+  setText('t3-name', name); setText('t3-jobtitle', jobtitle);
+  setText('t3-email', email); setText('t3-phone', phone); setText('t3-address', address); setText('t3-website', website);
+  setText('t3-summary', summary);
+  setHTML('t3-skills', t3Skills); setHTML('t3-langs', t3Langs);
+  setHTML('t3-exp', t3Exp); setHTML('t3-edu', t3Edu); setHTML('t3-certs', t3Certs);
+  const cs3 = $id('t3-cert-sec'); if(cs3) cs3.style.display = data.certs.length ? '' : 'none';
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderExpList(); renderEduList(); renderSkillList(); renderLangList(); renderCertList();
+  render();
+});
+</script>
+</body>
+</html>
