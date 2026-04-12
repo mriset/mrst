@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RANGKAI — Panduan Cara Bermain</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --merah: #E63946;
+    --kuning: #FFB703;
+    --biru: #219EBC;
+    --biru-tua: #023047;
+    --hijau: #2DC653;
+    --ungu: #7B2D8B;
+    --ungu-muda: #C77DFF;
+    --abu: #2d2d2d;
+    --putih: #FAFAF7;
+    --krem: #FFF9F0;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--biru-tua);
+    color: var(--putih);
+    overflow-x: hidden;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #023047 0%, #0a4a6e 50%, #023047 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px 20px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 20% 80%, rgba(33,158,188,0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(123,45,139,0.15) 0%, transparent 50%);
+  }
+  .hero-cards {
+    display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .mini-card {
+    width: 60px; height: 80px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem; font-weight: 900;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.3);
+    transition: transform 0.3s;
+  }
+  .mini-card:hover { transform: translateY(-5px) rotate(-3deg); }
+  .mc-biru { background: var(--biru); color: white; }
+  .mc-hijau { background: var(--hijau); color: white; }
+  .mc-merah { background: var(--merah); color: white; }
+  .mc-kuning { background: var(--kuning); color: #333; }
+  .mc-abu { background: #444; color: white; }
+
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(4rem, 12vw, 9rem); letter-spacing: 8px;
+    background: linear-gradient(135deg, #FFB703, #E63946, #C77DFF);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1; margin-bottom: 10px; position: relative; z-index: 1;
+    text-shadow: none; filter: drop-shadow(0 4px 20px rgba(255,183,3,0.4));
+  }
+  .hero-sub {
+    font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase; position: relative; z-index: 1;
+  }
+  .hero-badges {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0;
+    position: relative; z-index: 1;
+  }
+  .badge {
+    padding: 6px 16px; border-radius: 99px; font-weight: 800; font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+  .badge-merah { background: var(--merah); }
+  .badge-biru { background: var(--biru); }
+  .badge-kuning { background: var(--kuning); color: #333; }
+  .hero-nav {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px;
+    position: relative; z-index: 1;
+  }
+  .nav-btn {
+    padding: 10px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem; font-weight: 800; cursor: pointer; text-decoration: none;
+    border: 2px solid rgba(255,255,255,0.2); color: white;
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); border-color: rgba(255,255,255,0.5); }
+
+  /* ===== SECTION COMMON ===== */
+  section { padding: 60px 20px; max-width: 900px; margin: 0 auto; }
+  .section-title {
+    font-family: 'Fredoka One', cursive; font-size: 2.2rem; margin-bottom: 30px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-num {
+    width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* ===== CARDS VISUAL ===== */
+  .card-demo {
+    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 30px; margin: 20px 0;
+  }
+  .card-types-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin: 20px 0;
+  }
+  .card-type {
+    border-radius: 14px; padding: 16px 12px; text-align: center; border: 3px solid rgba(255,255,255,0.2);
+    transition: transform 0.2s; cursor: default;
+  }
+  .card-type:hover { transform: translateY(-4px); }
+  .card-type-letter {
+    font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 6px; display: block;
+  }
+  .card-type-name { font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: 0.85; }
+  .card-type-count { font-size: 0.7rem; opacity: 0.6; margin-top: 2px; }
+  .ct-vokal { background: linear-gradient(135deg, #023047, #0a6e9c); }
+  .ct-suku { background: linear-gradient(135deg, #1a3a1a, #2d6a2d); }
+  .ct-huruf-mati { background: linear-gradient(135deg, #2d2d2d, #444); }
+  .ct-gugus { background: linear-gradient(135deg, #3d1a5e, #7B2D8B); }
+  .ct-imbuhan { background: linear-gradient(135deg, #5e1a5e, #9e3a9e); border-color: var(--ungu-muda); }
+  .ct-aksi { background: linear-gradient(135deg, #8B2020, #E63946); }
+
+  /* ===== SETUP STEPS ===== */
+  .steps-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .step-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: rgba(255,255,255,0.05); border-radius: 14px; padding: 18px;
+    border: 1px solid rgba(255,255,255,0.08); transition: background 0.2s;
+  }
+  .step-item:hover { background: rgba(255,255,255,0.08); }
+  .step-num {
+    width: 38px; height: 38px; border-radius: 10px; font-family: 'Space Mono', monospace;
+    font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: #333;
+  }
+  .step-text { font-size: 1rem; line-height: 1.5; font-weight: 600; padding-top: 7px; }
+  .step-text strong { color: var(--kuning); }
+  .step-text em { color: var(--ungu-muda); font-style: normal; }
+
+  /* ===== ULAT BERJALAN DEMO ===== */
+  .ulat-demo {
+    background: rgba(255,255,255,0.04); border-radius: 20px; padding: 30px;
+    border: 2px solid rgba(33,158,188,0.3); margin: 20px 0;
+  }
+  .ulat-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; min-height: 70px; }
+  .ulat-label {
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); width: 80px; flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .kartu {
+    width: 62px; height: 80px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive; font-size: 1.25rem; font-weight: 900;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.25);
+    transition: all 0.4s; position: relative;
+  }
+  .kartu-aktif { background: linear-gradient(135deg, #023047, #0a6e9c); }
+  .kartu-baru { background: linear-gradient(135deg, #1a5e1a, #2DC653); animation: popIn 0.4s ease; }
+  .kartu-dibuang { background: linear-gradient(135deg, #4a4a4a, #666); opacity: 0.35; text-decoration: line-through; }
+  .kartu-mati { background: linear-gradient(135deg, #2d2d2d, #555); }
+  .kartu-aksi-red { background: linear-gradient(135deg, #8B0000, #E63946); }
+  .kartu-imbuhan { background: linear-gradient(135deg, #5e1a7a, #9e3aae); border-color: var(--ungu-muda); }
+  @keyframes popIn {
+    0% { transform: scale(0.5) translateY(-20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .arrow { font-size: 1.5rem; color: rgba(255,255,255,0.4); }
+  .word-formed { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--kuning); margin-left: 10px; }
+  .ulat-note { font-size: 0.85rem; color: rgba(255,255,255,0.55); font-style: italic; margin-top: 6px; }
+
+  /* ===== INTERACTIVE ULAT ===== */
+  .interactive-box {
+    background: rgba(33,158,188,0.1); border: 2px solid rgba(33,158,188,0.4);
+    border-radius: 20px; padding: 30px; margin: 20px 0; text-align: center;
+  }
+  .meja-display { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 90px; margin: 20px 0; }
+  .kata-terbentuk { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--kuning); min-height: 40px; letter-spacing: 4px; }
+  .btn-aksi {
+    padding: 10px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem; font-weight: 800; cursor: pointer; border: none;
+    transition: all 0.2s; margin: 5px;
+  }
+  .btn-biru { background: var(--biru); color: white; }
+  .btn-biru:hover { background: #1a7e99; transform: translateY(-2px); }
+  .btn-merah { background: var(--merah); color: white; }
+  .btn-merah:hover { background: #c02030; transform: translateY(-2px); }
+  .btn-hijau { background: var(--hijau); color: white; }
+  .btn-hijau:hover { background: #1fa83d; transform: translateY(-2px); }
+  .btn-kuning { background: var(--kuning); color: #333; }
+  .btn-kuning:hover { background: #e5a200; transform: translateY(-2px); }
+  .sim-msg {
+    font-size: 0.95rem; font-weight: 700; min-height: 24px; margin-top: 8px;
+    color: var(--hijau); transition: color 0.3s;
+  }
+  .sim-msg.err { color: var(--merah); }
+
+  /* ===== JEBAKAN SECTION ===== */
+  .jebakan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  @media (max-width: 600px) { .jebakan-grid { grid-template-columns: 1fr; } }
+  .jebakan-card {
+    background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .jebakan-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 10px; }
+  .jebakan-card ul { list-style: none; }
+  .jebakan-card li { padding: 5px 0; font-size: 0.9rem; display: flex; gap: 8px; align-items: flex-start; }
+  .jebakan-card li::before { content: '→'; color: var(--kuning); flex-shrink: 0; }
+
+  /* ===== ACTION CARDS ===== */
+  .aksi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+  .aksi-card {
+    border-radius: 16px; padding: 18px; border: 2px solid rgba(255,255,255,0.15);
+    transition: transform 0.2s, box-shadow 0.2s; cursor: default;
+  }
+  .aksi-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+  .aksi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .aksi-nama { font-family: 'Fredoka One', cursive; font-size: 1.2rem; }
+  .aksi-jumlah {
+    background: rgba(255,255,255,0.15); border-radius: 99px;
+    padding: 2px 10px; font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: 700;
+  }
+  .aksi-waktu { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 6px; font-weight: 800; }
+  .aksi-desc { font-size: 0.85rem; line-height: 1.5; opacity: 0.85; }
+  .aksi-icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .ac-hapus { background: linear-gradient(135deg, #1a3d5e, #2175a8); }
+  .ac-panik { background: linear-gradient(135deg, #7a1a1a, #d63636); }
+  .ac-serobot { background: linear-gradient(135deg, #5e3d00, #c87d00); }
+  .ac-ganda { background: linear-gradient(135deg, #1a5e1a, #2dc653); color: #001a00; }
+  .ac-ganda .aksi-desc, .ac-ganda .aksi-nama, .ac-ganda .aksi-waktu { color: #001a00; }
+  .ac-putar { background: linear-gradient(135deg, #003d5e, #007abe); }
+  .ac-blank { background: linear-gradient(135deg, #1a003d, #5e0a8b); }
+  .ac-kunci { background: linear-gradient(135deg, #5e2d00, #9e5a00); }
+  .ac-tunjuk { background: linear-gradient(135deg, #5e001a, #9e0030); }
+  .ac-recall { background: linear-gradient(135deg, #003d3d, #007a7a); }
+  .ac-intip { background: linear-gradient(135deg, #1a1a5e, #2828a8); }
+  .ac-acak { background: linear-gradient(135deg, #3d003d, #7a007a); }
+  .ac-bom { background: linear-gradient(135deg, #1a0000, #5e0000); border: 2px solid #E63946 !important; }
+
+  /* ===== DEKLARASI ===== */
+  .deklarasi-box {
+    background: linear-gradient(135deg, rgba(230,57,70,0.2), rgba(255,183,3,0.2));
+    border: 3px solid var(--kuning); border-radius: 20px; padding: 30px; text-align: center; margin: 20px 0;
+  }
+  .deklarasi-word {
+    font-family: 'Fredoka One', cursive; font-size: 3.5rem;
+    background: linear-gradient(135deg, #FFB703, #E63946); -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 6px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { filter: drop-shadow(0 0 10px rgba(255,183,3,0.5)); } 50% { filter: drop-shadow(0 0 25px rgba(230,57,70,0.7)); } }
+
+  /* ===== SANKSI TABLE ===== */
+  .sanksi-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin: 20px 0; }
+  .sanksi-table thead th {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(255,255,255,0.5); padding: 8px 12px; text-align: left;
+  }
+  .sanksi-table tbody td {
+    background: rgba(255,255,255,0.04); padding: 12px 14px; font-size: 0.9rem;
+    border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .sanksi-table tbody td:first-child { border-left: 1px solid rgba(255,255,255,0.06); border-radius: 10px 0 0 10px; }
+  .sanksi-table tbody td:last-child { border-right: 1px solid rgba(255,255,255,0.06); border-radius: 0 10px 10px 0; }
+  .penalti { color: var(--merah); font-weight: 800; }
+
+  /* ===== STRATEGI ===== */
+  .strategi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  @media (max-width: 600px) { .strategi-grid { grid-template-columns: 1fr; } }
+  .strategi-item {
+    background: rgba(255,255,255,0.05); border-radius: 14px; padding: 18px;
+    border: 1px solid rgba(255,255,255,0.1); transition: border-color 0.2s;
+  }
+  .strategi-item:hover { border-color: var(--biru); }
+  .strategi-icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .strategi-tip { font-size: 0.9rem; line-height: 1.55; }
+  .strategi-tip strong { color: var(--kuning); }
+
+  /* ===== MODE PERMAINAN ===== */
+  .mode-grid { display: grid; gap: 14px; margin: 20px 0; }
+  .mode-card {
+    border-radius: 16px; padding: 22px; border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04); transition: all 0.2s; cursor: default;
+  }
+  .mode-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.25); }
+  .mode-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .mode-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; }
+  .mode-nama { font-family: 'Fredoka One', cursive; font-size: 1.3rem; }
+  .mode-desc { font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.8); }
+
+  /* ===== QUICK REF ===== */
+  .qref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  @media (max-width: 500px) { .qref-grid { grid-template-columns: 1fr; } }
+  .qref-box {
+    background: rgba(255,255,255,0.06); border-radius: 14px; padding: 18px;
+    border-left: 4px solid; font-size: 0.9rem; line-height: 1.5;
+  }
+  .qref-title { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 8px; }
+
+  /* ===== DIVIDER ===== */
+  .divider { height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 20px 0; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center; padding: 40px 20px;
+    font-size: 0.85rem; color: rgba(255,255,255,0.35); font-family: 'Space Mono', monospace;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ===== SCROLL REVEAL ===== */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    border-radius: 16px; padding: 20px 24px; margin: 16px 0; font-size: 0.95rem; line-height: 1.6;
+    border-left: 5px solid;
+  }
+  .hb-kuning { background: rgba(255,183,3,0.12); border-color: var(--kuning); }
+  .hb-merah { background: rgba(230,57,70,0.12); border-color: var(--merah); }
+  .hb-biru { background: rgba(33,158,188,0.12); border-color: var(--biru); }
+  .hb-ungu { background: rgba(199,125,255,0.12); border-color: var(--ungu-muda); }
+  .hb-hijau { background: rgba(45,198,83,0.12); border-color: var(--hijau); }
+  .highlight-box strong { color: var(--kuning); }
+
+  /* selector nav sticky */
+  .sticky-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(2,48,71,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 20px; display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .sticky-nav::-webkit-scrollbar { display: none; }
+  .sticky-nav a {
+    color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.8rem; font-weight: 800;
+    padding: 6px 12px; border-radius: 8px; transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .sticky-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" style="max-width:none; padding: 60px 20px;">
+  <div class="hero-cards">
+    <div class="mini-card mc-biru">BU</div>
+    <div class="mini-card mc-hijau">KU</div>
+    <div class="mini-card mc-merah">DA</div>
+    <div class="mini-card mc-abu">N</div>
+    <div class="mini-card mc-kuning">A</div>
+    <div class="mini-card mc-biru">SI</div>
+  </div>
+  <h1>RANGKAI</h1>
+  <p class="hero-sub">Permainan Kartu Kosakata Bahasa Indonesia</p>
+  <div class="hero-badges">
+    <span class="badge badge-merah">200 Kartu</span>
+    <span class="badge badge-biru">2–10 Pemain</span>
+    <span class="badge badge-kuning">Usia 10+</span>
+    <span class="badge badge-merah">20–60 Menit</span>
+  </div>
+  <div class="hero-nav">
+    <a href="#komponen" class="nav-btn">🃏 Komponen</a>
+    <a href="#setup" class="nav-btn">⚙️ Persiapan</a>
+    <a href="#bermain" class="nav-btn">▶️ Cara Bermain</a>
+    <a href="#jebakan" class="nav-btn">⚠️ Jebakan</a>
+    <a href="#aksi" class="nav-btn">⚡ Kartu Aksi</a>
+    <a href="#menang" class="nav-btn">🏆 Menang</a>
+    <a href="#strategi" class="nav-btn">🧠 Strategi</a>
+    <a href="#mode" class="nav-btn">🎮 Mode</a>
+  </div>
+</section>
+
+<!-- STICKY NAV -->
+<nav class="sticky-nav">
+  <a href="#komponen">🃏 Komponen</a>
+  <a href="#setup">⚙️ Setup</a>
+  <a href="#bermain">▶️ Bermain</a>
+  <a href="#jebakan">⚠️ Jebakan</a>
+  <a href="#imbuhan">🔤 Imbuhan</a>
+  <a href="#aksi">⚡ Aksi</a>
+  <a href="#validasi">📖 Validasi</a>
+  <a href="#menang">🏆 Menang</a>
+  <a href="#strategi">🧠 Strategi</a>
+  <a href="#mode">🎮 Mode</a>
+  <a href="#referensi">📋 Ref Cepat</a>
+</nav>
+
+<!-- ===== SECTION 1: KOMPONEN ===== -->
+<section id="komponen" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--biru); color:white;">1</div>
+    Komponen & Jenis Kartu
+  </div>
+  <p style="font-size:1rem; color:rgba(255,255,255,0.75); margin-bottom:24px; line-height:1.6;">
+    Dek RANGKAI berisi <strong style="color:var(--kuning)">200 kartu</strong> dengan 6 kategori berbeda. Setiap kategori punya warna tersendiri agar mudah dikenali di tangan.
+  </p>
+
+  <div class="card-types-grid">
+    <div class="card-type ct-vokal">
+      <span class="card-type-letter">A I U E O</span>
+      <div class="card-type-name">Vokal Tunggal</div>
+      <div class="card-type-count">20 kartu • Putih/Biru</div>
+    </div>
+    <div class="card-type ct-suku">
+      <span class="card-type-letter">BA MA TA</span>
+      <div class="card-type-name">Suku Kata</div>
+      <div class="card-type-count">107 kartu • Putih/Krem</div>
+    </div>
+    <div class="card-type ct-huruf-mati">
+      <span class="card-type-letter">N R S T</span>
+      <div class="card-type-name">Huruf Mati</div>
+      <div class="card-type-count">27 kartu • Abu Gelap</div>
+    </div>
+    <div class="card-type ct-gugus">
+      <span class="card-type-letter">NG NY ST</span>
+      <div class="card-type-name">Gugus Konsonan</div>
+      <div class="card-type-count">8 kartu • Ungu Gelap 💀</div>
+    </div>
+    <div class="card-type ct-imbuhan">
+      <span class="card-type-letter" style="font-size:1.4rem;">MEN- -AN</span>
+      <div class="card-type-name">Imbuhan</div>
+      <div class="card-type-count">24 kartu • Ungu Muda</div>
+    </div>
+    <div class="card-type ct-aksi">
+      <span class="card-type-letter" style="font-size:1.1rem;">PANIK BOM</span>
+      <div class="card-type-name">Aksi Taktis</div>
+      <div class="card-type-count">46 kartu • Warna Mencolok</div>
+    </div>
+  </div>
+
+  <div class="highlight-box hb-biru">
+    💡 <strong>Tips:</strong> Kartu <span style="color:var(--ungu-muda)"><b>Gugus Konsonan</b></span> (NG, NY, ST, NK, NT, ND) berwarna <b>ungu gelap</b> — ini kartu paling berbahaya sebagai senjata jebakan. Jumlahnya sangat sedikit, jadi langka dan berharga!
+  </div>
+</section>
+
+<!-- ===== SECTION 2: SETUP ===== -->
+<section id="setup" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--kuning); color:#333;">2</div>
+    Persiapan Permainan
+  </div>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">1</div>
+      <div class="step-text">🃏 <strong>Kocok</strong> semua 200 kartu dengan baik sampai benar-benar acak.</div>
+    </li>
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">2</div>
+      <div class="step-text">✋ <strong>Bagikan 7 kartu</strong> secara tertutup kepada setiap pemain. Sisanya jadi <em>Tumpukan Tarik (Draw Pile)</em> di tengah meja.</div>
+    </li>
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">3</div>
+      <div class="step-text">📤 <strong>Buka 2 kartu</strong> dari tumpukan untuk membentuk <em>Kata Awal</em> di meja. Kedua kartu harus membentuk kata bermakna.</div>
+    </li>
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">4</div>
+      <div class="step-text">🔄 Jika 2 kartu awal <strong>tidak bisa membentuk kata</strong> (misal: dua huruf mati), kembalikan ke tumpukan, kocok ulang, buka lagi.</div>
+    </li>
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">5</div>
+      <div class="step-text">🔤 Jika salah satu kartu awal adalah <em>kartu imbuhan</em> (MEN-, BER-, -AN, dll.), <strong>buang dan ambil kartu baru</strong>.</div>
+    </li>
+    <li class="step-item">
+      <div class="step-num" style="background:var(--kuning);">6</div>
+      <div class="step-text">👶 <strong>Pemain pertama</strong> ditentukan: <em>pemain termuda</em>, atau pemain di sebelah kiri bandar.</div>
+    </li>
+  </ol>
+
+  <!-- ILUSTRASI SETUP -->
+  <div class="card-demo" style="margin-top:30px;">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; margin-bottom:20px; color:var(--kuning);">📐 Ilustrasi Susunan Meja</div>
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:20px; align-items:start; flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-size:0.7rem; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,0.5); margin-bottom:10px; text-transform:uppercase;">Tumpukan Tarik</div>
+        <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+          <div style="width:62px;height:80px;border-radius:11px;background:linear-gradient(135deg,#023047,#034a73);border:3px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.5rem;">?</div>
+          <div style="font-size:0.75rem; opacity:0.5;">Tertutup</div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:0.7rem; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,0.5); margin-bottom:10px; text-transform:uppercase;">Meja Aktif (2 kartu)</div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <div class="kartu kartu-aktif">BU</div>
+          <div class="kartu kartu-aktif">KU</div>
+        </div>
+        <div style="font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--kuning); margin-top:6px;">BUKU</div>
+        <div style="font-size:0.7rem; opacity:0.5; margin-top:4px;">👈 Kiri &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ujung Aktif 👉</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:0.7rem; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,0.5); margin-bottom:10px; text-transform:uppercase;">Tumpukan Sampah</div>
+        <div style="width:62px;height:80px;border-radius:11px;background:linear-gradient(135deg,#2d2d2d,#444);border:3px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem; margin:0 auto;">🗑️</div>
+        <div style="font-size:0.75rem; opacity:0.5; margin-top:4px;">Kosong (awal)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: CARA BERMAIN ===== -->
+<section id="bermain" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--hijau); color:white;">3</div>
+    Cara Bermain: Mekanik Ulat Berjalan 🐛
+  </div>
+
+  <div class="highlight-box hb-hijau" style="margin-bottom:24px;">
+    🎯 <strong>Inti permainan:</strong> Selalu ada <b>tepat 2 kartu aktif</b> di meja. Kamu menyambung ke <b>ujung kanan</b>, lalu kartu paling kiri otomatis terbuang. Kata di meja terus "berjalan" ke kanan seperti ulat!
+  </div>
+
+  <!-- DEMO ULAT BERJALAN -->
+  <div class="ulat-demo">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--biru); margin-bottom:16px;">🐛 Contoh Mekanik Ulat Berjalan</div>
+    
+    <div class="ulat-row">
+      <div class="ulat-label">Awal:</div>
+      <div class="kartu kartu-aktif">BU</div>
+      <div class="kartu kartu-aktif">KU</div>
+      <div class="word-formed">= BUKU</div>
+    </div>
+    <div class="ulat-note">Ujung aktif = [KU]. Pemain A harus sambung dari suku kata yang dimulai dari U atau bisa membentuk kata dengan KU.</div>
+
+    <div class="divider"></div>
+
+    <div class="ulat-row">
+      <div class="ulat-label">Pemain A taruh [DA]:</div>
+      <div class="kartu kartu-dibuang">BU</div>
+      <div class="kartu kartu-aktif">KU</div>
+      <div class="kartu kartu-baru">DA</div>
+      <div class="word-formed">= KUDA ✓</div>
+    </div>
+    <div class="ulat-note">[BU] dibuang ke tumpukan sampah. Ujung aktif baru = [DA].</div>
+
+    <div class="divider"></div>
+
+    <div class="ulat-row">
+      <div class="ulat-label">Pemain B taruh [NA]:</div>
+      <div class="kartu kartu-dibuang">KU</div>
+      <div class="kartu kartu-aktif">DA</div>
+      <div class="kartu kartu-baru">NA</div>
+      <div class="word-formed">= DANA ✓</div>
+    </div>
+    <div class="ulat-note">[KU] dibuang. Ujung aktif baru = [NA].</div>
+
+    <div class="divider"></div>
+
+    <div class="ulat-row">
+      <div class="ulat-label">Pemain C taruh [SI]:</div>
+      <div class="kartu kartu-dibuang">DA</div>
+      <div class="kartu kartu-aktif">NA</div>
+      <div class="kartu kartu-baru">SI</div>
+      <div class="word-formed">= NASI ✓</div>
+    </div>
+    <div class="ulat-note">Dan seterusnya... kata terus berjalan ke kanan!</div>
+  </div>
+
+  <!-- SIKLUS GILIRAN -->
+  <div style="margin-top:30px;">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.3rem; margin-bottom:16px; color:var(--kuning);">🔄 Siklus Giliran Normal</div>
+    <ol class="steps-list">
+      <li class="step-item">
+        <div class="step-num" style="background:var(--biru);">1</div>
+        <div class="step-text">👀 Perhatikan <strong>2 kartu aktif</strong> di meja. Identifikasi <em>ujung aktif</em> (kartu paling kanan).</div>
+      </li>
+      <li class="step-item">
+        <div class="step-num" style="background:var(--biru);">2</div>
+        <div class="step-text">🃏 Pilih <strong>1 kartu dari tanganmu</strong> yang bisa disambung ke ujung aktif untuk membentuk kata baru.</div>
+      </li>
+      <li class="step-item">
+        <div class="step-num" style="background:var(--biru);">3</div>
+        <div class="step-text">📥 <strong>Taruh kartu</strong> di sebelah kanan ujung aktif. Jika kata valid → kartu paling kiri otomatis dibuang.</div>
+      </li>
+      <li class="step-item">
+        <div class="step-num" style="background:var(--merah);">!</div>
+        <div class="step-text">😰 Jika <strong>tidak punya kartu yang cocok</strong>: <em>wajib ambil 1 kartu</em> dari Tumpukan Tarik. Jika bisa dimainkan, langsung mainkan. Jika tidak, giliran hangus.</div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- INTERACTIVE SIMULATOR -->
+  <div class="interactive-box" style="margin-top:30px;" id="simBox">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--biru); margin-bottom:16px;">🎮 Coba Simulator Sederhana!</div>
+    <div style="font-size:0.9rem; opacity:0.7; margin-bottom:12px;">Meja saat ini:</div>
+    <div class="meja-display" id="simMeja">
+      <div class="kartu kartu-aktif" id="simKiri">MA</div>
+      <div class="kartu kartu-aktif" id="simKanan">TA</div>
+    </div>
+    <div class="kata-terbentuk" id="simKata">MATA</div>
+    <div style="font-size:0.85rem; opacity:0.6; margin-bottom:16px;">Ujung aktif: <span id="simUjung" style="color:var(--kuning); font-weight:800;">TA</span> — pilih kartu untuk disambung:</div>
+    <div>
+      <button class="btn-aksi btn-biru" onclick="simPlay('NA')">NA</button>
+      <button class="btn-aksi btn-biru" onclick="simPlay('RI')">RI</button>
+      <button class="btn-aksi btn-biru" onclick="simPlay('PI')">PI</button>
+      <button class="btn-aksi btn-biru" onclick="simPlay('KU')">KU</button>
+      <button class="btn-aksi btn-merah" onclick="simPlay('NG')">NG 💀</button>
+      <button class="btn-aksi btn-kuning" onclick="simReset()">🔄 Reset</button>
+    </div>
+    <div class="sim-msg" id="simMsg"></div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: JEBAKAN ===== -->
+<section id="jebakan" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--merah); color:white;">4</div>
+    ⚠️ Jebakan Huruf Mati
+  </div>
+
+  <div class="highlight-box hb-merah">
+    ☠️ <strong>Mekanik penyerangan paling kuat!</strong> Taruh kartu huruf mati di ujung untuk "menutup" kata dan memaksa pemain berikutnya masuk situasi sulit.
+  </div>
+
+  <!-- DEMO JEBAKAN -->
+  <div class="ulat-demo" style="border-color:rgba(230,57,70,0.4);">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--merah); margin-bottom:16px;">💣 Contoh Memasang Jebakan</div>
+    
+    <div class="ulat-row">
+      <div class="ulat-label">Meja awal:</div>
+      <div class="kartu kartu-aktif">JA</div>
+      <div class="kartu kartu-aktif">LA</div>
+      <div class="word-formed">= JALA</div>
+    </div>
+    
+    <div class="ulat-row">
+      <div class="ulat-label">Kamu pasang [N]:</div>
+      <div class="kartu kartu-dibuang">JA</div>
+      <div class="kartu kartu-aktif">LA</div>
+      <div class="kartu kartu-mati">N</div>
+      <div class="word-formed">= JALAN ✓</div>
+    </div>
+    <div class="ulat-note" style="color:rgba(230,57,70,0.9);">💀 Ujung aktif = [N]. Pemain berikutnya TERJEBAK!</div>
+
+    <div class="divider"></div>
+
+    <div style="font-size:0.9rem; color:rgba(255,100,100,0.9); font-weight:700; margin:10px 0;">❌ Pemain berikutnya tidak bisa begitu saja taruh [BI] → [N][BI] = "NBI" TIDAK VALID!</div>
+  </div>
+
+  <div style="margin-top:24px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--hijau);">✅ Cara Lolos dari Jebakan</div>
+  <div class="jebakan-grid" style="margin-top:14px;">
+    <div class="jebakan-card" style="border-color:rgba(33,158,188,0.3);">
+      <div class="jebakan-title" style="color:var(--biru);">🌊 Vokal Tunggal</div>
+      <p style="font-size:0.85rem; margin-bottom:8px;">Taruh kartu vokal (A, I, U, E, O).</p>
+      <p style="font-size:0.85rem; color:var(--kuning);">Contoh: N + <b>A</b> → [N][A] = NA. Ujung aktif jadi A, mudah disambung!</p>
+    </div>
+    <div class="jebakan-card" style="border-color:rgba(45,198,83,0.3);">
+      <div class="jebakan-title" style="color:var(--hijau);">🔤 Kartu GANDA</div>
+      <p style="font-size:0.85rem; margin-bottom:8px;">Pakai GANDA untuk taruh 2 kartu sekaligus.</p>
+      <p style="font-size:0.85rem; color:var(--kuning);">Contoh: GANDA + A + BI → N-A-BI = NABI ✓</p>
+    </div>
+    <div class="jebakan-card" style="border-color:rgba(255,183,3,0.3);">
+      <div class="jebakan-title" style="color:var(--kuning);">🗑️ Kartu HAPUS</div>
+      <p style="font-size:0.85rem; margin-bottom:8px;">Buang ujung aktif ke sampah. Ujung aktif mundur satu langkah ke kiri.</p>
+    </div>
+    <div class="jebakan-card" style="border-color:rgba(199,125,255,0.3);">
+      <div class="jebakan-title" style="color:var(--ungu-muda);">🃏 Kartu BLANK</div>
+      <p style="font-size:0.85rem; margin-bottom:8px;">Deklarasikan BLANK sebagai vokal untuk menyambung dari huruf mati.</p>
+    </div>
+  </div>
+
+  <div class="highlight-box hb-ungu" style="margin-top:16px;">
+    😱 <strong>Gugus konsonan (NG, NY, ST, NK, NT, ND) jauh lebih menyiksa</strong> daripada huruf mati tunggal! Hampir tidak ada cara alami untuk lolos — butuh vokal khusus, HAPUS, atau BLANK.
+  </div>
+
+  <!-- DEMO GUGUS -->
+  <div class="ulat-demo" style="border-color:rgba(123,45,139,0.5); margin-top:20px;">
+    <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--ungu-muda); margin-bottom:16px;">💀 Jebakan Tingkat Tinggi: Gugus Konsonan</div>
+    <div class="ulat-row">
+      <div class="ulat-label">Meja:</div>
+      <div class="kartu kartu-aktif">BIN</div>
+      <div class="kartu kartu-aktif">TANG</div>
+      <div class="word-formed">= BINTANG</div>
+    </div>
+    <div class="ulat-row">
+      <div class="ulat-label">Kamu pasang [NG]:</div>
+      <div class="kartu kartu-dibuang">BIN</div>
+      <div class="kartu kartu-aktif" style="background:linear-gradient(135deg,#3d1a5e,#7B2D8B);">TANG</div>
+      <div class="kartu" style="background:linear-gradient(135deg,#3d1a5e,#7B2D8B); border-color:var(--ungu-muda);">NG</div>
+    </div>
+    <div class="ulat-note" style="color:var(--ungu-muda);">Ujung aktif [NG] — sangat sulit! Lawan butuh vokal + kartu lain atau HAPUS!</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: IMBUHAN ===== -->
+<section id="imbuhan" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--ungu); color:white;">5</div>
+    🔤 Kartu Imbuhan
+  </div>
+
+  <div class="highlight-box hb-ungu">
+    Kartu imbuhan berwarna <strong>ungu muda</strong> dan membuka ribuan kemungkinan kata baru. Ada dua jenis: <b>Awalan (Prefiks)</b> dan <b>Akhiran (Sufiks)</b>.
+  </div>
+
+  <div class="jebakan-grid" style="margin-top:20px;">
+    <div class="jebakan-card" style="border-color:var(--ungu-muda);">
+      <div class="jebakan-title" style="color:var(--ungu-muda);">⬅️ Awalan (Prefiks)</div>
+      <div style="font-family:'Space Mono',monospace; font-size:0.85rem; color:var(--kuning); margin-bottom:10px;">MEN- BER- PER- TER- DI- KE- SE- PE-</div>
+      <ul class="jebakan-card" style="background:none; border:none; padding:0;">
+        <li>Dimainkan sebagai suku kata <strong>pertama</strong>.</li>
+        <li>WAJIB disambung minimal 1 kartu lagi di kanannya saat giliran yang sama.</li>
+        <li>Atau biarkan pemain berikutnya melanjutkan.</li>
+      </ul>
+      <div style="margin-top:10px; background:rgba(255,255,255,0.08); border-radius:10px; padding:12px; font-size:0.85rem;">
+        <b>Contoh:</b><br>
+        Taruh [BER-] → pemain berikutnya taruh [LA] → [RI] = <span style="color:var(--kuning);">BERLARI</span> ✓
+      </div>
+    </div>
+    <div class="jebakan-card" style="border-color:var(--ungu-muda);">
+      <div class="jebakan-title" style="color:var(--ungu-muda);">➡️ Akhiran (Sufiks)</div>
+      <div style="font-family:'Space Mono',monospace; font-size:0.85rem; color:var(--kuning); margin-bottom:10px;">-AN -KAN -NYA -LAH</div>
+      <ul>
+        <li>Dimainkan di <strong>ujung kanan</strong> untuk menutup/memperpanjang kata.</li>
+        <li>Ujung aktif setelah akhiran = <em>huruf terakhir dari akhiran</em>.</li>
+      </ul>
+      <div style="margin-top:10px; background:rgba(255,255,255,0.08); border-radius:10px; padding:12px; font-size:0.85rem;">
+        <b>Akibat:</b><br>
+        [-AN] → ujung = <span style="color:var(--merah);font-weight:800;">N</span> (jebakan!)<br>
+        [-KAN] → ujung = <span style="color:var(--merah);font-weight:800;">N</span> (jebakan!)<br>
+        [-NYA] → ujung = <span style="color:var(--hijau);font-weight:800;">A</span> (aman 😌)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: KARTU AKSI ===== -->
+<section id="aksi" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--merah); color:white;">6</div>
+    ⚡ Kartu Aksi Taktis (12 Jenis)
+  </div>
+
+  <div class="highlight-box hb-merah" style="margin-bottom:24px;">
+    ⚡ <strong>Kartu aksi berwarna mencolok</strong> — inilah bumbu pertarungan RANGKAI. Mereka bisa mengubah jalannya permainan dalam hitungan detik!
+  </div>
+
+  <div class="aksi-grid">
+    <div class="aksi-card ac-hapus">
+      <div class="aksi-icon">🗑️</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">HAPUS</div>
+        <div class="aksi-jumlah">×6</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Buang ujung aktif ke tumpukan sampah. Ujung aktif mundur satu langkah ke kiri. Boleh langsung taruh 1 kartu lagi (tidak wajib). <strong style="color:var(--kuning);">Kartu penyelamat dari huruf mati!</strong></div>
+    </div>
+
+    <div class="aksi-card ac-panik">
+      <div class="aksi-icon">😱</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">PANIK</div>
+        <div class="aksi-jumlah">×5</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Pasang bersama kartu suku kata. Pemain berikutnya wajib respons dalam <strong style="color:var(--kuning);">5 detik</strong>. Semua hitung mundur bersama! Gagal = tarik 2 kartu + giliran hangus.</div>
+    </div>
+
+    <div class="aksi-card ac-serobot">
+      <div class="aksi-icon">⚡</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">SEROBOT</div>
+        <div class="aksi-jumlah">×5</div>
+      </div>
+      <div class="aksi-waktu">🚨 KAPAN SAJA!</div>
+      <div class="aksi-desc">Satu-satunya kartu yang dimainkan DI LUAR giliran! Banting SEROBOT + kartumu sambil teriak kata yang terbentuk. Giliran langsung jadi milikmu. Jika tidak valid, kehilangan hak SEROBOT 1 ronde.</div>
+    </div>
+
+    <div class="aksi-card ac-ganda">
+      <div class="aksi-icon">✌️</div>
+      <div class="aksi-header">
+        <div class="aksi-nama" style="color:#001a00;">GANDA</div>
+        <div class="aksi-jumlah" style="background:rgba(0,0,0,0.2); color:#001a00;">×4</div>
+      </div>
+      <div class="aksi-waktu" style="color:#001a00;">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Mainkan kartu ini, lalu taruh <strong>2 kartu sekaligus</strong> yang membentuk kata valid. Sangat berguna untuk lolos jebakan atau menguras kartu di tangan.</div>
+    </div>
+
+    <div class="aksi-card ac-putar">
+      <div class="aksi-icon">🔄</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">PUTAR HALUAN</div>
+        <div class="aksi-jumlah">×4</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Arah permainan berbalik! Searah jarum jam → berlawanan jarum jam. Dalam permainan 2 orang, efeknya seperti Skip.</div>
+    </div>
+
+    <div class="aksi-card ac-blank">
+      <div class="aksi-icon">🌈</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">BLANK</div>
+        <div class="aksi-jumlah">×4</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Joker mutlak! Deklarasikan dengan keras sebagai suku kata atau huruf apa pun. Bisa juga dijadikan huruf mati — jebakan mematikan!</div>
+    </div>
+
+    <div class="aksi-card ac-kunci">
+      <div class="aksi-icon">🔒</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">KUNCI</div>
+        <div class="aksi-jumlah">×3</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Kartu paling kiri di meja tidak bisa dibuang selama <strong style="color:var(--kuning);">2 ronde</strong>. Meja menampung 3 kartu sementara KUNCI aktif. Bekukan suku kata yang menguntungkan!</div>
+    </div>
+
+    <div class="aksi-card ac-tunjuk">
+      <div class="aksi-icon">👆</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">TUNJUK</div>
+        <div class="aksi-jumlah">×3</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Pilih satu pemain. Mereka wajib respons giliran berikutnya dalam <strong style="color:var(--kuning);">3 detik</strong> — lebih ketat dari PANIK. Gagal = 2 kartu penalti + giliran hangus.</div>
+    </div>
+
+    <div class="aksi-card ac-recall">
+      <div class="aksi-icon">♻️</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">RECALL</div>
+        <div class="aksi-jumlah">×3</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Lihat tumpukan sampah dan <strong style="color:var(--kuning);">ambil 1 kartu pilihan</strong> ke tanganmu. Berguna untuk mengambil kembali suku kata langka atau kartu aksi yang dibuang lawan!</div>
+    </div>
+
+    <div class="aksi-card ac-intip">
+      <div class="aksi-icon">🔍</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">INTIP</div>
+        <div class="aksi-jumlah">×3</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Lihat <strong style="color:var(--kuning);">3 kartu teratas</strong> tumpukan tarik secara diam-diam. Boleh susun ulang urutannya! Keunggulan perencanaan yang besar.</div>
+    </div>
+
+    <div class="aksi-card ac-acak">
+      <div class="aksi-icon">🌀</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">ACAK</div>
+        <div class="aksi-jumlah">×3</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">Semua pemain (termasuk kamu!) mengumpulkan kartu di tangan, lalu <strong style="color:var(--kuning);">bergeser ke kiri</strong>. Senjata bermata dua — bisa berbalik melawanmu!</div>
+    </div>
+
+    <div class="aksi-card ac-bom">
+      <div class="aksi-icon">💣</div>
+      <div class="aksi-header">
+        <div class="aksi-nama">BOM</div>
+        <div class="aksi-jumlah" style="background:rgba(230,57,70,0.3); color:var(--merah);">×1 ⚠️</div>
+      </div>
+      <div class="aksi-waktu">⏰ Giliran kamu</div>
+      <div class="aksi-desc">KARTU PALING LANGKA! Buang <strong style="color:var(--kuning);">2 kartu meja sekaligus</strong>. Buka 2 kartu baru sebagai kata awal berikutnya. Jika 2 kartu baru tidak valid, kamu kena 2 kartu penalti!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 7: VALIDASI & SANKSI ===== -->
+<section id="validasi" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:#555; color:white;">7</div>
+    📖 Validasi Kata & Tantangan
+  </div>
+
+  <div class="jebakan-grid">
+    <div class="jebakan-card" style="border-color:rgba(45,198,83,0.4);">
+      <div class="jebakan-title" style="color:var(--hijau);">✅ Kata VALID jika:</div>
+      <ul>
+        <li>Punya makna dalam bahasa Indonesia (KBBI)</li>
+        <li>Kata serapan umum yang diakui (BANK, MOTOR, MOBIL, RADIO)</li>
+        <li>Kata turunan dengan imbuhan (BERLARI, TULISAN)</li>
+        <li>Terbentuk dari <em>2 kartu aktif saat ini</em> di meja</li>
+      </ul>
+    </div>
+    <div class="jebakan-card" style="border-color:rgba(230,57,70,0.4);">
+      <div class="jebakan-title" style="color:var(--merah);">❌ Kata TIDAK VALID jika:</div>
+      <ul>
+        <li>Nama orang, nama merek, singkatan</li>
+        <li>Nama kota atau nama negara</li>
+        <li>Tidak ada di kamus manapun</li>
+        <li>Terbentuk dari seluruh riwayat kata (bukan 2 kartu aktif)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MEKANISME TANTANGAN -->
+  <div style="margin-top:24px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--kuning);">🗣️ Mekanisme Tantangan (Challenge)</div>
+  <p style="margin: 10px 0 16px; font-size:0.95rem; color:rgba(255,255,255,0.75);">
+    Jika kamu meragukan kata yang baru dibentuk, teriak <strong style="color:var(--merah);">"TANTANG!"</strong> sebelum giliran berikutnya dimulai.
+  </p>
+  <div class="jebakan-grid">
+    <div class="jebakan-card" style="border-color:rgba(230,57,70,0.4); background:rgba(230,57,70,0.08);">
+      <div class="jebakan-title" style="color:var(--merah);">Kata TIDAK ditemukan</div>
+      <p style="font-size:0.85rem;">Pemain yang membuat kata: <span class="penalti">+2 kartu penalti</span> + ambil kembali kartunya + giliran hangus.</p>
+    </div>
+    <div class="jebakan-card" style="border-color:rgba(45,198,83,0.4); background:rgba(45,198,83,0.08);">
+      <div class="jebakan-title" style="color:var(--hijau);">Kata VALID</div>
+      <p style="font-size:0.85rem;">Penantang yang salah: <span class="penalti">+2 kartu penalti</span>. Kata tetap sah, permainan lanjut.</p>
+    </div>
+  </div>
+
+  <!-- TABEL SANKSI -->
+  <div style="margin-top:28px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--kuning);">⚖️ Tabel Sanksi & Penalti</div>
+  <div style="overflow-x:auto; margin-top:14px;">
+    <table class="sanksi-table">
+      <thead>
+        <tr>
+          <th>Pelanggaran</th>
+          <th>Penalti</th>
+          <th>Giliran</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Membuat kata tidak valid (kalah tantang)</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Hangus</td>
+        </tr>
+        <tr>
+          <td>Lupa teriak RANGKAI saat kartu tersisa 1</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Lanjut</td>
+        </tr>
+        <tr>
+          <td>Gagal respons saat kena PANIK</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Hangus</td>
+        </tr>
+        <tr>
+          <td>Gagal respons saat kena TUNJUK</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Hangus</td>
+        </tr>
+        <tr>
+          <td>SEROBOT dengan kata tidak valid</td>
+          <td class="penalti">Hilang hak SEROBOT 1 ronde</td>
+          <td>Normal</td>
+        </tr>
+        <tr>
+          <td>Menantang kata yang ternyata valid</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Lanjut</td>
+        </tr>
+        <tr>
+          <td>BOM menghasilkan kata awal tidak valid</td>
+          <td class="penalti">+2 kartu</td>
+          <td>Hangus</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== SECTION 8: MENANG ===== -->
+<section id="menang" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--kuning); color:#333;">8</div>
+    🏆 Syarat Kemenangan
+  </div>
+
+  <div class="deklarasi-box">
+    <div style="font-size:1rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:10px;">Saat kartu kedua terakhir dimainkan, WAJIB teriakkan:</div>
+    <div class="deklarasi-word">RANGKAI!</div>
+    <div style="margin-top:16px; font-size:0.95rem; color:rgba(255,255,255,0.7);">
+      ⚠️ Harus terdengar jelas oleh semua pemain.<br>Berbisik atau berkata pelan = tidak dihitung.<br>
+      <span class="penalti" style="font-size:1rem;">Lupa teriak RANGKAI = tarik 2 kartu penalti!</span>
+    </div>
+  </div>
+
+  <div class="steps-list" style="margin-top:20px;">
+    <li class="step-item" style="list-style:none;">
+      <div class="step-num" style="background:var(--hijau);">🏅</div>
+      <div class="step-text">Pemain pertama yang <strong>tangannya kosong 100%</strong> adalah PEMENANG ronde tersebut!</div>
+    </li>
+    <li class="step-item" style="list-style:none;">
+      <div class="step-num" style="background:var(--biru);">🔄</div>
+      <div class="step-text">Jika <strong>Tumpukan Tarik habis</strong>: ambil semua kartu di Tumpukan Sampah (kecuali 2 kartu aktif di meja), kocok, jadikan tumpukan baru.</div>
+    </li>
+    <li class="step-item" style="list-style:none;">
+      <div class="step-num" style="background:#555;">🤝</div>
+      <div class="step-text">Jika tumpukan habis lagi dan tidak ada yang bisa bermain: <em>ronde berakhir seri</em>.</div>
+    </li>
+  </div>
+
+  <!-- SISTEM POIN -->
+  <div style="margin-top:30px; font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--kuning);">🎯 Sistem Poin (Opsional)</div>
+  <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin: 10px 0 16px;">Untuk permainan multi-ronde. Target: <b>50 poin</b> (pendek) atau <b>100 poin</b> (panjang).</p>
+  <div class="qref-grid">
+    <div class="qref-box" style="border-color:var(--hijau);">
+      <div class="qref-title" style="color:var(--hijau);">Bonus Poin</div>
+      +10 poin: Menang ronde<br>
+      +1 poin: Kata 2 suku kata<br>
+      +2 poin: Kata 3 suku kata<br>
+      +4 poin: Kata 4+ suku kata<br>
+      +1 bonus: Kata berakhir gugus konsonan<br>
+      +3 poin: Berhasil tantang kata lawan<br>
+      +2 poin: Berhasil SEROBOT
+    </div>
+    <div class="qref-box" style="border-color:var(--merah);">
+      <div class="qref-title" style="color:var(--merah);">Penalti Poin</div>
+      −1 poin per kartu yang tersisa di tangan saat ronde berakhir (bagi yang bukan pemenang)
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 9: STRATEGI ===== -->
+<section id="strategi" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--biru); color:white;">9</div>
+    🧠 Tips & Strategi
+  </div>
+
+  <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--kuning); margin-bottom:14px;">Strategi Dasar</div>
+  <div class="strategi-grid">
+    <div class="strategi-item">
+      <div class="strategi-icon">👁️</div>
+      <div class="strategi-tip">Selalu pantau ujung aktif dan siapkan minimal <strong>2 rencana kartu</strong> — karena lawan bisa mengubah ujung aktif sebelum giliranmu.</div>
+    </div>
+    <div class="strategi-item">
+      <div class="strategi-icon">💧</div>
+      <div class="strategi-tip">Jangan buang kartu vokal (A, I, U) terlalu cepat. Mereka adalah <strong>"peluru"</strong> untuk lolos dari jebakan huruf mati.</div>
+    </div>
+    <div class="strategi-item">
+      <div class="strategi-icon">🗑️</div>
+      <div class="strategi-tip">Kartu <strong>HAPUS</strong> paling efektif dipakai saat menghadapi gugus konsonan (NG, NY, ST) yang hampir mustahil diloloskan secara alami.</div>
+    </div>
+    <div class="strategi-item">
+      <div class="strategi-icon">🎯</div>
+      <div class="strategi-tip">Pantau kartu di tangan pemain lain — jika seseorang hampir habis kartunya, jadikan mereka target <strong>SEROBOT</strong> atau <strong>PANIK</strong>.</div>
+    </div>
+    <div class="strategi-item">
+      <div class="strategi-icon">🔤</div>
+      <div class="strategi-tip">Imbuhan <strong>MEN-</strong> dan <strong>BER-</strong> sangat serbaguna — hampir semua kata kerja bisa diawali keduanya. Simpan untuk momen kritis.</div>
+    </div>
+    <div class="strategi-item">
+      <div class="strategi-icon">🌀</div>
+      <div class="strategi-tip">Kartu <strong>ACAK</strong> adalah senjata bermata dua — gunakan hanya jika tanganmu buruk dan kamu yakin tangan lawan lebih baik.</div>
+    </div>
+  </div>
+
+  <div style="font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--merah); margin: 24px 0 14px;">Strategi Tingkat Lanjut</div>
+  <div class="strategi-grid">
+    <div class="strategi-item" style="border-color:rgba(230,57,70,0.3);">
+      <div class="strategi-icon">🧱</div>
+      <div class="strategi-tip"><strong>Rangkai jebakan berlapis:</strong> Taruh huruf mati yang memaksa lawan pakai vokal A, lalu SEROBOT dengan suku kata yang berakhiran NG.</div>
+    </div>
+    <div class="strategi-item" style="border-color:rgba(230,57,70,0.3);">
+      <div class="strategi-icon">🔍</div>
+      <div class="strategi-tip">Gunakan <strong>INTIP</strong> sebelum memutuskan strategi jangka panjang — mengetahui 3 kartu berikutnya memberimu keunggulan besar.</div>
+    </div>
+    <div class="strategi-item" style="border-color:rgba(230,57,70,0.3);">
+      <div class="strategi-icon">🔒</div>
+      <div class="strategi-tip"><strong>KUNCI</strong> paling efektif saat ujung aktif adalah vokal atau suku kata yang sangat menguntungkanmu — bekukan posisi itu!</div>
+    </div>
+    <div class="strategi-item" style="border-color:rgba(230,57,70,0.3);">
+      <div class="strategi-icon">💎</div>
+      <div class="strategi-tip">Konsonan ganda (PRA, TRI, KRI) sangat berharga — simpan hingga bisa membentuk kata 3 suku kata atau lebih sekaligus dengan GANDA.</div>
+    </div>
+  </div>
+
+  <div class="highlight-box hb-kuning" style="margin-top:20px;">
+    🏁 <strong>Strategi Akhir Permainan:</strong> Saat tersisa 3–4 kartu, hitung kombinasi untuk menyelesaikan permainan. Jangan lupa teriak RANGKAI! Jika lawan tersisa 1 kartu, paksakan PANIK atau TUNJUK untuk membuat mereka panik dan salah.
+  </div>
+</section>
+
+<!-- ===== SECTION 10: MODE PERMAINAN ===== -->
+<section id="mode" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--hijau); color:white;">10</div>
+    🎮 Mode Permainan
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-badge" style="background:var(--biru);">STANDAR</span>
+        <div class="mode-nama">Mode Standar (2–10 Pemain)</div>
+      </div>
+      <div class="mode-desc">Mode dasar seperti yang dijelaskan di panduan ini. Cocok untuk semua kelompok usia dan kesempatan. Mulai di sini jika baru pertama kali bermain!</div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-badge" style="background:var(--hijau);">KOPERASI</span>
+        <div class="mode-nama">Mode Koperasi — Lawan Waktu</div>
+      </div>
+      <div class="mode-desc">Semua pemain bersatu melawan "Waktu". Setiap 45 detik, satu kartu dari tumpukan tarik otomatis diletakkan di ujung aktif. Jika meja menumpuk lebih dari 4 kartu aktif atau tidak ada yang bisa bermain 3 ronde berturut-turut — semua kalah bersama!</div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-badge" style="background:var(--merah);">DUEL</span>
+        <div class="mode-nama">Mode Duel (1 vs 1)</div>
+      </div>
+      <div class="mode-desc">Kartu aksi diperkuat: PANIK jadi 3 detik, SEROBOT bisa digunakan 2 kali berturut-turut. Tambahan mekanik Duel Kata: setelah SEROBOT berhasil, pemain yang diserbot bisa membalas dengan SEROBOT mereka sendiri!</div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-badge" style="background:var(--ungu);">TIM</span>
+        <div class="mode-nama">Mode Tim (2v2 atau 3v3)</div>
+      </div>
+      <div class="mode-desc">Pemain dibagi ke tim, duduk berselang-seling. Boleh memberi "sinyal tangan" ke rekan: tepuk meja sekali = "tolong sambung", angkat alis = "kamu duluan". Tidak boleh bicara atau berbisik. Strategi sinyal diam adalah kuncinya!</div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-badge" style="background:var(--kuning); color:#333;">EDUKASI</span>
+        <div class="mode-nama">Mode Edukasi (Kelas/Anak)</div>
+      </div>
+      <div class="mode-desc">Kartu aksi dinonaktifkan. Setiap kata valid yang dibentuk harus disebutkan artinya dalam 5 detik untuk mendapat poin bonus +1. Guru atau fasilitator bertindak sebagai moderator. Sangat efektif untuk pembelajaran kosakata SD–SMP!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 11: REFERENSI CEPAT ===== -->
+<section id="referensi" class="reveal" style="max-width:900px; margin:0 auto; padding:60px 20px;">
+  <div class="section-title">
+    <div class="section-num" style="background:var(--merah); color:white;">📋</div>
+    Referensi Cepat
+  </div>
+  <p style="font-size:0.9rem; color:rgba(255,255,255,0.55); margin-bottom:20px;">Simpan halaman ini sebagai pegangan selama bermain!</p>
+
+  <div class="qref-grid">
+    <div class="qref-box" style="border-color:var(--kuning);">
+      <div class="qref-title" style="color:var(--kuning);">⚙️ Setup</div>
+      Kocok 200 kartu → Bagikan 7 per pemain → Buka 2 kartu awal → Pastikan membentuk kata valid → Pemain termuda jalan duluan
+    </div>
+    <div class="qref-box" style="border-color:var(--biru);">
+      <div class="qref-title" style="color:var(--biru);">🔄 Giliran Normal</div>
+      Taruh 1 kartu di kanan ujung aktif → Kata valid? → Kartu kiri terbuang → Giliran pindah. Tidak punya? → Tarik 1 kartu → Mainkan jika bisa, atau giliran hangus
+    </div>
+    <div class="qref-box" style="border-color:var(--merah);">
+      <div class="qref-title" style="color:var(--merah);">⚠️ Jebakan Huruf Mati</div>
+      Taruh huruf mati di ujung → Lawan harus lolos dengan Vokal, GANDA+Vokal, HAPUS, atau BLANK
+    </div>
+    <div class="qref-box" style="border-color:var(--hijau);">
+      <div class="qref-title" style="color:var(--hijau);">🏆 Deklarasi & Menang</div>
+      Kartu kedua terakhir dimainkan → Teriak RANGKAI! → Lupa = +2 kartu penalti. Kartu habis = MENANG!
+    </div>
+  </div>
+
+  <!-- RINGKASAN KARTU AKSI -->
+  <div style="margin-top:28px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--kuning); margin-bottom:14px;">⚡ Ringkasan Kartu Aksi</div>
+  <div style="overflow-x:auto;">
+    <table class="sanksi-table">
+      <thead>
+        <tr>
+          <th>Kartu</th>
+          <th>Jml</th>
+          <th>Kapan</th>
+          <th>Efek Singkat</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>🗑️ HAPUS</td><td>×6</td><td>Giliran kamu</td><td>Buang ujung aktif, mundur satu langkah</td></tr>
+        <tr><td>😱 PANIK</td><td>×5</td><td>Giliran kamu</td><td>Lawan respons dalam 5 detik</td></tr>
+        <tr><td>⚡ SEROBOT</td><td>×5</td><td>Kapan saja!</td><td>Ambil alih giliran di luar urutan</td></tr>
+        <tr><td>✌️ GANDA</td><td>×4</td><td>Giliran kamu</td><td>Mainkan 2 kartu sekaligus</td></tr>
+        <tr><td>🔄 PUTAR HALUAN</td><td>×4</td><td>Giliran kamu</td><td>Balik arah permainan</td></tr>
+        <tr><td>🌈 BLANK</td><td>×4</td><td>Giliran kamu</td><td>Joker — jadikan suku kata apa saja</td></tr>
+        <tr><td>🔒 KUNCI</td><td>×3</td><td>Giliran kamu</td><td>Bekukan kartu kiri selama 2 ronde</td></tr>
+        <tr><td>👆 TUNJUK</td><td>×3</td><td>Giliran kamu</td><td>Target 1 pemain wajib respons 3 detik</td></tr>
+        <tr><td>♻️ RECALL</td><td>×3</td><td>Giliran kamu</td><td>Ambil 1 kartu dari tumpukan sampah</td></tr>
+        <tr><td>🔍 INTIP</td><td>×3</td><td>Giliran kamu</td><td>Lihat & susun 3 kartu atas tumpukan tarik</td></tr>
+        <tr><td>🌀 ACAK</td><td>×3</td><td>Giliran kamu</td><td>Semua kartu di tangan bergeser ke kiri</td></tr>
+        <tr><td>💣 BOM</td><td>×1</td><td>Giliran kamu</td><td>Buang 2 kartu meja, mulai kata baru</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  RANGKAI — Buku Induk Edisi Revisi 2.0 &nbsp;|&nbsp; 200 Kartu &nbsp;|&nbsp; 2–10 Pemain &nbsp;|&nbsp; Usia 10+ &nbsp;|&nbsp; 20–60 Menit
+</footer>
+
+<script>
+// === SCROLL REVEAL ===
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// === SIMULATOR ===
+const gameData = {
+  meja: ['MA', 'TA'],
+  kata: 'MATA',
+  history: []
+};
+
+const validMoves = {
+  'MA': { 'TA': 'MATA', 'SI': 'MASI?', 'NA': 'MANA', 'LA': 'MALA', 'DA': 'MADA', 'RA': 'MARA' },
+  'TA': { 'NA': 'TANA?', 'RI': 'TARI', 'PI': 'TAPI', 'KU': 'TAKU?', 'NG': 'TANG' },
+  'NA': { 'SI': 'NASI', 'MA': 'NAMA', 'DA': 'NADA', 'RI': 'NARI?', 'PI': 'NAPI' },
+  'RI': { 'BA': 'RIBA', 'SI': 'RISI?', 'MA': 'RIMA' },
+  'PI': { 'KU': 'PIKU?', 'SI': 'PISI?', 'LA': 'PILA?' },
+  'KU': { 'DA': 'KUDA', 'LI': 'KULI', 'RA': 'KURA?', 'NG': 'KUNG?' },
+  'SI': { 'NA': 'SINA?', 'LA': 'SILA', 'PI': 'SIPI?' },
+  'NG': { 'invalid': true }
+};
+
+const validWords = ['NASI', 'TARI', 'NAMA', 'NADA', 'SILA', 'KUDA', 'KULI', 'RIBA', 'MANA', 'RIMA'];
+
+function simPlay(kartu) {
+  const ujung = gameData.meja[1];
+  const kata = ujung + kartu;
+  
+  // Cek kartu NG (jebakan maut)
+  if (kartu === 'NG') {
+    if (ujung === 'NG') {
+      showMsg('❌ Tidak bisa! NG tidak bisa disambung ke NG!', true);
+      return;
+    }
+    // NG bisa jadi jebakan
+    gameData.history.push([...gameData.meja]);
+    gameData.meja = [ujung, 'NG'];
+    gameData.kata = ujung + 'NG';
+    updateSimDisplay();
+    showMsg('💀 Jebakan NG dipasang! Lawan akan sangat kesulitan!', false, '#d63636');
+    return;
+  }
+  
+  // Cek kata valid
+  const kataFormed = ujung + kartu;
+  const isValid = validWords.includes(kataFormed) || validWords.some(w => w.startsWith(kataFormed)) || (kataFormed.length >= 4 && !kataFormed.includes('?'));
+  
+  if (ujung === 'NG') {
+    showMsg('❌ Ujung aktif adalah NG — butuh vokal (A/I/U) untuk lolos!', true);
+    return;
+  }
+  
+  // Valid jika membentuk kata yang diketahui
+  const kata2 = ujung + kartu;
+  const knownValid = validWords.includes(kata2);
+  
+  if (knownValid || (kartu !== 'NG' && kartu.match(/[AEIOU]/) && ujung !== 'NG')) {
+    gameData.history.push([...gameData.meja]);
+    gameData.meja = [ujung, kartu];
+    gameData.kata = kata2;
+    updateSimDisplay();
+    showMsg('✅ ' + kata2 + ' — valid! Giliran pindah ke pemain berikutnya.');
+  } else if (kartu.match(/[^AEIOU]/) && !knownValid) {
+    // konsonan tapi belum tentu valid
+    gameData.history.push([...gameData.meja]);
+    gameData.meja = [ujung, kartu];
+    gameData.kata = kata2;
+    updateSimDisplay();
+    showMsg('⚠️ ' + kata2 + ' — terbentuk! (Cek di kamus jika kata ini valid)');
+  } else {
+    showMsg('❌ ' + kata2 + ' — tidak valid! Tidak bisa disambung.', true);
+  }
+}
+
+function updateSimDisplay() {
+  document.getElementById('simKiri').textContent = gameData.meja[0];
+  document.getElementById('simKanan').textContent = gameData.meja[1];
+  document.getElementById('simKata').textContent = gameData.kata;
+  document.getElementById('simUjung').textContent = gameData.meja[1];
+  
+  const kananEl = document.getElementById('simKanan');
+  const isMati = !gameData.meja[1].match(/[AEIOU]$/);
+  kananEl.style.background = isMati ? 'linear-gradient(135deg,#4a1010,#8b2020)' : 'linear-gradient(135deg,#023047,#0a6e9c)';
+}
+
+function showMsg(msg, isErr = false, color = null) {
+  const el = document.getElementById('simMsg');
+  el.textContent = msg;
+  el.className = 'sim-msg' + (isErr ? ' err' : '');
+  if (color) el.style.color = color;
+  else el.style.color = '';
+}
+
+function simReset() {
+  gameData.meja = ['MA', 'TA'];
+  gameData.kata = 'MATA';
+  gameData.history = [];
+  document.getElementById('simKiri').textContent = 'MA';
+  document.getElementById('simKanan').textContent = 'TA';
+  document.getElementById('simKiri').style.background = '';
+  document.getElementById('simKanan').style.background = '';
+  document.getElementById('simKata').textContent = 'MATA';
+  document.getElementById('simUjung').textContent = 'TA';
+  document.getElementById('simMsg').textContent = '';
+}
+</script>
+</body>
+</html>
