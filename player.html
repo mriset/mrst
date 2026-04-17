@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a0a12">
+    <title>Wolf Player - Werewolf Online</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Creepster&display=swap');
+
+        :root {
+            --bg-primary: #0a0a12;
+            --bg-secondary: #12121f;
+            --bg-card: #16213e;
+            --accent-purple: #7b2ff7;
+            --accent-purple-light: #9d5cfa;
+            --accent-gold: #f0c040;
+            --accent-red: #e74c3c;
+            --accent-green: #2ecc71;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --border-color: #2a2a40;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .header-logo {
+            font-family: 'Creepster', cursive;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark, #5a1db8));
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Status Board */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-alive {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--accent-green);
+        }
+
+        .status-dead {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+        }
+
+        /* Role Card flip effect */
+        .role-scene {
+            perspective: 600px;
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .role-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .role-card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .role-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-front {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            border: 2px solid var(--border-color);
+        }
+
+        .role-back {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid var(--accent-purple);
+            transform: rotateY(180deg);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .role-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .role-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            fontWeight: bold;
+        }
+
+        .role-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Players List */
+        .player-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .player-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Timer Sync */
+        .timer-box {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(240, 192, 64, 0.1);
+            border: 1px solid rgba(240, 192, 64, 0.3);
+            display: none;
+            /* Only show in discussion */
+        }
+
+        .timer-display {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+        }
+
+        /* Announcement Toast */
+        #toastContainer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: rgba(123, 47, 247, 0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-weight: 500;
+        }
+    </style>
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+    <div id="toastContainer"></div>
+
+    <div class="header">
+        <div class="header-logo">Werewolf</div>
+    </div>
+
+    <!-- Screen 1: Login -->
+    <div id="screen-login" class="screen active">
+        <div class="card">
+            <h2 style="font-family:'Cinzel',serif; margin-bottom: 16px; text-align:center;">Bergabung ke Permainan</h2>
+            <div class="form-group">
+                <label class="form-label">Nama Kamu</label>
+                <input type="text" id="inputName" class="form-input" placeholder="Masukkan nama panggilan...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kode Room</label>
+                <input type="text" id="inputRoom" class="form-input" placeholder="Misal: ABCD12"
+                    style="text-transform: uppercase;">
+            </div>
+            <button class="btn" onclick="joinRoom()">Bergabung</button>
+        </div>
+    </div>
+
+    <!-- Screen 2: Waiting -->
+    <div id="screen-waiting" class="screen">
+        <div class="card" style="text-align:center;">
+            <h2 style="font-family:'Cinzel',serif; color:var(--accent-gold); margin-bottom: 8px;">Menunggu Moderator...
+            </h2>
+            <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom: 20px;">Permainan belum dimulai.</p>
+
+            <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; text-align:left;">
+                <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom: 10px;">
+                    Pemain Terhubung</div>
+                <ul id="waitingPlayerList" class="player-list">
+                    <!-- Populated dynamically -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Game -->
+    <div id="screen-game" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <div>
+                <div style="font-family:'Cinzel',serif; font-weight:700; font-size:1.2rem; color:var(--accent-gold);"
+                    id="gamePhaseDisplay">SIANG HARI</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Hari ke-<span id="gameDayDisplay">1</span></div>
+            </div>
+            <div id="playerStatusBadge" class="status-badge status-alive">HIDUP</div>
+        </div>
+
+        <div id="timerContainer" class="timer-box">
+            <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Sisa
+                Waktu Diskusi</div>
+            <div id="timerDisplay" class="timer-display">00:00</div>
+        </div>
+
+        <div class="card">
+            <h3 style="text-align:center; font-family:'Cinzel',serif; color:var(--text-secondary);">Kartu Peranmu</h3>
+            <p style="text-align:center; font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">(Ketuk kartu
+                untuk melihat peran)</p>
+
+            <div class="role-scene">
+                <div class="role-card" id="roleCard" onclick="this.classList.toggle('is-flipped')">
+                    <div class="role-face role-front">
+                        <div style="font-size:5rem;">❓</div>
+                        <div style="font-family:'Cinzel',serif; font-weight:bold; margin-top:20px;">RAHASIA</div>
+                    </div>
+                    <div class="role-face role-back">
+                        <div class="role-icon" id="roleIcon">👤</div>
+                        <div class="role-name" id="roleName">Warga Biasa</div>
+                        <div class="role-desc" id="roleDesc">Belum ada role yang dibagikan. Tunggu moderator mengacak
+                            peran.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size:1rem; margin-bottom:10px; color:var(--text-secondary);">Daftar Pemain</h3>
+            <ul id="activePlayerList" class="player-list">
+                <!-- Dinamis -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // ==================== FIREBASE CONFIG AND INIT ====================
+        // GANTI CONFIG INI DENGAN CONFIG DARI FIREBASE CONSOLE PROJECT KAMU!
+        const firebaseConfig = {
+            /* 
+            apiKey: "AIzaSyBiFLIVROIksZMPS5kl3-ijiNnD6G1L8Lk",
+  authDomain: "wwonline-e773c.firebaseapp.com",
+  projectId: "wwonline-e773c",
+  storageBucket: "wwonline-e773c.firebasestorage.app",
+  messagingSenderId: "399653834294",
+  appId: "1:399653834294:web:42b78b940a4d3512e29297",
+  measurementId: "G-BCRC7M0Q7T"
+            */
+        };
+
+        let db = null;
+        if (Object.keys(firebaseConfig).length > 0) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        }
+
+        // App State
+        let roomCode = '';
+        let playerName = '';
+        let playerId = localStorage.getItem('werewolf_player_id');
+        if (!playerId) {
+            playerId = 'p_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('werewolf_player_id', playerId);
+        }
+
+        let myRoleData = null;
+        let isDead = false;
+
+        // Auto-fill from URL if joining via link
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('room')) {
+            document.getElementById('inputRoom').value = urlParams.get('room').toUpperCase();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>📢</span> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'all 0.4s';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        function joinRoom() {
+            if (!db) {
+                alert("Firebase belum dikonfigurasi!");
+                return;
+            }
+            playerName = document.getElementById('inputName').value.trim();
+            roomCode = document.getElementById('inputRoom').value.trim().toUpperCase();
+
+            if (!playerName || !roomCode) {
+                alert("Mohon isi Nama dan Kode Room!");
+                return;
+            }
+
+            // Verify room exists
+            db.ref(`rooms/${roomCode}/meta`).once('value', snapshot => {
+                if (!snapshot.exists()) {
+                    alert("Room tidak ditemukan!");
+                    return;
+                }
+
+                // Join room
+                db.ref(`rooms/${roomCode}/players/${playerId}`).update({
+                    name: playerName,
+                    joinedAt: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    initListeners();
+                    showScreen('screen-waiting');
+                });
+            });
+        }
+
+        function initListeners() {
+            // Listen to Meta
+            db.ref(`rooms/${roomCode}/meta`).on('value', snapshot => {
+                const meta = snapshot.val();
+                if (!meta) return; // Room deleted
+
+                if (meta.gameStarted) {
+                    showScreen('screen-game');
+                    document.getElementById('gamePhaseDisplay').textContent = meta.phase === 'night' ? 'MALAM HARI' : 'SIANG HARI';
+                    document.getElementById('gamePhaseDisplay').style.color = meta.phase === 'night' ? 'var(--accent-purple-light)' : 'var(--accent-gold)';
+                    document.getElementById('gameDayDisplay').textContent = meta.day;
+                } else {
+                    showScreen('screen-waiting');
+                }
+            });
+
+            // Listen to My Player Data (Role & Status)
+            db.ref(`rooms/${roomCode}/players/${playerId}`).on('value', snapshot => {
+                const playerData = snapshot.val();
+                if (!playerData) return; // Kicked
+
+                // Check death
+                if (!playerData.alive && !isDead) {
+                    isDead = true;
+                    showToast("💀 Kamu telah MATI! Jangan beritahu role-mu ke pemain lain.");
+                    document.getElementById('playerStatusBadge').className = 'status-badge status-dead';
+                    document.getElementById('playerStatusBadge').textContent = 'MATI';
+                } else if (playerData.alive && isDead) {
+                    isDead = false;
+                    document.getElementById('playerStatusBadge').className = 'status-badge status-alive';
+                    document.getElementById('playerStatusBadge').textContent = 'HIDUP';
+                }
+
+                // Update Role
+                if (playerData.role && playerData.role !== myRoleData) {
+                    myRoleData = playerData.role;
+                    updateRoleCard(playerData.role);
+                }
+            });
+
+            // Listen to All Players (for the lists)
+            db.ref(`rooms/${roomCode}/players`).on('value', snapshot => {
+                const players = snapshot.val() || {};
+                const waitingList = document.getElementById('waitingPlayerList');
+                const activeList = document.getElementById('activePlayerList');
+                waitingList.innerHTML = '';
+                activeList.innerHTML = '';
+
+                Object.keys(players).forEach(pId => {
+                    const p = players[pId];
+                    // Waiting item
+                    waitingList.innerHTML += `<li class="player-item"><span>${p.name}</span><span>✅</span></li>`;
+
+                    // Active list item (hide role, only show status)
+                    const statusIcon = p.alive ? '🟢' : '💀';
+                    const nameStyle = p.alive ? '' : 'text-decoration: line-through; color: var(--text-muted);';
+                    activeList.innerHTML += `<li class="player-item"><span style="${nameStyle}">${p.name}</span><span>${statusIcon}</span></li>`;
+                });
+            });
+
+            // Listen to Timer
+            let localTimerInterval;
+            db.ref(`rooms/${roomCode}/timer`).on('value', snapshot => {
+                const timerData = snapshot.val();
+                clearInterval(localTimerInterval);
+                if (!timerData) {
+                    document.getElementById('timerContainer').style.display = 'none';
+                    return;
+                }
+
+                if (timerData.running && timerData.secondsLeft > 0) {
+                    document.getElementById('timerContainer').style.display = 'block';
+                    let secs = timerData.secondsLeft;
+
+                    // Calculate drift (Optional refinement)
+                    const driftSecs = Math.floor((Date.now() - timerData.updatedAt) / 1000);
+                    secs = Math.max(0, secs - driftSecs);
+
+                    updateTimerUI(secs);
+
+                    localTimerInterval = setInterval(() => {
+                        secs = Math.max(0, secs - 1);
+                        updateTimerUI(secs);
+                        if (secs === 0) {
+                            clearInterval(localTimerInterval);
+                            playBuzzer();
+                        }
+                    }, 1000);
+                } else {
+                    document.getElementById('timerContainer').style.display = 'none';
+                    if (timerData.secondsLeft === 0) playBuzzer();
+                }
+            });
+        }
+
+        function updateTimerUI(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            const el = document.getElementById('timerDisplay');
+            el.textContent = `${m}:${s}`;
+            if (seconds <= 10) {
+                el.style.color = 'var(--accent-red)';
+            } else {
+                el.style.color = 'var(--accent-gold)';
+            }
+        }
+
+        function playBuzzer() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [0, 0.2, 0.4].forEach(delay => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
+                    osc.start(ctx.currentTime + delay);
+                    osc.stop(ctx.currentTime + delay + 0.3);
+                });
+            } catch (e) { }
+        }
+
+        // Definisi dasar untuk player view (supaya tidak perlu transfer JSON raksasa)
+        const roleDataFallback = {
+            'Werewolf': { icon: '🐺', desc: 'Serigala: Habisi 1 target tiap malam bersama kawanan.' },
+            'Alpha Wolf': { icon: '👑', desc: 'Alpha: Gigitan maut 1x, atau rekrut 1 manusia pembelot.' },
+            'Lone Wolf': { icon: '🐺', desc: 'Liar: Warga biasa. Jika digigit Werewolf malam hari, berubah jadi Werewolf.' },
+            'Seer': { icon: '🔮', desc: 'Peramal: Terawang faksi 1 pemain tiap malam.' },
+            'Guardian': { icon: '🛡️', desc: 'Pelindung: Lindungi 1 pemain dari kematian malam ini.' },
+            'Witch': { icon: '🧪', desc: 'Penyihir: Punya 1 Ramuan Hidup & 1 Racun.' },
+            'Wizard': { icon: '🧙', desc: 'Penyihir Agung: Bungkam 1 pemain malam hari (maks 3x).' },
+            'Hunter': { icon: '🏹', desc: 'Pemburu: Jika ditebak/mati, berhak menembak mati 1 pemain.' },
+            'Veteran': { icon: '⚔️', desc: 'Veteran: Siaga 2x malam hari. Siapapun yang menyerangmu akan tertembak mati.' },
+            'Bodyguard': { icon: '💂', desc: 'Perisai: Lindungi sasaran. Jika ia diserang, kamu mati, penyerang ikut mati.' },
+            'Priest': { icon: '⛪', desc: 'Pendeta: Siram Air Suci siang hari. Valid = Serigala mati, Salah = Kamu mati.' },
+            'Mayor': { icon: '🏛️', desc: 'Walikota: Buka identitas, suara voting dihitung ganda.' },
+            'Sheriff': { icon: '⭐', desc: 'Sheriff: Tembak mati di siang hari. Jika salah tembak orang baik, mati.' },
+            'Jester': { icon: '🃏', desc: 'Badut: Buat warga mencurigaimu dan menggantungmu siang hari untuk menang otomatis.' },
+            'Cupid': { icon: '💕', desc: 'Pemikat: Rantai sepasang kekasih di malam 1.' },
+            'Doppelganger': { icon: '🎭', desc: 'Peniru: Pilih 1 target. Jika ia mati, kamu warisi kemampuannya.' },
+            'Serial Killer': { icon: '🔪', desc: 'Pembunuh: Habisi 1 setiap malam. Kebal serangan serigala.' },
+            'Idiot': { icon: '😅', desc: 'Pandir: Jika digantung batal mati, tapi hak voting hilang selamanya.' },
+            'Prince': { icon: '🤴', desc: 'Pangeran: Eksekusi pertamamu batal otomatis.' },
+            'Little Girl': { icon: '👧', desc: 'Gadis: Bisa ngintip saat serigala bangun. Mati jika ditunjuk serigala.' },
+            'Villager': { icon: '👥', desc: 'Warga: Tanpa kekuatan unik, andalkan opini untuk mengusir serigala.' },
+
+            // Peran Tambahan
+            'Wolf Cub': { icon: '🐺', desc: 'Anak Serigala: Werewolf biasa. Jika mati, kawanan dapat membunuh 2 orang malam berikutnya.' },
+            'Minion': { icon: '🕵️', desc: 'Kaki Tangan: Tahu siapa saja Werewolf sejak awal, namun para Werewolf tidak tahu siapa dia.' },
+            'Sorcerer': { icon: '🧿', desc: 'Penyihir Gelap: Bantu Werewolf mencari siapa Seer asli.' },
+            'Infector': { icon: '🦠', desc: 'Penginfeksi: 1x per game, mengubah korban serangan wolf menjadi Werewolf.' },
+            'White Wolf': { icon: '🐺', desc: 'Serigala Putih: Bangun dengan kawanan, namun setiap dua malam sekali memangsa serigala lain.' },
+
+            'Tough Guy': { icon: '💪', desc: 'Jagoan: Jika diserang di malam hari, mati di malam berikutnya dan hidup seharian penuh.' },
+            'Mason 1': { icon: '⛏️', desc: 'Pekerja Batuan 1: Buka mata bersama Mason 2, saling percaya sebagai warga.' },
+            'Mason 2': { icon: '⛏️', desc: 'Pekerja Batuan 2: Pasangan Mason 1.' },
+            'Lycan': { icon: '🐾', desc: 'Serigala Jinak: Pihak warga, tapi saat diperiksa Seer muncul sebagai Serigala.' },
+            'Cursed': { icon: '😈', desc: 'Terkutuk: Pihak warga. Jika diserang Werewolf akan berubah jadi Werewolf.' },
+            'Apprentice Seer': { icon: '🔮', desc: 'Murid Peramal: Mewarisi kristal jika Seer asli mati.' },
+            'Gravedigger': { icon: '⚰️', desc: 'Penggali Kubur: Tahu peran asli orang yang digantung siang tadi.' },
+            'Drunk': { icon: '🍺', desc: 'Pemabuk: Warga biasa. Jika digigit, pembunuh kehilangan kekuatan membunuh untuk satu malam.' },
+            'Tavern Keeper': { icon: '🍻', desc: 'Penjaga Kedai: 1x setiap malam mabukkan orang, matikan kekuatannya malam itu.' },
+            'Aura Seer': { icon: '👁️', desc: 'Peramal Aura: Tahu apakah seseorang Warga, Serigala, atau Netral.' },
+            'Martyr': { icon: '✝️', desc: 'Martir: Di siang hari bisa korbankan nyawa untuk selamatkan orang yang akan dihukum.' },
+            'Tracker': { icon: '🔍', desc: 'Pelacak: Memilih 1 orang malam hari dan melihat siapa yang ia datangi.' },
+            'Hunters Apprentice': { icon: '🏹', desc: 'Murid Pemburu: Mendapat 1 tembakan jika Hunter mati.' },
+
+            'Amnesiac': { icon: '🌀', desc: 'Hilang Ingatan: Ambil peran orang mati di malam ke-3.' },
+            'Thief': { icon: '🎴', desc: 'Pencuri: Tukar peran permanen dengan satu pemain di malam 1.' },
+            'Survivor': { icon: '🛡️', desc: 'Penyintas: Tugas bertahan hidup. Punya 1 rompi anti mati untuk dipakai satu malam.' },
+            'Cult Leader': { icon: '🌑', desc: 'Pemimpin Sekte: Rekrut anggota setiap malam.' },
+            'Vampire': { icon: '🧛', desc: 'Vampir: Faksi ketiga. Gigit korban baru setiap malam.' },
+            'Troublemaker': { icon: '🃏', desc: 'Pembuat Onar: Tukar kartu dua pemain tanpa melihat.' },
+            'Bounty Hunter': { icon: '🎯', desc: 'Pemburu Hadiah: Menang mandiri jika target yang ditunjuk awal mati digantung warga.' }
+        };
+
+        function updateRoleCard(role) {
+            const rData = roleDataFallback[role] || { icon: '👤', desc: 'Tidak punya peran spesial.' };
+            document.getElementById('roleName').textContent = role;
+            document.getElementById('roleIcon').textContent = rData.icon;
+            document.getElementById('roleDesc').textContent = rData.desc;
+        }
+
+    </script>
+</body>
+
+</html>
