@@ -1,13 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOTAK HITAM - Premium Print Layout</title>
-    
-    <!-- Google Fonts: Playfair untuk elegan/klasik, Montserrat untuk modern/clean -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600;1,800&family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
-    
+    <title>KOTAK HITAM - Web App</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600;1,800&family=Montserrat:wght@400;600;800;900&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
             /* Palet Warna Premium */
@@ -15,365 +19,638 @@
             --dark-gray: #161618;
             --pale-gold: #D4AF37;
             --dark-gold: #856d22;
-            --blood-red: #9e1b1b;
-            --dark-red: #520b0b;
             --off-white: #f5f2eb;
-            
-            /* Dimensi Kartu Standar (ID Card/Poker Kecil) */
-            --card-w: 54mm;
-            --card-h: 85.6mm;
-            --bleed: 2mm;
+            --bg-grad: radial-gradient(circle at 50% 0%, #2a2a30 0%, #0a0a0c 100%);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #121212;
+            background-color: #000;
             color: var(--off-white);
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-            min-height: 100vh;
+            justify-content: center;
+            height: 100vh;
+            height: 100dvh;
+            /* Mobile viewport fix */
+            overflow: hidden;
         }
 
-        .header { text-align: center; margin-bottom: 25px; }
-        .header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--pale-gold); letter-spacing: 3px; font-weight: 800; }
-        .header p { color: #888; font-size: 0.9rem; margin-top: 5px; font-weight: 600; letter-spacing: 1px; }
-        
-        .toolbar {
-            background: #1a1a1a; padding: 15px 25px; border-radius: 8px; border: 1px solid #333;
-            margin-bottom: 30px; display: flex; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        
-        button {
-            background: linear-gradient(135deg, var(--pale-gold), #aa8820);
-            color: #111; border: none; padding: 10px 24px; border-radius: 5px;
-            font-weight: 800; cursor: pointer; font-family: 'Montserrat', sans-serif;
-            letter-spacing: 1px; transition: transform 0.2s;
-        }
-        button:hover { transform: translateY(-2px); }
-
-        /* --- PAGE & PRINT LAYOUT --- */
-        .page {
-            background: #ffffff;
-            width: 210mm; /* A4 Width */
-            min-height: 297mm; /* A4 Height */
-            padding: 15mm;
+        /* --- UI APLIKASI (MOBILE FIRST) --- */
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            /* Optimal untuk ukuran HP modern */
+            height: 100%;
+            background: var(--bg-grad);
             display: flex;
-            flex-wrap: wrap;
-            gap: 4mm;
-            justify-content: flex-start;
-            align-content: flex-start;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            padding: 24px;
+        }
+
+        .active-screen {
+            display: flex !important;
+        }
+
+        /* Menu Screen */
+        .menu-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
             margin-bottom: 30px;
         }
 
-        @media print {
-            body { background: none; padding: 0; }
-            .header, .toolbar { display: none !important; }
-            .page { box-shadow: none; margin: 0; padding: 10mm; page-break-after: always; }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            color: var(--pale-gold);
+            letter-spacing: 4px;
+            font-weight: 800;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
-        /* --- CARD BASE --- */
-        .card {
-            width: var(--card-w);
-            height: var(--card-h);
-            background-color: var(--charcoal);
-            background-image: radial-gradient(circle at 50% 30%, #202024 0%, var(--charcoal) 70%);
-            position: relative;
-            overflow: hidden;
-            border-radius: 3mm;
-            border: 0.5px solid #555;
+        .header p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-text strong {
+            color: var(--pale-gold);
+        }
+
+        .menu-action {
+            padding-bottom: 20px;
+        }
+
+        /* Buttons */
+        button {
+            outline: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--pale-gold), #aa8820);
+            color: #111;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(26, 26, 26, 0.8);
+            color: var(--pale-gold);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-icon {
+            background: none;
+            color: #888;
+            font-size: 1.5rem;
+            padding: 5px;
+        }
+
+        /* Play Screen */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .counter {
+            color: var(--pale-gold);
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .card-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            perspective: 1000px;
+        }
+
+        /* Kartu di Layar HP (Adopted from 6th) */
+        .card-hp {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 54 / 85.6;
+            background: #0a0a0a;
+            color: #ffffff;
+            border-radius: 4mm;
+            border: 1px solid #333;
             display: flex;
             flex-direction: column;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+            transform-style: preserve-3d;
         }
 
-        /* SVG Noise Texture */
-        .card-texture {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; opacity: 0.25; z-index: 1; mix-blend-mode: overlay;
+        /* Animasi Transisi Kartu */
+        .fade-in {
+            animation: cardEntry 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        /* INNER FRAME (Bingkai Premium) */
-        .card-inner {
-            position: absolute;
-            top: 3.5mm; left: 3.5mm; right: 3.5mm; bottom: 3.5mm;
-            border: 1px solid rgba(212, 175, 55, 0.2);
+        @keyframes cardEntry {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95) rotateX(10deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0);
+            }
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        .nav-controls .btn {
+            flex: 1;
+            padding: 16px 10px;
+            font-size: 0.95rem;
+        }
+
+        /* --- STYLING ISI KARTU --- */
+        .q-top {
+            height: 15%;
+            padding: 4mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
             z-index: 2;
-            pointer-events: none;
-            display: flex; flex-direction: column;
         }
 
-        /* Ornamen Sudut */
-        .corner { position: absolute; width: 4mm; height: 4mm; border: 1px solid var(--pale-gold); }
-        .corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-        .corner.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
-        .corner.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
-        .corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-
-        /* --- QUESTION CARD CONTENT --- */
-        .q-content {
-            position: relative; z-index: 3; flex: 1;
-            display: flex; flex-direction: column; padding: 5mm;
-        }
-
-        .q-header {
-            text-align: center; margin-top: 2mm;
-        }
-        .q-title {
-            font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 6.5pt;
-            letter-spacing: 4px; color: var(--pale-gold); margin-bottom: 2mm;
-        }
-        .q-divider {
-            display: flex; align-items: center; justify-content: center; opacity: 0.7;
-        }
-        .q-divider::before, .q-divider::after {
-            content: ''; height: 1px; width: 12mm; background: var(--pale-gold);
-        }
-        .q-divider span {
-            display: inline-block; width: 3px; height: 3px; background: var(--pale-gold);
-            transform: rotate(45deg); margin: 0 2mm;
+        .q-level-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .q-mid {
-            flex: 1; display: flex; align-items: center; justify-content: center;
+            height: 70%;
+            padding: 6mm 4mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
         }
+
         .q-text {
-            font-family: 'Playfair Display', serif; font-style: italic; font-weight: 600;
-            font-size: 10.5pt; line-height: 1.45; text-align: center;
-            color: var(--off-white); text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            line-height: 1.4;
+            color: #ffffff;
+            font-weight: 600;
         }
 
-        .q-footer {
-            text-align: center; margin-bottom: 1mm;
-            display: flex; flex-direction: column; align-items: center; gap: 1mm;
-        }
-        .q-code {
-            font-family: 'Montserrat', sans-serif; font-size: 5pt; font-weight: 600;
-            color: #888; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;
-            letter-spacing: 1px; border: 1px solid #333;
-        }
-        .q-edition {
-            font-family: 'Montserrat', sans-serif; font-size: 4.5pt; font-weight: 600;
-            color: var(--dark-gold); letter-spacing: 2px; text-transform: uppercase;
+        .q-bot {
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
         }
 
-        /* --- VOTE CARDS --- */
-        .vote-card { align-items: center; justify-content: center; }
-        .vote-card .card-inner { border: none; }
-        .vote-card .corner { border-color: rgba(255,255,255,0.1); }
-        
-        .vote-badge {
-            position: relative; z-index: 3;
-            width: 38mm; height: 38mm; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5);
-        }
-        .vote-badge::before {
-            content: ''; position: absolute; inset: 1.5mm; border-radius: 50%;
-            border: 1px dashed rgba(255,255,255,0.3);
-        }
-        
-        .vote-ya .vote-badge {
-            background: radial-gradient(circle, var(--dark-gold) 0%, #302604 100%);
-            border: 2px solid var(--pale-gold);
-        }
-        .vote-ya .vote-text { color: var(--off-white); text-shadow: 0 0 8px rgba(212,175,55,0.8); }
-        
-        .vote-tidak .vote-badge {
-            background: radial-gradient(circle, var(--dark-red) 0%, #1c0202 100%);
-            border: 2px solid var(--blood-red);
-        }
-        .vote-tidak .vote-text { color: var(--off-white); text-shadow: 0 0 8px rgba(255,0,0,0.8); }
-
-        .vote-text {
-            font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 16pt;
-            letter-spacing: 3px; position: relative; z-index: 4;
-        }
-        .vote-label {
-            position: absolute; bottom: 6mm; z-index: 3;
-            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 5pt;
-            color: #666; letter-spacing: 4px; text-transform: uppercase;
+        .q-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: #ffffff;
+            font-weight: 800;
+            opacity: 0.8;
         }
 
-        /* --- BACK CARDS --- */
-        .back-card { align-items: center; justify-content: center; }
-        
-        .back-art {
-            position: relative; z-index: 3;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 100%; height: 100%;
-        }
-        
-        /* Optical Illusion / Geometric Box */
-        .geo-box {
-            position: relative; width: 28mm; height: 28mm;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .geo-box::before, .geo-box::after {
-            content: ''; position: absolute;
-            border: 1.5px solid var(--pale-gold);
-            width: 100%; height: 100%;
-        }
-        .geo-box::after { transform: rotate(45deg); border-width: 1px; opacity: 0.5; }
-        
-        .geo-inner {
-            position: absolute; width: 18mm; height: 18mm;
-            background: var(--charcoal); border: 1px solid var(--pale-gold);
-            transform: rotate(45deg); z-index: 2;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        /* Latar Belakang Kartu Depan (Sangat halus) */
+        .card-bg-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.15;
+            pointer-events: none;
         }
 
-        .back-title {
-            position: absolute; z-index: 4;
-            font-family: 'Playfair Display', serif; color: var(--off-white);
-            font-size: 10pt; font-weight: 900; letter-spacing: 4px;
-            text-align: center; line-height: 1.1;
-            text-shadow: 0 2px 4px rgba(0,0,0,1);
-        }
-        
-        .back-label {
-            position: absolute; bottom: 8mm; z-index: 3;
-            font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 5pt;
-            color: var(--dark-gold); letter-spacing: 3px;
-        }
-        .back-label-top {
-            position: absolute; top: 8mm; z-index: 3;
-            font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 5pt;
-            color: #555; letter-spacing: 4px;
-        }
-
+        /* Level Colors */
+        .lvl-1 .q-level-text { color: #ffffff; }
+        .lvl-1 .q-top { background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent); }
+        .lvl-2 .q-level-text { color: #C9A84C; }
+        .lvl-2 .q-top { background: linear-gradient(to bottom, rgba(201, 168, 76, 0.05), transparent); }
+        .lvl-3 .q-level-text { color: #8B1A1A; }
+        .lvl-3 .q-top { background: linear-gradient(to bottom, rgba(139, 26, 26, 0.1), transparent); }
     </style>
 </head>
+
 <body>
 
-    <div class="header">
-        <h1>KOTAK HITAM</h1>
-        <p>Premium Print Layout &bull; Edisi Sepupu 17+</p>
-    </div>
-
-    <div class="toolbar">
-        <button onclick="window.print()">🖨️ Cetak A4 / Simpan PDF</button>
-    </div>
-
-    <!-- PAGE 1: Front Cards -->
-    <div class="page" id="page-front"></div>
-
-    <!-- PAGE 2: Back Cards -->
-    <div class="page" id="page-back"></div>
-
-    <!-- SVG Filter Definition for Noise Texture -->
+    <!-- SVG Noise Filter -->
     <svg style="display:none;">
         <defs>
             <filter id="noiseFilter">
-                <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="3" stitchTiles="stitch"/>
+                <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="3" stitchTiles="stitch" />
                 <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.1 0" />
             </filter>
         </defs>
     </svg>
 
-    <script>
-        // Data Kartu KOTAK HITAM
-        const cardData = [
-            // KARTU PERTANYAAN
-            { type: 'question', id: 'Q-01', text: 'Pernahkah kamu diam-diam membaca chat atau DM di HP pacar/mantanmu tanpa sepengetahuan mereka?' },
-            { type: 'question', id: 'Q-02', text: 'Pernahkah kamu pura-pura sakit atau mencari alasan palsu hanya untuk menghindari acara kumpul keluarga besar kita?' },
-            { type: 'question', id: 'Q-03', text: 'Jujur, apakah kamu pernah naksir atau punya perasaan lebih pada teman dari saudaramu (atau sepupumu) sendiri?' },
-            { type: 'question', id: 'Q-04', text: 'Pernahkah kamu merusakkan, menghilangkan, atau mengambil barang milik keluarga di masa lalu, tapi kamu diam saja sampai sekarang?' },
-            { type: 'question', id: 'Q-05', text: 'Menurutmu, apakah ada minimal satu orang di ruangan ini yang sebenarnya bermuka dua atau "fake" di depan keluarga besar?' },
-            
-            // KARTU VOTE
-            { type: 'vote', id: 'V-YA', value: 'YA' },
-            { type: 'vote', id: 'V-TIDAK', value: 'TIDAK' }
-        ];
+    <!-- MAIN APP UI -->
+    <div id="app-container">
 
-        // Frame Elemen Reusable
-        const textureSVG = `
-            <svg class="card-texture" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+        <!-- MENU SCREEN -->
+        <div id="menu-screen" class="screen active-screen">
+            <div class="menu-content">
+                <div class="header">
+                    <h1>KOTAK HITAM</h1>
+                    <p>A Psychological Party Game</p>
+                </div>
+
+                <div class="info-text">
+                    <p><strong>Kapasitas:</strong> Maks 10 Pemain</p>
+                    <p style="margin-top: 10px;">Pertanyaan akan <strong>diacak</strong>.<br>Bacakan keras-keras, lalu
+                        lakukan <i>blind vote</i> bersama.</p>
+                </div>
+            </div>
+
+            <div class="menu-action">
+                <button class="btn btn-primary" onclick="startGame()">▶ Mulai Bermain</button>
+            </div>
+        </div>
+
+        <!-- PLAY SCREEN (HP View) -->
+        <div id="play-screen" class="screen">
+            <div class="top-bar">
+                <button class="btn-icon" onclick="showMenu()">✕</button>
+                <div style="width: 24px;"></div> <!-- Spacer for flex balance -->
+            </div>
+
+            <div class="card-container">
+                <!-- Interaktif Kartu Pertanyaan -->
+                <div class="card-hp" id="hp-card-view">
+                    <!-- Content Injected via JS -->
+                </div>
+            </div>
+
+            <div class="nav-controls">
+                <button class="btn btn-primary" onclick="nextCard()" style="font-size: 1.1rem; padding: 18px;">Ambil Kartu</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Database Pertanyaan
+        const questions = [
+    { level: 1, text: "Pernahkah kamu pura-pura tidak lihat chat masuk karena malas membalas?" },
+    { level: 1, text: "Apakah kamu pernah stalking seseorang lebih dari satu jam dalam satu sesi tanpa sadar?" },
+    { level: 1, text: "Pernahkah kamu bilang \"di jalan\" padahal baru mau mandi?" },
+    { level: 1, text: "Apakah kamu pernah ketawa ikut-ikutan padahal tidak tahu apa yang lucu?" },
+    { level: 1, text: "Pernahkah kamu nonton episode berikutnya meski sudah jam 2 pagi dan ada agenda besok?" },
+    { level: 1, text: "Apakah kamu pernah punya folder tersembunyi di HP yang tidak boleh dilihat siapapun?" },
+    { level: 1, text: "Pernahkah kamu terlambat membalas pesan penting sampai akhirnya tidak jadi dibalas?" },
+    { level: 1, text: "Apakah kamu pernah sengaja mengetik lama agar terlihat sedang memikirkan jawaban?" },
+    { level: 1, text: "Pernahkah kamu minta rekomendasi seseorang lalu diam-diam tidak mengikutinya sama sekali?" },
+    { level: 1, text: "Apakah kamu pernah berbohong soal sudah makan agar tidak repot makan bersama?" },
+    { level: 1, text: "Pernahkah kamu pernah bikin to-do list yang tidak pernah kamu sentuh lagi?" },
+    { level: 1, text: "Apakah kamu pernah overthinking soal satu kalimat pendek yang seseorang kirim ke kamu?" },
+    { level: 1, text: "Pernahkah kamu niat uninstall media sosial tapi tidak jadi karena takut ketinggalan?" },
+    { level: 1, text: "Apakah kamu pernah sengaja kirim typo agar percakapan terasa lebih santai?" },
+    { level: 1, text: "Pernahkah kamu mencari nama seseorang di Google hanya karena penasaran?" },
+    { level: 1, text: "Apakah kamu pernah screenshot percakapan orang lain dan menyimpannya?" },
+    { level: 1, text: "Pernahkah kamu diam-diam mengintip story seseorang dari akun lain?" },
+    { level: 1, text: "Apakah kamu pernah merasa lega ketika acara yang kamu tunggu tiba-tiba dibatalkan?" },
+    { level: 1, text: "Pernahkah kamu punya playlist yang malu kamu tunjukkan ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah bilang \"hampir sampai\" padahal baru keluar rumah?" },
+    { level: 1, text: "Pernahkah kamu setuju dengan pendapat seseorang hanya supaya obrolan cepat selesai?" },
+    { level: 1, text: "Apakah kamu pernah mem-follow seseorang lalu unfollow setelah mereka follow balik?" },
+    { level: 1, text: "Pernahkah kamu menghapus komentar yang sudah diketik karena takut dihakimi?" },
+    { level: 1, text: "Apakah kamu pernah menilai seseorang hanya dari tampilan feed atau foto profilnya?" },
+    { level: 1, text: "Pernahkah kamu janjian dengan seseorang yang kamu harap membatalkan duluan?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura baterai habis agar tidak perlu merespons?" },
+    { level: 1, text: "Pernahkah kamu diam-diam bangga dengan sesuatu yang tidak mau kamu akui ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah menghabiskan lebih dari satu jam melihat profil seseorang yang tidak kamu kenal secara personal?" },
+    { level: 1, text: "Pernahkah kamu ngobrol dengan diri sendiri dan merasa itu lebih melegakan dari ngobrol dengan orang lain?" },
+    { level: 1, text: "Apakah kamu pernah berharap seseorang tahu kamu sedang tidak baik-baik saja, tapi kamu tidak bilang apa-apa?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak muncul di online agar tidak ada yang mengajak bicara?" },
+    { level: 1, text: "Apakah kamu pernah mendengarkan lagu yang sama berulang kali selama lebih dari satu jam?" },
+    { level: 1, text: "Pernahkah kamu pura-pura sibuk padahal hanya rebahan dan scroll tanpa tujuan?" },
+    { level: 1, text: "Apakah kamu pernah merasa lebih tahu kehidupan seseorang dari media sosialnya daripada dari obrolan langsung?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak buka pintu kamar selama seharian penuh?" },
+    { level: 1, text: "Apakah kamu pernah beli barang impulsif lalu menyesal dalam 24 jam?" },
+    { level: 1, text: "Pernahkah kamu pernah nonton konten yang memalukan lalu langsung hapus history-nya?" },
+    { level: 1, text: "Apakah kamu pernah punya kebiasaan aneh yang kamu lakukan hanya saat benar-benar sendirian?" },
+    { level: 1, text: "Pernahkah kamu pernah tertidur saat video call dan berpura-pura tidak terjadi apa-apa?" },
+    { level: 1, text: "Apakah kamu pernah sengaja tidak reply pesan grup padahal kamu yang paling aktif sebelumnya?" },
+    { level: 1, text: "Pernahkah kamu makan dalam porsi yang tidak akan kamu akui ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah diam-diam membuka percakapan lama hanya untuk membacanya ulang?" },
+    { level: 1, text: "Pernahkah kamu tiba-tiba mute seseorang di media sosial tanpa alasan yang jelas?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura tidak tahu sesuatu padahal kamu yang pertama tahu?" },
+    { level: 1, text: "Pernahkah kamu berbohong soal selera atau pendapatmu agar tidak terlihat berbeda dari kelompok?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang cemburu hanya untuk melihat reaksinya?" },
+    { level: 2, text: "Apakah kamu pernah menghapus bukti percakapan sebelum ketahuan orang tertentu?" },
+    { level: 2, text: "Pernahkah kamu bilang hal berbeda kepada dua orang berbeda tentang kejadian yang sama?" },
+    { level: 2, text: "Apakah kamu pernah tetap berteman dengan seseorang hanya karena takut konflik kalau berhenti?" },
+    { level: 2, text: "Pernahkah kamu mengambil kredit atas ide atau hasil kerja orang lain?" },
+    { level: 2, text: "Apakah kamu pernah berbicara buruk tentang seseorang yang baru saja pergi dari tempat itu?" },
+    { level: 2, text: "Pernahkah kamu diam-diam merasa senang saat hubungan pertemanan orang lain bermasalah?" },
+    { level: 2, text: "Apakah kamu pernah menyukai seseorang yang seharusnya tidak kamu sukai?" },
+    { level: 2, text: "Pernahkah kamu sengaja memberi informasi tidak lengkap agar situasi berpihak padamu?" },
+    { level: 2, text: "Apakah kamu pernah memanfaatkan kebaikan seseorang untuk kepentinganmu sendiri?" },
+    { level: 2, text: "Pernahkah kamu diam-diam berharap seseorang gagal agar kamu merasa lebih baik soal dirimu?" },
+    { level: 2, text: "Apakah kamu pernah memilih diam saat seharusnya membela seseorang?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak memberitahu seseorang tentang sesuatu yang penting baginya?" },
+    { level: 2, text: "Apakah kamu pernah menceritakan rahasia orang lain saat situasi terasa \"aman\"?" },
+    { level: 2, text: "Pernahkah kamu punya akun media sosial yang tidak diketahui siapapun di sekitarmu?" },
+    { level: 2, text: "Apakah kamu pernah berpura-pura mendukung keputusan seseorang padahal kamu tidak setuju sama sekali?" },
+    { level: 2, text: "Pernahkah kamu berhenti menghubungi seseorang tanpa penjelasan apapun?" },
+    { level: 2, text: "Apakah kamu pernah memaafkan seseorang secara verbal tapi tidak pernah benar-benar memaafkannya?" },
+    { level: 2, text: "Pernahkah kamu berteman dekat dengan seseorang yang sebenarnya tidak kamu percaya?" },
+    { level: 2, text: "Apakah kamu pernah sengaja terlihat baik-baik saja agar seseorang merasa bersalah?" },
+    { level: 2, text: "Pernahkah kamu menilai pilihan hidup seseorang dengan sangat keras tapi tidak pernah bilang?" },
+    { level: 2, text: "Apakah kamu pernah meminta pendapat seseorang padahal keputusanmu sudah bulat sejak awal?" },
+    { level: 2, text: "Pernahkah kamu merespons seseorang secara berbeda tergantung siapa yang sedang melihatmu?" },
+    { level: 2, text: "Apakah kamu pernah tetap berada di lingkungan yang tidak membuatmu nyaman hanya demi tidak dikucilkan?" },
+    { level: 2, text: "Pernahkah kamu membaca isi HP atau notifikasi seseorang tanpa izin?" },
+    { level: 2, text: "Apakah kamu pernah menggunakan kepercayaan seseorang sebagai bahan cerita ke orang lain?" },
+    { level: 2, text: "Pernahkah kamu berpura-pura tidak kenal seseorang di depan kelompok tertentu?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam menyimpan perasaan pada seseorang yang sudah punya pasangan?" },
+    { level: 2, text: "Pernahkah kamu mengorbankan prinsipmu agar bisa diterima di suatu kelompok?" },
+    { level: 2, text: "Apakah kamu pernah terlibat gosip yang kemudian kamu sesali karena dampaknya lebih besar dari yang kamu kira?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang merasa butuh kehadiranmu?" },
+    { level: 2, text: "Apakah kamu pernah memendam amarah kepada seseorang lebih dari satu bulan tanpa bilang apa-apa?" },
+    { level: 2, text: "Pernahkah kamu berbicara jujur kepada seseorang bukan karena peduli, tapi karena ingin terlihat jujur?" },
+    { level: 2, text: "Apakah kamu pernah mengakhiri sebuah persahabatan tanpa konfrontasi — hanya menghilang perlahan?" },
+    { level: 2, text: "Pernahkah kamu punya ekspektasi besar kepada seseorang yang tidak pernah kamu sampaikan?" },
+    { level: 2, text: "Apakah kamu pernah memendam rasa bersalah atas sesuatu yang kamu lakukan kepada orang lain tanpa pernah minta maaf?" },
+    { level: 2, text: "Pernahkah kamu bohong tentang alasanmu menjauhi seseorang?" },
+    { level: 2, text: "Apakah kamu pernah secara sadar menampilkan versi dirimu yang berbeda untuk membuat seseorang tertarik?" },
+    { level: 2, text: "Pernahkah kamu merasa senang ketika seseorang yang tidak kamu sukai mengalami kesulitan?" },
+    { level: 2, text: "Apakah kamu pernah sengaja memperpanjang sebuah konflik karena ada bagian dari dirimu yang menikmatinya?" },
+    { level: 2, text: "Pernahkah kamu sengaja melepaskan sesuatu yang baik sebelum orang lain punya kesempatan meninggalkanmu lebih dulu?" },
+    { level: 2, text: "Apakah kamu pernah sadar sedang berbohong saat bicara tapi tetap melanjutkannya sampai selesai?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak mengundang seseorang ke sebuah momen agar mereka merasa tersisih?" },
+    { level: 2, text: "Apakah kamu pernah memendam rasa rindu kepada seseorang yang kamu sendiri yang memilih untuk pergi?" },
+    { level: 2, text: "Pernahkah kamu secara sadar memilih tidak tumbuh lebih dekat dengan seseorang yang sebenarnya kamu sukai?" },
+    { level: 2, text: "Apakah kamu pernah tetap dalam situasi yang tidak sehat karena takut tidak ada yang lebih baik menunggumu?" },
+    { level: 2, text: "Pernahkah kamu menceritakan masalah seseorang kepada orang yang sebenarnya tidak perlu tahu?" },
+    { level: 2, text: "Apakah kamu pernah berharap seseorang tertentu memilihmu — tapi tidak pernah melakukan apapun untuk itu?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat percakapan terasa normal padahal ada sesuatu yang belum kamu selesaikan dengan orang itu?" },
+    { level: 2, text: "Apakah kamu pernah memilih seseorang yang salah secara sadar karena kamu pikir itu yang kamu pantas dapat?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa tidak ada satu orang pun yang benar-benar tahu versi aslimu?" },
+    { level: 3, text: "Apakah kamu pernah sengaja menyabotase sesuatu yang baik dalam hidupmu sendiri?" },
+    { level: 3, text: "Pernahkah kamu jatuh untuk seseorang yang kamu tahu sejak awal tidak akan berhasil — tapi tetap jatuh?" },
+    { level: 3, text: "Apakah kamu pernah berbohong soal kondisi mentalmu agar tidak terlihat lemah di depan orang lain?" },
+    { level: 3, text: "Pernahkah kamu membuat keputusan besar dalam hidupmu berdasarkan apa yang diharapkan orang lain, bukan dirimu?" },
+    { level: 3, text: "Apakah kamu pernah merasa kesepian justru di momen yang seharusnya paling menyenangkan?" },
+    { level: 3, text: "Pernahkah kamu pura-pura bahagia dalam sebuah hubungan jauh lebih lama dari yang seharusnya?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa orang-orang di sekitarmu mengenal versi dirimu yang kamu desain, bukan yang asli?" },
+    { level: 3, text: "Pernahkah kamu berharap bisa menghapus satu versi dirimu dari masa lalu yang masih kadang muncul dalam pikiranmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa persahabatan yang terlihat paling dekat justru yang paling rapuh?" },
+    { level: 3, text: "Pernahkah kamu meragukan apakah orang-orang di sekitarmu benar-benar peduli, atau hanya sudah terbiasa?" },
+    { level: 3, text: "Apakah kamu pernah memendam sesuatu begitu lama hingga kamu tidak yakin lagi apakah itu masih penting?" },
+    { level: 3, text: "Pernahkah kamu merasa lebih mudah jujur kepada orang yang hampir tidak kamu kenal daripada kepada orang terdekatmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa tidak layak mendapat hal-hal baik yang sedang terjadi dalam hidupmu?" },
+    { level: 3, text: "Pernahkah kamu punya satu pikiran tentang dirimu yang kamu yakini akan mengubah cara orang melihatmu jika mereka tahu?" },
+    { level: 3, text: "Apakah kamu pernah takut menjadi terlalu dekat dengan seseorang karena kamu merasa cenderung merusak hal-hal baik?" },
+    { level: 3, text: "Pernahkah kamu merasa sudah sangat berbeda dari siapa kamu beberapa tahun lalu, dan tidak semua perubahannya menyenangkan?" },
+    { level: 3, text: "Apakah kamu pernah berharap bisa memulai ulang hubungan dengan seseorang yang sudah lama menghilang dari hidupmu?" },
+    { level: 3, text: "Pernahkah kamu merasa lebih aman ketika tidak ada yang terlalu dekat denganmu?" },
+    { level: 3, text: "Apakah kamu pernah punya satu rahasia yang kamu yakini tidak akan pernah kamu ceritakan ke siapapun?" },
+    { level: 3, text: "Pernahkah kamu berpikir bahwa kamu lebih sering berpura-pura baik-baik saja daripada yang disadari orang-orang di sekitarmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa versi dirimu yang paling jujur hanya muncul saat kamu sendirian?" },
+    { level: 3, text: "Pernahkah kamu menyesal membiarkan seseorang pergi tanpa pernah bilang apa yang sebenarnya kamu rasakan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu lebih mudah menghilang dari kehidupan seseorang daripada menghadapi percakapan yang sulit?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa ada satu hal yang belum pernah kamu katakan dengan jujur — bahkan kepada dirimu sendiri?" },
+    { level: 1, text: "Pernahkah kamu pura-pura tidak suka seseorang padahal sudah lama memerhatikannya?" },
+    { level: 1, text: "Apakah kamu pernah stalking foto lama seseorang yang kamu sukai sampai scroll ratusan postingan?" },
+    { level: 1, text: "Pernahkah kamu punya crush pada seseorang hanya karena suaranya?" },
+    { level: 1, text: "Apakah kamu pernah latihan ngomong sesuatu ke cermin sebelum ketemu orang yang kamu suka?" },
+    { level: 1, text: "Pernahkah kamu sengaja lewat tempat yang sama berulang kali dengan harapan bertemu seseorang?" },
+    { level: 1, text: "Apakah kamu pernah diam-diam cek zodiak atau MBTI seseorang untuk lihat kompatibilitasnya denganmu?" },
+    { level: 1, text: "Pernahkah kamu screenshot foto seseorang yang kamu suka dan menyimpannya?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura tidak tahu sesuatu agar seseorang mau menjelaskannya padamu?" },
+    { level: 1, text: "Pernahkah kamu sengaja pakai baju tertentu karena tahu akan bertemu seseorang yang kamu suka?" },
+    { level: 1, text: "Apakah kamu pernah replay chat lama dari seseorang hanya karena kangen?" },
+    { level: 1, text: "Pernahkah kamu pernah kirim meme ke seseorang sebagai alasan untuk memulai percakapan?" },
+    { level: 1, text: "Apakah kamu pernah sengaja online di waktu yang sama dengan seseorang agar terlihat aktif?" },
+    { level: 1, text: "Pernahkah kamu bohong soal suka atau tidak suka sesuatu agar punya kesamaan dengan seseorang?" },
+    { level: 1, text: "Apakah kamu pernah punya nickname rahasia untuk seseorang yang kamu suka di kontakmu?" },
+    { level: 1, text: "Pernahkah kamu sengaja membuat caption atau story yang ditujukan ke satu orang tertentu?" },
+    { level: 2, text: "Pernahkah kamu menyukai seseorang lebih lama dari yang pernah kamu akui ke siapapun?" },
+    { level: 2, text: "Apakah kamu pernah pura-pura sudah move on padahal belum?" },
+    { level: 2, text: "Pernahkah kamu membandingkan orang yang kamu pacari dengan seseorang dari masa lalumu?" },
+    { level: 2, text: "Apakah kamu pernah tetap dalam sebuah hubungan yang sudah tidak kamu yakini hanya karena tidak mau sendirian?" },
+    { level: 2, text: "Pernahkah kamu menyukai seseorang tapi sengaja tidak melakukan apapun karena takut ditolak?" },
+    { level: 2, text: "Apakah kamu pernah sadar bahwa kamu memperlakukan seseorang lebih baik di depan umum daripada saat berdua?" },
+    { level: 2, text: "Pernahkah kamu pernah terlibat situasi yang secara teknis bukan selingkuh, tapi kamu tahu rasanya seperti itu?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam membandingkan dirimu dengan mantan pasangan seseorang?" },
+    { level: 2, text: "Pernahkah kamu bilang \"aku baik-baik saja\" setelah putus padahal sama sekali tidak?" },
+    { level: 2, text: "Apakah kamu pernah memulai percakapan dengan seseorang bukan karena kamu peduli, tapi karena kamu bosan?" },
+    { level: 2, text: "Pernahkah kamu jatuh cinta dengan cara seseorang berbicara sebelum benar-benar mengenal orangnya?" },
+    { level: 2, text: "Apakah kamu pernah sengaja tidak memberi kejelasan kepada seseorang karena nyaman dengan situasi yang menggantung?" },
+    { level: 2, text: "Pernahkah kamu sadar bahwa kamu lebih menyukai ide tentang seseorang daripada orangnya sendiri?" },
+    { level: 2, text: "Apakah kamu pernah mempertahankan hubungan yang sudah selesai jauh lebih lama dari yang seharusnya?" },
+    { level: 2, text: "Pernahkah kamu merasa cemburu pada seseorang yang tidak punya hak untuk membuatmu cemburu?" },
+    { level: 2, text: "Apakah kamu pernah dengan sengaja tidak memberikan kepastian kepada seseorang yang jelas-jelas menyukaimu?" },
+    { level: 2, text: "Pernahkah kamu mencari tahu kabar mantan lewat orang ketiga karena tidak mau terlihat peduli?" },
+    { level: 2, text: "Apakah kamu pernah memulai perasaan untuk seseorang yang baru sebagai cara untuk melupakan yang sebelumnya?" },
+    { level: 2, text: "Pernahkah kamu tidak jujur soal perasaanmu karena takut mengubah dinamika yang sudah nyaman?" },
+    { level: 2, text: "Apakah kamu pernah berharap seseorang yang sudah pergi dari hidupmu tiba-tiba menghubungi duluan?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa orang yang paling kamu sukai justru yang paling tidak kamu tunjukkan perasaanmu?" },
+    { level: 3, text: "Apakah kamu pernah mencintai seseorang dengan cara yang tidak pernah mereka sadari?" },
+    { level: 3, text: "Pernahkah kamu menyesal tidak mengatakannya — bukan karena waktunya sudah berlalu, tapi karena kamu yang memilih diam?" },
+    { level: 3, text: "Apakah kamu pernah memilih pergi dari seseorang bukan karena tidak sayang, tapi karena takut pada apa yang bisa terjadi kalau kamu tetap tinggal?" },
+    { level: 3, text: "Pernahkah kamu jatuh cinta pada waktu yang salah dengan orang yang mungkin benar?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu lebih mudah mencintai seseorang dari jauh daripada saat mereka benar-benar ada?" },
+    { level: 3, text: "Pernahkah kamu sadar bahwa kamu menyabotase sebuah hubungan yang sebenarnya baik karena kamu tidak percaya itu bisa bertahan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa cara kamu mencintai seseorang justru membuat mereka pergi?" },
+    { level: 3, text: "Pernahkah kamu berharap bisa kembali ke satu momen tertentu bersama seseorang — bukan untuk mengubahnya, tapi hanya untuk merasakannya sekali lagi?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa ada satu orang yang sampai sekarang belum benar-benar selesai di dalam dirimu?" },
+    { level: 1, text: "Pernahkah kamu pura-pura tidak ingat sesuatu agar tidak perlu menjelaskan panjang lebar?" },
+    { level: 1, text: "Apakah kamu pernah sengaja menghindari seseorang di tempat umum agar tidak perlu menyapa?" },
+    { level: 1, text: "Pernahkah kamu berbohong soal sudah membaca buku atau menonton film yang sedang dibahas?" },
+    { level: 1, text: "Apakah kamu pernah punya pendapat kuat tentang sesuatu yang belum pernah kamu coba sendiri?" },
+    { level: 1, text: "Pernahkah kamu setuju dengan sesuatu di depan umum tapi diam-diam mencarinya di Google setelahnya?" },
+    { level: 1, text: "Apakah kamu pernah berpura-pura lebih sibuk dari yang sebenarnya agar terlihat penting?" },
+    { level: 1, text: "Pernahkah kamu menghindari cermin selama beberapa hari berturut-turut?" },
+    { level: 1, text: "Apakah kamu pernah sengaja datang terlambat ke sebuah acara agar tidak perlu duduk canggung sendirian?" },
+    { level: 1, text: "Pernahkah kamu mendengarkan percakapan orang lain di tempat umum dan tidak berhenti meski sudah tahu itu tidak sopan?" },
+    { level: 1, text: "Apakah kamu pernah berpura-pura sibuk saat seseorang yang tidak ingin kamu temui berjalan mendekat?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak menghabiskan makanan di piring agar tidak ditawari tambahan?" },
+    { level: 1, text: "Apakah kamu pernah berbohong soal harga barang yang kamu beli — entah dikecilkan atau dibesarkan?" },
+    { level: 2, text: "Pernahkah kamu menyadari bahwa kamu lebih keras menghakimi orang lain atas kesalahan yang pernah kamu lakukan sendiri?" },
+    { level: 2, text: "Apakah kamu pernah dengan sengaja tidak mengoreksi asumsi orang tentang dirimu karena asumsi itu menguntungkanmu?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa versi terbaikmu hanya muncul di depan orang yang tidak terlalu mengenalmu?" },
+    { level: 2, text: "Apakah kamu pernah berpura-pura sudah move on dari sesuatu — bukan kepada orang lain, tapi kepada dirimu sendiri?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang merasa kamu tidak butuh mereka, padahal sebaliknya?" },
+    { level: 2, text: "Apakah kamu pernah memilih versi cerita yang membuat kamu terlihat lebih baik saat menceritakan konflik kepada orang lain?" },
+    { level: 2, text: "Pernahkah kamu sadar bahwa kamu lebih sering hadir untuk orang lain daripada untuk dirimu sendiri?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam iri pada seseorang yang hidupnya terlihat lebih sederhana dari hidupmu?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak menunjukkan kemampuan penuhmu agar tidak dibebani ekspektasi?" },
+    { level: 2, text: "Apakah kamu pernah merasa lega ketika seseorang yang kamu anggap lebih baik darimu ternyata juga punya masalah?" },
+    { level: 2, text: "Pernahkah kamu pernah pura-pura tidak butuh validasi dari siapapun padahal sangat membutuhkannya?" },
+    { level: 2, text: "Apakah kamu pernah memilih diam bukan karena tidak punya pendapat, tapi karena tidak ingin menanggung konsekuensinya?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa kamu lebih mudah baik kepada orang asing daripada kepada orang yang paling dekat denganmu?" },
+    { level: 2, text: "Apakah kamu pernah dengan sadar membiarkan seseorang salah paham tentang niatmu karena meluruskannya terlalu rumit?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa kamu sudah terlalu lama menjadi versi dirimu yang kamu ciptakan untuk orang lain?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa ketakutanmu yang paling besar bukan soal gagal, tapi soal berhasil lalu tetap merasa kosong?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu tidak benar-benar tahu apa yang kamu inginkan dari hidupmu sendiri?" },
+    { level: 3, text: "Pernahkah kamu sadar bahwa ada satu keputusan dalam hidupmu yang sampai sekarang masih kamu pertanyakan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa semakin banyak orang mengenalmu, semakin sedikit yang benar-benar memahaminya?" },
+    { level: 3, text: "Pernahkah kamu berpikir bahwa versi dirimu lima tahun lagi akan menilai keputusanmu hari ini dengan sangat keras?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu sedang menjalani hidup yang sebenarnya bukan milikmu sepenuhnya?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa hal yang paling kamu takuti bukan kehilangan orang lain, tapi kehilangan dirimu sendiri?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu belum pernah benar-benar jujur — bahkan dalam satu percakapan pun — tentang siapa kamu sebenarnya?" }
+];
+
+        let currentIndex = 0;
+        let shuffledQuestions = [];
+
+        // Reusable SVG Background
+        const bgSvg = `
+            <svg class="card-bg-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,0 L100,100 M100,0 L0,100" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-dasharray="2 4" opacity="0.2"/>
             </svg>
         `;
-        const innerFrame = `
-            <div class="card-inner">
-                <div class="corner tl"></div><div class="corner tr"></div>
-                <div class="corner bl"></div><div class="corner br"></div>
-            </div>
-        `;
 
-        function renderFrontCards() {
-            const container = document.getElementById('page-front');
-            let html = '';
-
-            cardData.forEach(card => {
-                if (card.type === 'question') {
-                    html += `
-                    <div class="card">
-                        ${textureSVG}
-                        ${innerFrame}
-                        <div class="q-content">
-                            <div class="q-header">
-                                <div class="q-title">KOTAK HITAM</div>
-                                <div class="q-divider"><span></span></div>
-                            </div>
-                            <div class="q-mid">
-                                <div class="q-text">"${card.text}"</div>
-                            </div>
-                            <div class="q-footer">
-                                <div class="q-code">${card.id}</div>
-                                <div class="q-edition">EDISI SEPUPU</div>
-                            </div>
-                        </div>
-                    </div>`;
-                } 
-                else if (card.type === 'vote') {
-                    const voteClass = card.value === 'YA' ? 'vote-ya' : 'vote-tidak';
-                    html += `
-                    <div class="card vote-card ${voteClass}">
-                        ${textureSVG}
-                        ${innerFrame}
-                        <div class="vote-badge">
-                            <div class="vote-text">${card.value}</div>
-                        </div>
-                        <div class="vote-label">VOTING CARD</div>
-                    </div>`;
-                }
-            });
-
-            container.innerHTML = html;
+        // -- LOGIKA BERMAIN (HP) --
+        function showMenu() {
+            document.getElementById('menu-screen').classList.add('active-screen');
+            document.getElementById('play-screen').classList.remove('active-screen');
         }
 
-        function renderBackCards() {
-            const container = document.getElementById('page-back');
-            let html = '';
-
-            // Render 7 Kartu Belakang (5 Pertanyaan + 2 Vote)
-            for(let i=0; i<7; i++) {
-                let label = i < 5 ? "CONFIDENTIAL" : "VOTING TICKET";
-                html += `
-                <div class="card back-card">
-                    ${textureSVG}
-                    ${innerFrame}
-                    <div class="back-art">
-                        <div class="back-label-top">CLASSIFIED</div>
-                        <div class="geo-box">
-                            <div class="geo-inner"></div>
-                            <div class="back-title">KOTAK<br>HITAM</div>
-                        </div>
-                        <div class="back-label">${label}</div>
-                    </div>
-                </div>`;
+        function startGame() {
+            // Acak pertanyaan (Fisher-Yates Shuffle)
+            shuffledQuestions = [...questions];
+            for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
             }
 
-            container.innerHTML = html;
+            currentIndex = 0;
+            document.getElementById('menu-screen').classList.remove('active-screen');
+            document.getElementById('play-screen').classList.add('active-screen');
+            renderHPCard();
         }
 
-        // Render semua saat halaman dimuat
-        renderFrontCards();
-        renderBackCards();
+        function renderHPCard() {
+            const cardView = document.getElementById('hp-card-view');
+
+            // Trigger ulang animasi transisi
+            cardView.classList.remove('fade-in');
+            void cardView.offsetWidth; // Force reflow
+            cardView.classList.add('fade-in');
+
+            // Ambil data kartu dari array
+            let cardData = shuffledQuestions[currentIndex];
+            let cardLevel = cardData.level;
+            
+            // Assign class correctly, preserving base classes
+            cardView.className = `card-hp lvl-${cardLevel} fade-in`;
+
+            cardView.innerHTML = `
+                ${bgSvg}
+                <div class="q-top">
+                    <span class="q-level-text">LEVEL ${cardLevel}</span>
+                </div>
+                <div class="q-mid">
+                    <p class="q-text">"${cardData.text}"</p>
+                </div>
+                <div class="q-bot">
+                    <span class="q-brand">KOTAK HITAM</span>
+                </div>
+            `;
+        }
+
+        function nextCard() {
+            currentIndex++;
+            if (currentIndex >= shuffledQuestions.length) {
+                // Kocok ulang jika deck habis
+                shuffledQuestions = [...questions];
+                shuffledQuestions.sort(() => Math.random() - 0.5);
+                currentIndex = 0;
+            }
+            renderHPCard();
+        }
     </script>
 </body>
+
 </html>
