@@ -703,6 +703,82 @@
             { id: 'all', name: 'Acak Semua Level', desc: 'Mainkan semua pertanyaan secara acak!', color: 'bg-[#8b5cf6]', icon: 'ph-sparkle' }
         ];
 
+        // --- AUDIO SYSTEM ---
+        let audioCtx;
+        let noiseBuffer;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // Membangun suara "White Noise" untuk efek kertas/kartu asli
+            if (!noiseBuffer && audioCtx) {
+                const bufferSize = audioCtx.sampleRate * 0.1; // 0.1 detik durasi
+                noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1; // Random noise
+                }
+            }
+        }
+
+        function playTickSound() {
+            if (!audioCtx || !noiseBuffer) return;
+            
+            const noiseSrc = audioCtx.createBufferSource();
+            noiseSrc.buffer = noiseBuffer;
+            
+            // Menggunakan Lowpass Filter yang frekuensinya turun cepat = efek "Wuuush" / "Swish" kartu
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(4000, audioCtx.currentTime); // Mulai dari suara tipis kertas
+            filter.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05); // Jatuh ke suara tumpul
+            
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.005); // Attack cepat (bunyi gesekan awal)
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06); // Hilang cepat
+            
+            // Hubungkan noise -> filter -> gain -> speaker
+            noiseSrc.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            noiseSrc.start(audioCtx.currentTime);
+            noiseSrc.stop(audioCtx.currentTime + 0.06);
+        }
+
+        function playStopSound() {
+            if (!audioCtx) return;
+            
+            // Memainkan chord C Mayor yang ceria
+            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+            
+            frequencies.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                const startTime = audioCtx.currentTime + (index * 0.05); 
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.15, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start(startTime);
+                osc.stop(startTime + 0.6);
+            });
+        }
+
         // --- STATE MANAJEMEN ---
         let currentDeck = [];
         let currentCardIndex = 0;
@@ -784,6 +860,7 @@
         }
 
         function startGame(categoryId) {
+            initAudio(); // Inisialisasi audio saat user berinteraksi
             // Setup Deck
             currentDeck = [];
             if (categoryId === 'all') {
@@ -859,8 +936,8 @@
             card.classList.add('animate-pulse-fast');
 
             let shuffleCount = 0;
-            const maxShuffles = 15; // Berapa kali kartu berubah teks sebelum berhenti
-            const shuffleSpeed = 60; // Kecepatan acak (ms) - 15 * 60 = 0.9 detik total
+            const maxShuffles = 20; // Berapa kali kartu berubah teks sebelum berhenti
+            const shuffleSpeed = 100; // Kecepatan acak (ms) - 20 * 100 = 2 detik total
 
             const shuffleInterval = setInterval(() => {
                 // Tampilkan teks acak untuk memberi efek rolet/shuffling
@@ -868,6 +945,7 @@
                 qText.innerHTML = `...${currentDeck[randomIdx]}`;
 
                 if (navigator.vibrate) navigator.vibrate(20); // Efek getar kecil (haptic) di mobile
+                playTickSound(); // Putar suara tick
 
                 shuffleCount++;
                 if (shuffleCount >= maxShuffles) {
@@ -883,6 +961,7 @@
                     card.classList.add('animate-pop');
 
                     if (navigator.vibrate) navigator.vibrate([100, 50, 150]); // Getar kuat saat kartu muncul
+                    playStopSound(); // Putar suara tadah
 
                     isShuffling = false;
                     if (btnNext) {
