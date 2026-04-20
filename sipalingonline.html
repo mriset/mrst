@@ -407,7 +407,7 @@
         }
         .btn-vote-player:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-vote-player.voted-mine { background: #1A1A1A; color: #FFB800; box-shadow: none; }
-        .btn-vote-player.self-btn { background: #E2E8F0; border-color: #CBD5E1; color: #94A3B8; box-shadow: none; }
+
 
         /* === RESULTS LIST === */
         .results-list {
@@ -539,7 +539,8 @@
 
             <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden;">
                 <p style="color:#64748B;font-weight:800;letter-spacing:2px;font-size:0.7rem;text-transform:uppercase;">KODE ROOM</p>
-                <h2 id="lobby-room-code" style="font-family:'Fredoka One',cursive;font-size:4.2rem;color:#FFB800;-webkit-text-stroke:2px #1A1A1A;text-shadow:5px 5px 0 #1A1A1A;letter-spacing:6px;margin:6px 0 16px;">----</h2>
+                <h2 id="lobby-room-code" onclick="copyInviteLink()" style="font-family:'Fredoka One',cursive;font-size:4.2rem;color:#FFB800;-webkit-text-stroke:2px #1A1A1A;text-shadow:5px 5px 0 #1A1A1A;letter-spacing:6px;margin:6px 0 0; cursor:pointer;" title="Klik untuk menyalin link invite">----</h2>
+                <p style="font-size:0.75rem;color:#94A3B8;font-style:italic;margin-top:4px;margin-bottom:16px;">(Klik kode di atas untuk menyalin link invite)</p>
 
                 <p style="font-weight:800;font-size:0.88rem;color:#1A1A1A;margin-bottom:2px;">
                     Daftar Pemain: <span id="player-count" style="color:#FFB800;-webkit-text-stroke:0.5px #1A1A1A;">0</span>
@@ -1243,7 +1244,7 @@ function verifyAndCreateRoom() {
                 status: 'lobby',
                 players: { [myPlayerId]: { name: myName } }
             }).then(() => {
-                roomRef.onDisconnect().remove();
+                // roomRef.onDisconnect().remove(); // Dihapus agar tidak langsung keluar room saat refresh
                 saveSession();
                 listenToRoom();
             }).catch(e => {
@@ -1574,7 +1575,6 @@ function submitVote(targetPlayerId) {
     if (!currentRoomData || currentRoomData.status !== 'voting') return;
     const alreadyVoted = currentRoomData.vote && currentRoomData.vote.votes && currentRoomData.vote.votes[myPlayerId];
     if (alreadyVoted) return;
-    if (targetPlayerId === myPlayerId) return;
     roomRef.child('vote/votes/' + myPlayerId).set(targetPlayerId);
 }
 
@@ -1725,11 +1725,6 @@ function renderPlay(data) {
     const btnStartVote     = document.getElementById('btn-start-vote');
     const modVoteControls  = document.getElementById('mod-vote-controls');
     const modResultsCtrls  = document.getElementById('mod-results-controls');
-
-    // Default: hide panels
-    votePanel.classList.remove('show');
-    resultsPanel.classList.remove('show');
-
     // Moderator block
     modPlayControls.style.display  = isModerator ? 'flex' : 'none';
     if (modVoteControls)  modVoteControls.style.display  = isModerator ? 'block' : 'none';
@@ -1745,6 +1740,8 @@ function renderPlay(data) {
     }
 
     if (st === 'playing') {
+        votePanel.classList.remove('show');
+        resultsPanel.classList.remove('show');
         if (isModerator) {
             btnAcak.disabled = false;
             btnAcak.style.display = 'flex';
@@ -1754,6 +1751,8 @@ function renderPlay(data) {
         }
     }
     else if (st === 'shuffling') {
+        votePanel.classList.remove('show');
+        resultsPanel.classList.remove('show');
         if (isModerator) {
             btnAcak.disabled = true;
             btnAcak.style.display = 'flex';
@@ -1767,7 +1766,9 @@ function renderPlay(data) {
         if (data.currentCard && !isShuffling) renderCardData(data.currentCard);
         resultsPanel.classList.remove('show');
         renderVotePanel(data);
-        setTimeout(() => votePanel.classList.add('show'), 300);
+        if (!votePanel.classList.contains('show')) {
+            setTimeout(() => votePanel.classList.add('show'), 50);
+        }
         if (isModerator) {
             btnAcak.disabled = true;
             btnAcak.style.display = 'flex';
@@ -1778,7 +1779,9 @@ function renderPlay(data) {
         votePanel.classList.remove('show');
         if (data.currentCard && !isShuffling) renderCardData(data.currentCard);
         renderResultsPanel(data);
-        setTimeout(() => resultsPanel.classList.add('show'), 300);
+        if (!resultsPanel.classList.contains('show')) {
+            setTimeout(() => resultsPanel.classList.add('show'), 50);
+        }
         if (isModerator) {
             btnAcak.style.display = 'none';
             btnStartVote.style.display = 'none';
@@ -1823,10 +1826,10 @@ function renderVotePanel(data) {
         const isSelf   = pid === myPlayerId;
         const isChosen = myVote === pid;
         const btn      = document.createElement('button');
-        btn.className  = 'btn-vote-player' + (isSelf ? ' self-btn' : '') + (isChosen ? ' voted-mine' : '');
+        btn.className  = 'btn-vote-player' + (isChosen ? ' voted-mine' : '');
         btn.textContent = p.name + (isSelf ? ' (Kamu)' : '');
-        btn.disabled   = hasVoted || isSelf;
-        if (!hasVoted && !isSelf) btn.onclick = () => submitVote(pid);
+        btn.disabled   = hasVoted;
+        if (!hasVoted) btn.onclick = () => submitVote(pid);
         grid.appendChild(btn);
     }
 

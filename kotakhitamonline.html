@@ -662,10 +662,10 @@
             </div>
             <div class="menu-content">
                 <p style="color: #aaa; font-weight: 600; letter-spacing: 2px;">KODE ROOM</p>
-                <h1 id="lobby-room-code" style="font-size: 4rem; color: var(--pale-gold); letter-spacing: 10px; text-shadow: 0 0 20px rgba(212,175,55,0.4); margin: 10px 0;">----</h1>
+                <h1 id="lobby-room-code" onclick="copyInviteLink()" style="font-size: 4rem; color: var(--pale-gold); letter-spacing: 10px; text-shadow: 0 0 20px rgba(212,175,55,0.4); margin: 10px 0; cursor: pointer;" title="Klik untuk menyalin link invite">----</h1>
+                <p style="font-size: 0.75rem; color: #888; font-style: italic; margin-top: -5px; margin-bottom: 20px;">(Klik kode di atas untuk menyalin link invite)</p>
                 
-                <h3 style="margin-top: 20px; font-weight: 600;">Daftar Pemain: <span id="player-count">0</span></h3>
-                <button class="btn btn-secondary" onclick="copyInviteLink()" style="margin-bottom: 20px; font-size: 0.85rem; display: inline-block; width: auto;"><i class="fa-solid fa-link"></i> Salin Link Invite</button>
+                <h3 style="margin-top: 10px; font-weight: 600;">Daftar Pemain: <span id="player-count">0</span></h3>
                 <div class="player-list" id="player-list">
                     <!-- Pemain akan muncul disini -->
                 </div>
@@ -1460,7 +1460,7 @@ function verifyAndCreateRoom() {
                 status: 'lobby',
                 players: { [myPlayerId]: { name: myName } }
             }).then(() => {
-                roomRef.onDisconnect().remove();
+                // roomRef.onDisconnect().remove(); // Dihapus agar tidak langsung keluar room saat refresh
                 saveSession();
                 listenToRoom();
             }).catch(e => {
@@ -1614,6 +1614,10 @@ function joinRoom() {
             `;
         }
 
+        function escapeHTML(str) { 
+            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[tag]); 
+        }
+
         function updateUI(data) {
             const playersCount = data.players ? Object.keys(data.players).length : 0;
             
@@ -1699,7 +1703,9 @@ function joinRoom() {
                 else if (data.status === 'voting') {
                     resultsPanel.classList.remove('show');
                     if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
-                    setTimeout(() => votePanel.classList.add('show'), 300);
+                    if (!votePanel.classList.contains('show')) {
+                        setTimeout(() => votePanel.classList.add('show'), 50);
+                    }
                     
                     const votesCount = data.vote && data.vote.votes ? Object.keys(data.vote.votes).length : 0;
                     voteStatus.textContent = `${votesCount} / ${playersCount} sudah vote`;
@@ -1716,7 +1722,9 @@ function joinRoom() {
                 else if (data.status === 'results') {
                     votePanel.classList.remove('show');
                     if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
-                    setTimeout(() => resultsPanel.classList.add('show'), 300);
+                    if (!resultsPanel.classList.contains('show')) {
+                        setTimeout(() => resultsPanel.classList.add('show'), 50);
+                    }
                     
                     let yaCount = 0;
                     let noneCount = 0;
@@ -1755,98 +1763,85 @@ function joinRoom() {
         }
 
         function triggerShuffle() {
-    if (!isModerator || isShuffling) return;
-    if (!currentRoomData || currentRoomData.status !== 'playing') return;
+            if (!isModerator || isShuffling) return;
+            if (!currentRoomData || currentRoomData.status !== 'playing') return;
 
-    initAudio(); // pastikan AudioContext aktif saat user gesture
+            initAudio();
 
-    const catId = currentRoomData.selectedCategory;
-    const cat   = categoriesConfig.find(c => c.id === catId);
-    let deck  = getCategDeck(catId);
-    if (!deck.length) return;
-    
-    let usedCards = currentRoomData.usedCards || [];
-    let availableDeck = deck.filter(q => !usedCards.includes(q));
-    
-    if (!availableDeck.length) {
-        alert("Semua kartu di kategori ini sudah dimainkan! Mengacak ulang deck.");
-        availableDeck = deck;
-        usedCards = [];
-    }
+            let usedCards = currentRoomData.usedCards || [];
+            let availableDeck = questions.filter(q => !usedCards.includes(q.text));
 
-    const randomQ  = availableDeck[Math.floor(Math.random() * availableDeck.length)];
-    usedCards.push(randomQ);
-    const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
-    const startTimeStamp = firebase.database.ServerValue.TIMESTAMP;
-
-    roomRef.update({
-        status: 'shuffling',
-        usedCards: usedCards,
-        shuffleSignal: {
-            id: signalId,
-            startAt: startTimeStamp,
-            card: {
-                text: randomQ,
-                categoryId: catId,
-                categoryName: cat.name,
-                categoryHexColor: cat.hexColor,
-                categoryIcon: cat.icon,
-                isIntro: false
+            if (!availableDeck.length) {
+                alert("Semua kartu sudah dimainkan! Mengacak ulang deck.");
+                availableDeck = questions;
+                usedCards = [];
             }
+
+            const randomCard = availableDeck[Math.floor(Math.random() * availableDeck.length)];
+            usedCards.push(randomCard.text);
+            const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
+
+            roomRef.update({
+                status: 'shuffling',
+                usedCards: usedCards,
+                shuffleSignal: {
+                    id: signalId,
+                    startAt: firebase.database.ServerValue.TIMESTAMP,
+                    card: {
+                        text: randomCard.text,
+                        level: randomCard.level,
+                        isIntro: false
+                    }
+                }
+            });
         }
-    });
-}
 
         function handleShuffleSignal(signal) {
-    if (lastProcessedShuffleSignalId === signal.id) return;
-    lastProcessedShuffleSignalId = signal.id;
+            if (lastProcessedShuffleSignalId === signal.id) return;
+            lastProcessedShuffleSignalId = signal.id;
 
-    initAudio();
+            initAudio();
 
-    const catId = currentRoomData ? currentRoomData.selectedCategory : 'level1';
-    const deck  = getCategDeck(catId);
-    const cardEl = document.getElementById('sp-card');
-    const textEl = document.getElementById('sp-card-text');
+            const cardEl = document.getElementById('hp-card-view');
+            const shuffleLevel = signal.card.level || 1;
 
-    isShuffling = true;
-    cardEl.classList.add('animate-shuffle');
+            isShuffling = true;
+            cardEl.classList.add('animate-shuffle');
 
-    // Disable Acak Kartu during shuffle
-    const btnAcak = document.getElementById('btn-acak');
-    if (btnAcak) btnAcak.disabled = true;
+            const btnAcak = document.getElementById('btn-next');
+            if (btnAcak) btnAcak.disabled = true;
 
-    const shuffleSpeed = 100;
-    const duration = 2000;
-    
-    const localStart = Date.now();
+            const shuffleSpeed = 100;
+            const duration = 2000;
+            const localStart = Date.now();
 
-    const interval = setInterval(() => {
-        const randomQ = deck[Math.floor(Math.random() * deck.length)];
-        textEl.textContent = '...' + randomQ;
-        playTickSound();
+            const interval = setInterval(() => {
+                const randomCard = questions[Math.floor(Math.random() * questions.length)];
+                cardEl.className = `card-hp lvl-${randomCard.level}`;
+                cardEl.innerHTML = getCardHTML(randomCard.level, randomCard.text);
+                playTickSound();
 
-        if (Date.now() - localStart >= duration) {
-            clearInterval(interval);
+                if (Date.now() - localStart >= duration) {
+                    clearInterval(interval);
 
-            // Final reveal
-            textEl.textContent = '...' + signal.card.text;
-            cardEl.classList.remove('animate-shuffle');
-            cardEl.classList.remove('animate-pop');
-            void cardEl.offsetWidth; // reflow
-            cardEl.classList.add('animate-pop');
+                    // Final reveal
+                    cardEl.classList.remove('animate-shuffle');
+                    cardEl.classList.remove('animate-pop');
+                    void cardEl.offsetWidth;
+                    cardEl.className = `card-hp lvl-${signal.card.level} animate-pop`;
+                    cardEl.innerHTML = getCardHTML(signal.card.level, signal.card.text);
 
-            playStopSound();
+                    playStopSound();
 
-            isShuffling = false;
-            if (btnAcak) btnAcak.disabled = false;
+                    isShuffling = false;
+                    if (btnAcak) btnAcak.disabled = false;
 
-            // Moderator writes final state to Firebase
-            if (isModerator && currentRoomData && currentRoomData.status === 'shuffling') {
-                roomRef.update({ status: 'playing', currentCard: signal.card });
-            }
+                    if (isModerator && currentRoomData && currentRoomData.status === 'shuffling') {
+                        roomRef.update({ status: 'playing', currentCard: signal.card });
+                    }
+                }
+            }, shuffleSpeed);
         }
-    }, shuffleSpeed);
-}
 
         function startVote() {
             if (!isModerator || currentRoomData.status !== 'playing') return;
