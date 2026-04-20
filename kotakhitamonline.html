@@ -279,6 +279,94 @@
         }
         .player-list-item:last-child { border-bottom: none; }
         .crown-icon { color: var(--pale-gold); margin-left: 10px; }
+        .btn-kick {
+            background: rgba(180, 30, 30, 0.3);
+            border: 1px solid rgba(255, 80, 80, 0.4);
+            color: #ff6b6b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .btn-kick:hover { background: rgba(200, 30, 30, 0.6); border-color: #ff4444; }
+        .btn-kick:active { transform: scale(0.93); }
+
+        /* === PLAYERS OVERLAY (in-game kick) === */
+        #players-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        #players-overlay.show {
+            pointer-events: all;
+            opacity: 1;
+        }
+        #players-overlay-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+        }
+        #players-overlay-sheet {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            background: #0d0d10;
+            border-top: 1px solid rgba(212,175,55,0.4);
+            border-left: 1px solid rgba(212,175,55,0.15);
+            border-right: 1px solid rgba(212,175,55,0.15);
+            border-radius: 20px 20px 0 0;
+            padding: 12px 20px 32px;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.08);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #players-overlay.show #players-overlay-sheet {
+            transform: translateY(0);
+        }
+        .overlay-pill {
+            width: 40px; height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 999px;
+            margin: 0 auto 14px;
+        }
+        .overlay-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--pale-gold);
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 3px;
+        }
+        .overlay-player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .overlay-player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--off-white);
+        }
 
         .card-container {
             flex: 1;
@@ -594,7 +682,10 @@
         <!-- PLAY SCREEN -->
         <div id="play-screen" class="screen">
             <div class="top-bar">
-                <div style="width:44px"></div>
+                <button class="btn-icon-top" onclick="confirmLeave()" title="Keluar Room"
+                    style="border-color:rgba(198,40,40,0.4);color:#c62828;">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
                 <div class="counter-badge" id="play-room-code">ROOM: ----</div>
                 <div style="width:44px"></div>
             </div>
@@ -624,28 +715,47 @@
             </div>
             
             <div class="nav-controls" id="play-controls">
-                <button class="btn btn-primary" id="btn-next" onclick="triggerShuffle()">
-                    <i class="fa-solid fa-shuffle"></i> Acak Kartu
-                </button>
-                
-                <!-- Moderator controls row -->
-                <div class="row-controls" id="mod-play-controls" style="display: none;">
-                    <button class="btn btn-secondary" id="btn-start-vote" onclick="startVote()" style="flex:1;">
-                        MULAI VOTE
-                    </button>
-                    <button class="btn btn-secondary" id="btn-reveal-vote" onclick="revealResults()" style="display: none; flex:1;">
-                        BUKA HASIL
-                    </button>
-                    <button class="btn btn-secondary" id="btn-reset-vote" onclick="resetVote()" style="display: none; flex:1;">
-                        RESET VOTE
-                    </button>
+                <!-- Moderator controls -->
+                <div id="mod-play-controls" style="display: none; flex-direction: column; gap: 10px;">
+                    <div class="row-controls">
+                        <button class="btn btn-primary" id="btn-next" onclick="triggerShuffle()" style="flex:1;">
+                            <i class="fa-solid fa-shuffle"></i> Acak
+                        </button>
+                        <button class="btn btn-secondary" id="btn-show-players" onclick="togglePlayersOverlay()" style="flex:1;">
+                            <i class="fa-solid fa-users"></i> Pemain
+                        </button>
+                    </div>
+                    <div class="row-controls">
+                        <button class="btn btn-secondary" id="btn-start-vote" onclick="startVote()" style="flex:1;">
+                            MULAI VOTE
+                        </button>
+                        <button class="btn btn-secondary" id="btn-reveal-vote" onclick="revealResults()" style="display: none; flex:1;">
+                            BUKA HASIL
+                        </button>
+                        <button class="btn btn-secondary" id="btn-reset-vote" onclick="resetVote()" style="display: none; flex:1;">
+                            RESET VOTE
+                        </button>
+                    </div>
                 </div>
-                <button class="btn btn-danger" onclick="confirmLeave()" style="margin-top: 5px;">
-                    <i class="fa-solid fa-right-from-bracket"></i> Keluar Room
-                </button>
+
             </div>
         </div>
     </div>
+
+<!-- PLAYERS OVERLAY (in-game kick) -->
+<div id="players-overlay">
+    <div id="players-overlay-backdrop" onclick="togglePlayersOverlay()"></div>
+    <div id="players-overlay-sheet">
+        <div class="overlay-pill"></div>
+        <div class="overlay-title">&#9876; DAFTAR PEMAIN</div>
+        <div class="overlay-player-list" id="overlay-player-list">
+            <!-- rendered by JS -->
+        </div>
+        <button class="btn btn-secondary" onclick="togglePlayersOverlay()" style="width:100%;margin-top:16px;">
+            <i class="fa-solid fa-xmark"></i> Tutup
+        </button>
+    </div>
+</div>
 
     <script>
 
@@ -1402,6 +1512,16 @@
                     return;
                 }
                 
+                // Deteksi di-kick: cek node kickedPlayers (terpisah dari players list)
+                if (!isModerator && data.kickedPlayers && data.kickedPlayers[myPlayerId]) {
+                    alert("Kamu telah di-kick dari room oleh Moderator.");
+                    clearSession();
+                    roomRef.off();
+                    roomRef = null; pRef = null; myRoomCode = ''; currentRoomData = null;
+                    showScreen('home-screen');
+                    return;
+                }
+                
                 // If moderator is no longer in players list, or data.moderator is gone, room is dead
                 if (!data.players || !data.players[data.moderator]) {
                     alert("Moderator keluar. Room ditutup.");
@@ -1451,10 +1571,15 @@
                 for (let pid in data.players) {
                     const p = data.players[pid];
                     const isMod = pid === data.moderator;
+                    const isMe = pid === myPlayerId;
+                    const showKick = isModerator && !isMod && !isMe;
                     pList.innerHTML += `
                         <div class="player-list-item">
-                            <span>${p.name} ${pid === myPlayerId ? '(Kamu)' : ''}</span>
-                            ${isMod ? '<i class="fa-solid fa-crown crown-icon"></i>' : ''}
+                            <span>${p.name} ${isMe ? '(Kamu)' : ''}</span>
+                            <span style="display:flex;align-items:center;gap:8px;">
+                                ${isMod ? '<i class="fa-solid fa-crown crown-icon"></i>' : ''}
+                                ${showKick ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${p.name}')">KICK</button>` : ''}
+                            </span>
                         </div>`;
                 }
                 
@@ -1475,6 +1600,10 @@
             } else {
                 showScreen('play-screen');
                 document.getElementById('play-room-code').textContent = `ROOM: ${myRoomCode}`;
+
+                // Refresh overlay player list jika sedang terbuka
+                const overlay = document.getElementById('players-overlay');
+                if (overlay && overlay.classList.contains('show')) renderOverlayPlayerList(data);
                 
                 const btnNext = document.getElementById('btn-next');
                 const votePanel = document.getElementById('vote-panel');
@@ -1491,15 +1620,10 @@
                     btnStartVote.style.display = (data.status === 'playing') ? 'block' : 'none';
                     btnRevealVote.style.display = (data.status === 'voting') ? 'block' : 'none';
                     btnResetVote.style.display = (data.status === 'results') ? 'block' : 'none';
+                    // Nonaktifkan Acak Kartu saat voting/shuffling/results
+                    btnNext.disabled = (data.status === 'voting' || data.status === 'shuffling' || data.status === 'results');
                 } else {
                     modPlayControls.style.display = 'none';
-                }
-                
-                // Shuffle logic override disable
-                if (!isModerator) {
-                    btnNext.disabled = true;
-                } else {
-                    btnNext.disabled = (data.status === 'voting' || data.status === 'shuffling' || data.status === 'results');
                 }
 
                 if (data.status === 'playing') {
@@ -1578,12 +1702,12 @@
             if (!isModerator) return;
             if (isShuffling) return;
             if (currentRoomData.status !== 'playing') return;
-            
-            // Generate random card or Pick from deck
-            // Just use random directly to keep it simple and stateless
+
+            initAudio(); // pastikan AudioContext aktif saat user gesture
+
             const randomCard = questions[Math.floor(Math.random() * questions.length)];
             const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
-            
+
             roomRef.update({
                 status: 'shuffling',
                 shuffleSignal: {
@@ -1596,7 +1720,9 @@
         function handleShuffleSignal(signal) {
             if (lastProcessedShuffleSignalId === signal.id) return;
             lastProcessedShuffleSignalId = signal.id;
-            
+
+            initAudio(); // fallback untuk pemain non-moderator
+
             const cardView = document.getElementById('hp-card-view');
             isShuffling = true;
             cardView.classList.add('animate-shuffle');
@@ -1610,8 +1736,7 @@
                 cardView.className = `card-hp lvl-${randomCard.level} animate-shuffle`;
                 cardView.innerHTML = getCardHTML(randomCard.level, randomCard.text);
 
-                if (window.navigator && window.navigator.vibrate) { window.navigator.vibrate(15); } 
-                playTickSound(); 
+                playTickSound();
 
                 shuffleCount++;
                 if (shuffleCount >= maxShuffles) {
@@ -1622,8 +1747,7 @@
                     void cardView.offsetWidth; 
                     cardView.classList.add('animate-pop');
 
-                    if (window.navigator && window.navigator.vibrate) { window.navigator.vibrate([80, 40, 100]); }
-                    playStopSound(); 
+                    playStopSound();
 
                     isShuffling = false;
                     
@@ -1665,6 +1789,85 @@
                 vote: null
             });
         }
+
+        function kickPlayer(pid, name) {
+            if (!isModerator) return;
+            if (!confirm(`Kick "${name}" dari room?`)) return;
+            roomRef.child('kickedPlayers/' + pid).set(true);
+            roomRef.child('players/' + pid).remove();
+            // Tutup overlay setelah kick
+            const overlay = document.getElementById('players-overlay');
+            if (overlay.classList.contains('show')) togglePlayersOverlay();
+        }
+
+        function togglePlayersOverlay() {
+            if (!isModerator) return;
+            const overlay = document.getElementById('players-overlay');
+            const isShown = overlay.classList.toggle('show');
+            if (isShown && currentRoomData) renderOverlayPlayerList(currentRoomData);
+        }
+
+        function renderOverlayPlayerList(data) {
+            const players = data.players || {};
+            const list = document.getElementById('overlay-player-list');
+            list.innerHTML = '';
+            for (let pid in players) {
+                const p     = players[pid];
+                const isMod = pid === data.moderator;
+                const isMe  = pid === myPlayerId;
+                const item  = document.createElement('div');
+                item.className = 'overlay-player-item';
+                item.innerHTML = `
+                    <span style="display:flex;align-items:center;gap:8px;">
+                        ${isMod
+                            ? '<i class="fa-solid fa-crown" style="color:var(--pale-gold);"></i>'
+                            : '<i class="fa-solid fa-user" style="color:#666;"></i>'
+                        }
+                        ${p.name}${isMe ? ' <span style="font-size:0.72rem;color:#666;">(Kamu)</span>' : ''}
+                    </span>
+                    ${(!isMod && !isMe)
+                        ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${p.name}')">KICK</button>`
+                        : `<span style="font-size:0.72rem;color:var(--pale-gold);letter-spacing:1px;">${isMod ? 'MOD' : ''}</span>`
+                    }
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        // === AUTO RESTORE SESSION AFTER REFRESH ===
+        function restoreSession() {
+            if (!_saved || !_saved.roomCode) return;
+
+            db.ref('rooms/' + _saved.roomCode).once('value', snapshot => {
+                if (!snapshot.exists()) {
+                    // Room sudah tidak ada, bersihkan session
+                    clearSession();
+                    return;
+                }
+                const data = snapshot.val();
+
+                // Cek apakah pernah di-kick
+                if (data.kickedPlayers && data.kickedPlayers[_saved.pid]) {
+                    clearSession();
+                    return;
+                }
+
+                // Restore state
+                myRoomCode = _saved.roomCode;
+                isModerator = (data.moderator === _saved.pid);
+                roomRef = db.ref('rooms/' + myRoomCode);
+
+                if (!isModerator) {
+                    pRef = roomRef.child('players/' + myPlayerId);
+                    // Re-assert keberadaan player di Firebase agar tidak hilang setelah refresh
+                    pRef.set({ name: _saved.name });
+                }
+                listenToRoom();
+            });
+        }
+
+        // Jalankan restore saat halaman selesai load
+        restoreSession();
 
     </script>
 </body>
