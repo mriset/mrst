@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KOTAK HITAM - Multiplayer</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600;1,800&family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --charcoal: #050505;
+            --off-white: #f5f2eb;
+            --pale-gold: #D4AF37;
+            --dark-gold: #aa8820;
+            --crimson: #8B1A1A;
+            --bg-grad: radial-gradient(circle at 50% 0%, #1a1a20 0%, #050505 100%);
+            
+            --lvl1-color: #ffffff;
+            --lvl2-color: #D4AF37;
+            --lvl3-color: #ff3333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--charcoal);
+            color: var(--off-white);
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        .hidden { display: none !important; }
+        
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background: var(--bg-grad);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+        }
+
+        .ambient-light {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, rgba(0,0,0,0) 70%);
+            top: -100px;
+            left: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .ambient-light.bottom {
+            top: auto;
+            bottom: -100px;
+            left: auto;
+            right: -100px;
+            background: radial-gradient(circle, rgba(139,26,26,0.08) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            padding: 24px;
+            position: relative;
+            z-index: 10;
+        }
+        .active-screen {
+            display: flex !important;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .menu-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-container {
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .logo-box {
+            border: 2px solid var(--pale-gold);
+            padding: 25px 35px;
+            background: rgba(10, 10, 12, 0.8);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2), inset 0 0 15px rgba(212, 175, 55, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 4px;
+            position: relative;
+        }
+        .logo-box::before, .logo-box::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--pale-gold);
+            border-radius: 50%;
+        }
+        .logo-box::before { top: -4px; left: -4px; }
+        .logo-box::after { bottom: -4px; right: -4px; }
+
+        .logo-box h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--pale-gold);
+            letter-spacing: 6px;
+            font-weight: 800;
+            line-height: 1.1;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+            margin-bottom: 5px;
+        }
+
+        /* Forms & Inputs */
+        .form-container {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 20;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 1.1rem;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 15px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--pale-gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        input[type="text"]::placeholder {
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+        }
+        .divider {
+            color: #777;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            font-weight: 800;
+        }
+
+        button {
+            outline: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn {
+            width: 100%;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            filter: grayscale(1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--pale-gold), var(--dark-gold));
+            color: #111;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--pale-gold);
+            border: 2px solid var(--pale-gold);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #c62828, #8e0000);
+            color: white;
+            box-shadow: 0 6px 20px rgba(198, 40, 40, 0.3);
+        }
+        
+        .btn-icon-top {
+            background: rgba(22, 22, 24, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            backdrop-filter: blur(5px);
+        }
+        .btn-icon-top:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .counter-badge {
+            color: var(--off-white);
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Lobby Styles */
+        .player-list {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 10px;
+            width: 100%;
+            max-width: 320px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .player-list-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .player-list-item:last-child { border-bottom: none; }
+        .crown-icon { color: var(--pale-gold); margin-left: 10px; }
+
+        .card-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            perspective: 1500px;
+            position: relative;
+        }
+
+        .card-hp {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 54 / 85.6;
+            background: #111;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 20px var(--card-glow, rgba(0,0,0,0));
+            transition: box-shadow 0.5s ease, border-color 0.5s ease;
+            border: 1px solid var(--card-border, #333);
+            overflow: hidden;
+            z-index: 5;
+        }
+        .card-hp::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .lvl-0 { --card-border: rgba(255,255,255,0.2); --card-glow: rgba(255,255,255,0.05); --lvl-text: var(--lvl1-color); }
+        .lvl-1 { --card-border: rgba(255,255,255,0.2); --card-glow: rgba(255,255,255,0.05); --lvl-text: var(--lvl1-color); }
+        .lvl-2 { --card-border: rgba(212,175,55,0.4); --card-glow: rgba(212,175,55,0.15); --lvl-text: var(--lvl2-color); }
+        .lvl-3 { --card-border: rgba(200,30,30,0.5); --card-glow: rgba(200,30,30,0.2); --lvl-text: var(--lvl3-color); }
+
+        .lvl-0 .card-gradient { background: transparent; }
+        .lvl-1 .card-gradient { background: radial-gradient(circle at 50% -20%, rgba(255,255,255,0.1), transparent 70%); }
+        .lvl-2 .card-gradient { background: radial-gradient(circle at 50% -20%, rgba(212,175,55,0.15), transparent 70%); }
+        .lvl-3 .card-gradient { background: radial-gradient(circle at 50% -20%, rgba(200,30,30,0.2), transparent 70%); }
+
+        .card-gradient {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .card-content-wrapper {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .q-top {
+            height: 18%;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .q-level-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--lvl-text);
+            padding: 5px 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            background: rgba(0,0,0,0.6);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .q-mid {
+            flex: 1;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .q-icon {
+            font-size: 2.5rem;
+            color: var(--lvl-text);
+            opacity: 0.3;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px var(--card-glow));
+        }
+        .q-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            line-height: 1.5;
+            color: #ffffff;
+            font-weight: 600;
+            display: -webkit-box;
+            -webkit-line-clamp: 6; 
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 2px 5px rgba(0,0,0,1);
+        }
+        .q-bot {
+            height: 15%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+        .q-brand {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            color: #555;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* Vote & Results Panels */
+        .vote-panel, .results-panel {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%) translateY(50%);
+            width: 95%;
+            max-width: 380px;
+            background: rgba(20, 20, 24, 0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            z-index: 100;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .vote-panel.show, .results-panel.show {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--pale-gold);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        .vote-status {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        .vote-btns {
+            display: flex;
+            gap: 15px;
+        }
+        .btn-vote {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-yes { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 1px solid #4caf50; }
+        .btn-no { background: linear-gradient(135deg, #c62828, #b71c1c); border: 1px solid #f44336; }
+        .btn-vote:active:not(:disabled) { transform: scale(0.95); }
+        .btn-vote:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+
+        .results-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .result-item {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+        .result-item.ya { color: #4caf50; }
+        .result-item.tidak { color: #f44336; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes cardEntry {
+            0% { opacity: 0; transform: translateY(40px) scale(0.9) rotateX(15deg); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
+        }
+        .fade-in {
+            animation: cardEntry 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .animate-shuffle {
+            animation: shufflePulse 0.3s ease-in-out infinite;
+        }
+        @keyframes shufflePulse {
+            0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            25% { transform: scale(1.02) rotate(-1deg); filter: brightness(1.2); }
+            50% { transform: scale(1) rotate(0deg); filter: brightness(1.1); }
+            75% { transform: scale(1.02) rotate(1deg); filter: brightness(1.2); }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+        }
+        .animate-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 15px;
+            flex-direction: column;
+            margin-top: 15px;
+            padding-bottom: 15px;
+        }
+        .row-controls {
+            display: flex;
+            gap: 10px;
+            flex-direction: row;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div class="ambient-light"></div>
+        <div class="ambient-light bottom"></div>
+
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active-screen">
+            <div class="menu-content">
+                <div class="logo-container">
+                    <div class="logo-box">
+                        <h1>KOTAK</h1>
+                        <h1>HITAM</h1>
+                    </div>
+                </div>
+                <div class="form-container">
+                    <input type="text" id="player-name" placeholder="Nama Kamu (Max 12 char)" maxlength="12" autocomplete="off">
+                    <button class="btn btn-primary" onclick="createRoom()">
+                        <i class="fa-solid fa-plus"></i> Buat Room
+                    </button>
+                    
+                    <div class="divider">ATAU GABUNG</div>
+                    
+                    <input type="text" id="room-code-input" placeholder="KODE ROOM" maxlength="4" style="text-transform: uppercase;" autocomplete="off">
+                    <button class="btn btn-secondary" onclick="joinRoom()">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Gabung Room
+                    </button>
+                </div>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 0.7rem; letter-spacing: 3px; font-family: 'Inter', sans-serif;">MULTIPLAYER EDITION</p>
+        </div>
+
+        <!-- LOBBY SCREEN -->
+        <div id="lobby-screen" class="screen">
+            <div class="top-bar">
+                <div style="width:44px"></div>
+                <div class="counter-badge">LOBBY</div>
+                <div style="width:44px"></div>
+            </div>
+            <div class="menu-content">
+                <p style="color: #aaa; font-weight: 600; letter-spacing: 2px;">KODE ROOM</p>
+                <h1 id="lobby-room-code" style="font-size: 4rem; color: var(--pale-gold); letter-spacing: 10px; text-shadow: 0 0 20px rgba(212,175,55,0.4); margin: 10px 0;">----</h1>
+                
+                <h3 style="margin-top: 20px; font-weight: 600;">Daftar Pemain: <span id="player-count">0</span></h3>
+                <div class="player-list" id="player-list">
+                    <!-- Pemain akan muncul disini -->
+                </div>
+            </div>
+            <div class="nav-controls" style="padding-bottom: 15px;">
+                <div id="mod-lobby-controls" style="display: none; flex-direction: column; gap: 15px;">
+                    <button class="btn btn-primary" id="btn-start-game" onclick="startGame()" disabled>
+                        Menunggu (Min. 3 Pemain)
+                    </button>
+                </div>
+                <button class="btn btn-danger" onclick="confirmLeave()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar Room
+                </button>
+            </div>
+        </div>
+
+        <!-- PLAY SCREEN -->
+        <div id="play-screen" class="screen">
+            <div class="top-bar">
+                <div style="width:44px"></div>
+                <div class="counter-badge" id="play-room-code">ROOM: ----</div>
+                <div style="width:44px"></div>
+            </div>
+            <div class="card-container">
+                <div class="card-hp fade-in" id="hp-card-view">
+                    <!-- Card content -->
+                </div>
+
+                <!-- Vote Panel -->
+                <div id="vote-panel" class="vote-panel">
+                    <div class="panel-title">VOTE SEKARANG</div>
+                    <div class="vote-status" id="vote-status">0/0 sudah vote</div>
+                    <div class="vote-btns">
+                        <button class="btn-vote btn-yes" id="btn-vote-ya" onclick="submitVote('yes')">YA</button>
+                        <button class="btn-vote btn-no" id="btn-vote-tidak" onclick="submitVote('no')">TIDAK</button>
+                    </div>
+                </div>
+                
+                <!-- Results Panel -->
+                <div id="results-panel" class="results-panel">
+                    <div class="panel-title">HASIL VOTE</div>
+                    <div class="results-bars">
+                        <div class="result-item ya"><span><i class="fa-solid fa-thumbs-up"></i> YA</span> <span id="res-ya">0</span></div>
+                        <div class="result-item tidak"><span><i class="fa-solid fa-thumbs-down"></i> TIDAK</span> <span id="res-tidak">0</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-controls" id="play-controls">
+                <button class="btn btn-primary" id="btn-next" onclick="triggerShuffle()">
+                    <i class="fa-solid fa-shuffle"></i> Acak Kartu
+                </button>
+                
+                <!-- Moderator controls row -->
+                <div class="row-controls" id="mod-play-controls" style="display: none;">
+                    <button class="btn btn-secondary" id="btn-start-vote" onclick="startVote()" style="flex:1;">
+                        MULAI VOTE
+                    </button>
+                    <button class="btn btn-secondary" id="btn-reveal-vote" onclick="revealResults()" style="display: none; flex:1;">
+                        BUKA HASIL
+                    </button>
+                    <button class="btn btn-secondary" id="btn-reset-vote" onclick="resetVote()" style="display: none; flex:1;">
+                        RESET VOTE
+                    </button>
+                </div>
+                <button class="btn btn-danger" onclick="confirmLeave()" style="margin-top: 5px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar Room
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const questions = [
+    { level: 1, text: "Pernahkah kamu pura-pura tidak lihat chat masuk karena malas membalas?" },
+    { level: 1, text: "Apakah kamu pernah stalking seseorang lebih dari satu jam dalam satu sesi tanpa sadar?" },
+    { level: 1, text: "Pernahkah kamu bilang \"di jalan\" padahal baru mau mandi?" },
+    { level: 1, text: "Apakah kamu pernah ketawa ikut-ikutan padahal tidak tahu apa yang lucu?" },
+    { level: 1, text: "Pernahkah kamu nonton episode berikutnya meski sudah jam 2 pagi dan ada agenda besok?" },
+    { level: 1, text: "Apakah kamu pernah punya folder tersembunyi di HP yang tidak boleh dilihat siapapun?" },
+    { level: 1, text: "Pernahkah kamu terlambat membalas pesan penting sampai akhirnya tidak jadi dibalas?" },
+    { level: 1, text: "Apakah kamu pernah sengaja mengetik lama agar terlihat sedang memikirkan jawaban?" },
+    { level: 1, text: "Pernahkah kamu minta rekomendasi seseorang lalu diam-diam tidak mengikutinya sama sekali?" },
+    { level: 1, text: "Apakah kamu pernah berbohong soal sudah makan agar tidak repot makan bersama?" },
+    { level: 1, text: "Pernahkah kamu pernah bikin to-do list yang tidak pernah kamu sentuh lagi?" },
+    { level: 1, text: "Apakah kamu pernah overthinking soal satu kalimat pendek yang seseorang kirim ke kamu?" },
+    { level: 1, text: "Pernahkah kamu niat uninstall media sosial tapi tidak jadi karena takut ketinggalan?" },
+    { level: 1, text: "Apakah kamu pernah sengaja kirim typo agar percakapan terasa lebih santai?" },
+    { level: 1, text: "Pernahkah kamu mencari nama seseorang di Google hanya karena penasaran?" },
+    { level: 1, text: "Apakah kamu pernah screenshot percakapan orang lain dan menyimpannya?" },
+    { level: 1, text: "Pernahkah kamu diam-diam mengintip story seseorang dari akun lain?" },
+    { level: 1, text: "Apakah kamu pernah merasa lega ketika acara yang kamu tunggu tiba-tiba dibatalkan?" },
+    { level: 1, text: "Pernahkah kamu punya playlist yang malu kamu tunjukkan ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah bilang \"hampir sampai\" padahal baru keluar rumah?" },
+    { level: 1, text: "Pernahkah kamu setuju dengan pendapat seseorang hanya supaya obrolan cepat selesai?" },
+    { level: 1, text: "Apakah kamu pernah mem-follow seseorang lalu unfollow setelah mereka follow balik?" },
+    { level: 1, text: "Pernahkah kamu menghapus komentar yang sudah diketik karena takut dihakimi?" },
+    { level: 1, text: "Apakah kamu pernah menilai seseorang hanya dari tampilan feed atau foto profilnya?" },
+    { level: 1, text: "Pernahkah kamu janjian dengan seseorang yang kamu harap membatalkan duluan?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura baterai habis agar tidak perlu merespons?" },
+    { level: 1, text: "Pernahkah kamu diam-diam bangga dengan sesuatu yang tidak mau kamu akui ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah menghabiskan lebih dari satu jam melihat profil seseorang yang tidak kamu kenal secara personal?" },
+    { level: 1, text: "Pernahkah kamu ngobrol dengan diri sendiri dan merasa itu lebih melegakan dari ngobrol dengan orang lain?" },
+    { level: 1, text: "Apakah kamu pernah berharap seseorang tahu kamu sedang tidak baik-baik saja, tapi kamu tidak bilang apa-apa?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak muncul di online agar tidak ada yang mengajak bicara?" },
+    { level: 1, text: "Apakah kamu pernah mendengarkan lagu yang sama berulang kali selama lebih dari satu jam?" },
+    { level: 1, text: "Pernahkah kamu pura-pura sibuk padahal hanya rebahan dan scroll tanpa tujuan?" },
+    { level: 1, text: "Apakah kamu pernah merasa lebih tahu kehidupan seseorang dari media sosialnya daripada dari obrolan langsung?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak buka pintu kamar selama seharian penuh?" },
+    { level: 1, text: "Apakah kamu pernah beli barang impulsif lalu menyesal dalam 24 jam?" },
+    { level: 1, text: "Pernahkah kamu pernah nonton konten yang memalukan lalu langsung hapus history-nya?" },
+    { level: 1, text: "Apakah kamu pernah punya kebiasaan aneh yang kamu lakukan hanya saat benar-benar sendirian?" },
+    { level: 1, text: "Pernahkah kamu pernah tertidur saat video call dan berpura-pura tidak terjadi apa-apa?" },
+    { level: 1, text: "Apakah kamu pernah sengaja tidak reply pesan grup padahal kamu yang paling aktif sebelumnya?" },
+    { level: 1, text: "Pernahkah kamu makan dalam porsi yang tidak akan kamu akui ke siapapun?" },
+    { level: 1, text: "Apakah kamu pernah diam-diam membuka percakapan lama hanya untuk membacanya ulang?" },
+    { level: 1, text: "Pernahkah kamu tiba-tiba mute seseorang di media sosial tanpa alasan yang jelas?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura tidak tahu sesuatu padahal kamu yang pertama tahu?" },
+    { level: 1, text: "Pernahkah kamu berbohong soal selera atau pendapatmu agar tidak terlihat berbeda dari kelompok?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang cemburu hanya untuk melihat reaksinya?" },
+    { level: 2, text: "Apakah kamu pernah menghapus bukti percakapan sebelum ketahuan orang tertentu?" },
+    { level: 2, text: "Pernahkah kamu bilang hal berbeda kepada dua orang berbeda tentang kejadian yang sama?" },
+    { level: 2, text: "Apakah kamu pernah tetap berteman dengan seseorang hanya karena takut konflik kalau berhenti?" },
+    { level: 2, text: "Pernahkah kamu mengambil kredit atas ide atau hasil kerja orang lain?" },
+    { level: 2, text: "Apakah kamu pernah berbicara buruk tentang seseorang yang baru saja pergi dari tempat itu?" },
+    { level: 2, text: "Pernahkah kamu diam-diam merasa senang saat hubungan pertemanan orang lain bermasalah?" },
+    { level: 2, text: "Apakah kamu pernah menyukai seseorang yang seharusnya tidak kamu sukai?" },
+    { level: 2, text: "Pernahkah kamu sengaja memberi informasi tidak lengkap agar situasi berpihak padamu?" },
+    { level: 2, text: "Apakah kamu pernah memanfaatkan kebaikan seseorang untuk kepentinganmu sendiri?" },
+    { level: 2, text: "Pernahkah kamu diam-diam berharap seseorang gagal agar kamu merasa lebih baik soal dirimu?" },
+    { level: 2, text: "Apakah kamu pernah memilih diam saat seharusnya membela seseorang?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak memberitahu seseorang tentang sesuatu yang penting baginya?" },
+    { level: 2, text: "Apakah kamu pernah menceritakan rahasia orang lain saat situasi terasa \"aman\"?" },
+    { level: 2, text: "Pernahkah kamu punya akun media sosial yang tidak diketahui siapapun di sekitarmu?" },
+    { level: 2, text: "Apakah kamu pernah berpura-pura mendukung keputusan seseorang padahal kamu tidak setuju sama sekali?" },
+    { level: 2, text: "Pernahkah kamu berhenti menghubungi seseorang tanpa penjelasan apapun?" },
+    { level: 2, text: "Apakah kamu pernah memaafkan seseorang secara verbal tapi tidak pernah benar-benar memaafkannya?" },
+    { level: 2, text: "Pernahkah kamu berteman dekat dengan seseorang yang sebenarnya tidak kamu percaya?" },
+    { level: 2, text: "Apakah kamu pernah sengaja terlihat baik-baik saja agar seseorang merasa bersalah?" },
+    { level: 2, text: "Pernahkah kamu menilai pilihan hidup seseorang dengan sangat keras tapi tidak pernah bilang?" },
+    { level: 2, text: "Apakah kamu pernah meminta pendapat seseorang padahal keputusanmu sudah bulat sejak awal?" },
+    { level: 2, text: "Pernahkah kamu merespons seseorang secara berbeda tergantung siapa yang sedang melihatmu?" },
+    { level: 2, text: "Apakah kamu pernah tetap berada di lingkungan yang tidak membuatmu nyaman hanya demi tidak dikucilkan?" },
+    { level: 2, text: "Pernahkah kamu membaca isi HP atau notifikasi seseorang tanpa izin?" },
+    { level: 2, text: "Apakah kamu pernah menggunakan kepercayaan seseorang sebagai bahan cerita ke orang lain?" },
+    { level: 2, text: "Pernahkah kamu berpura-pura tidak kenal seseorang di depan kelompok tertentu?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam menyimpan perasaan pada seseorang yang sudah punya pasangan?" },
+    { level: 2, text: "Pernahkah kamu mengorbankan prinsipmu agar bisa diterima di suatu kelompok?" },
+    { level: 2, text: "Apakah kamu pernah terlibat gosip yang kemudian kamu sesali karena dampaknya lebih besar dari yang kamu kira?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang merasa butuh kehadiranmu?" },
+    { level: 2, text: "Apakah kamu pernah memendam amarah kepada seseorang lebih dari satu bulan tanpa bilang apa-apa?" },
+    { level: 2, text: "Pernahkah kamu berbicara jujur kepada seseorang bukan karena peduli, tapi karena ingin terlihat jujur?" },
+    { level: 2, text: "Apakah kamu pernah mengakhiri sebuah persahabatan tanpa konfrontasi — hanya menghilang perlahan?" },
+    { level: 2, text: "Pernahkah kamu punya ekspektasi besar kepada seseorang yang tidak pernah kamu sampaikan?" },
+    { level: 2, text: "Apakah kamu pernah memendam rasa bersalah atas sesuatu yang kamu lakukan kepada orang lain tanpa pernah minta maaf?" },
+    { level: 2, text: "Pernahkah kamu bohong tentang alasanmu menjauhi seseorang?" },
+    { level: 2, text: "Apakah kamu pernah secara sadar menampilkan versi dirimu yang berbeda untuk membuat seseorang tertarik?" },
+    { level: 2, text: "Pernahkah kamu merasa senang ketika seseorang yang tidak kamu sukai mengalami kesulitan?" },
+    { level: 2, text: "Apakah kamu pernah sengaja memperpanjang sebuah konflik karena ada bagian dari dirimu yang menikmatinya?" },
+    { level: 2, text: "Pernahkah kamu sengaja melepaskan sesuatu yang baik sebelum orang lain punya kesempatan meninggalkanmu lebih dulu?" },
+    { level: 2, text: "Apakah kamu pernah sadar sedang berbohong saat bicara tapi tetap melanjutkannya sampai selesai?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak mengundang seseorang ke sebuah momen agar mereka merasa tersisih?" },
+    { level: 2, text: "Apakah kamu pernah memendam rasa rindu kepada seseorang yang kamu sendiri yang memilih untuk pergi?" },
+    { level: 2, text: "Pernahkah kamu secara sadar memilih tidak tumbuh lebih dekat dengan seseorang yang sebenarnya kamu sukai?" },
+    { level: 2, text: "Apakah kamu pernah tetap dalam situasi yang tidak sehat karena takut tidak ada yang lebih baik menunggumu?" },
+    { level: 2, text: "Pernahkah kamu menceritakan masalah seseorang kepada orang yang sebenarnya tidak perlu tahu?" },
+    { level: 2, text: "Apakah kamu pernah berharap seseorang tertentu memilihmu — tapi tidak pernah melakukan apapun untuk itu?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat percakapan terasa normal padahal ada sesuatu yang belum kamu selesaikan dengan orang itu?" },
+    { level: 2, text: "Apakah kamu pernah memilih seseorang yang salah secara sadar karena kamu pikir itu yang kamu pantas dapat?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa tidak ada satu orang pun yang benar-benar tahu versi aslimu?" },
+    { level: 3, text: "Apakah kamu pernah sengaja menyabotase sesuatu yang baik dalam hidupmu sendiri?" },
+    { level: 3, text: "Pernahkah kamu jatuh untuk seseorang yang kamu tahu sejak awal tidak akan berhasil — tapi tetap jatuh?" },
+    { level: 3, text: "Apakah kamu pernah berbohong soal kondisi mentalmu agar tidak terlihat lemah di depan orang lain?" },
+    { level: 3, text: "Pernahkah kamu membuat keputusan besar dalam hidupmu berdasarkan apa yang diharapkan orang lain, bukan dirimu?" },
+    { level: 3, text: "Apakah kamu pernah merasa kesepian justru di momen yang seharusnya paling menyenangkan?" },
+    { level: 3, text: "Pernahkah kamu pura-pura bahagia dalam sebuah hubungan jauh lebih lama dari yang seharusnya?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa orang-orang di sekitarmu mengenal versi dirimu yang kamu desain, bukan yang asli?" },
+    { level: 3, text: "Pernahkah kamu berharap bisa menghapus satu versi dirimu dari masa lalu yang masih kadang muncul dalam pikiranmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa persahabatan yang terlihat paling dekat justru yang paling rapuh?" },
+    { level: 3, text: "Pernahkah kamu meragukan apakah orang-orang di sekitarmu benar-benar peduli, atau hanya sudah terbiasa?" },
+    { level: 3, text: "Apakah kamu pernah memendam sesuatu begitu lama hingga kamu tidak yakin lagi apakah itu masih penting?" },
+    { level: 3, text: "Pernahkah kamu merasa lebih mudah jujur kepada orang yang hampir tidak kamu kenal daripada kepada orang terdekatmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa tidak layak mendapat hal-hal baik yang sedang terjadi dalam hidupmu?" },
+    { level: 3, text: "Pernahkah kamu punya satu pikiran tentang dirimu yang kamu yakini akan mengubah cara orang melihatmu jika mereka tahu?" },
+    { level: 3, text: "Apakah kamu pernah takut menjadi terlalu dekat dengan seseorang karena kamu merasa cenderung merusak hal-hal baik?" },
+    { level: 3, text: "Pernahkah kamu merasa sudah sangat berbeda dari siapa kamu beberapa tahun lalu, dan tidak semua perubahannya menyenangkan?" },
+    { level: 3, text: "Apakah kamu pernah berharap bisa memulai ulang hubungan dengan seseorang yang sudah lama menghilang dari hidupmu?" },
+    { level: 3, text: "Pernahkah kamu merasa lebih aman ketika tidak ada yang terlalu dekat denganmu?" },
+    { level: 3, text: "Apakah kamu pernah punya satu rahasia yang kamu yakini tidak akan pernah kamu ceritakan ke siapapun?" },
+    { level: 3, text: "Pernahkah kamu berpikir bahwa kamu lebih sering berpura-pura baik-baik saja daripada yang disadari orang-orang di sekitarmu?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa versi dirimu yang paling jujur hanya muncul saat kamu sendirian?" },
+    { level: 3, text: "Pernahkah kamu menyesal membiarkan seseorang pergi tanpa pernah bilang apa yang sebenarnya kamu rasakan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu lebih mudah menghilang dari kehidupan seseorang daripada menghadapi percakapan yang sulit?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa ada satu hal yang belum pernah kamu katakan dengan jujur — bahkan kepada dirimu sendiri?" },
+    { level: 1, text: "Pernahkah kamu pura-pura tidak suka seseorang padahal sudah lama memerhatikannya?" },
+    { level: 1, text: "Apakah kamu pernah stalking foto lama seseorang yang kamu sukai sampai scroll ratusan postingan?" },
+    { level: 1, text: "Pernahkah kamu punya crush pada seseorang hanya karena suaranya?" },
+    { level: 1, text: "Apakah kamu pernah latihan ngomong sesuatu ke cermin sebelum ketemu orang yang kamu suka?" },
+    { level: 1, text: "Pernahkah kamu sengaja lewat tempat yang sama berulang kali dengan harapan bertemu seseorang?" },
+    { level: 1, text: "Apakah kamu pernah diam-diam cek zodiak atau MBTI seseorang untuk lihat kompatibilitasnya denganmu?" },
+    { level: 1, text: "Pernahkah kamu screenshot foto seseorang yang kamu suka dan menyimpannya?" },
+    { level: 1, text: "Apakah kamu pernah pura-pura tidak tahu sesuatu agar seseorang mau menjelaskannya padamu?" },
+    { level: 1, text: "Pernahkah kamu sengaja pakai baju tertentu karena tahu akan bertemu seseorang yang kamu suka?" },
+    { level: 1, text: "Apakah kamu pernah replay chat lama dari seseorang hanya karena kangen?" },
+    { level: 1, text: "Pernahkah kamu pernah kirim meme ke seseorang sebagai alasan untuk memulai percakapan?" },
+    { level: 1, text: "Apakah kamu pernah sengaja online di waktu yang sama dengan seseorang agar terlihat aktif?" },
+    { level: 1, text: "Pernahkah kamu bohong soal suka atau tidak suka sesuatu agar punya kesamaan dengan seseorang?" },
+    { level: 1, text: "Apakah kamu pernah punya nickname rahasia untuk seseorang yang kamu suka di kontakmu?" },
+    { level: 1, text: "Pernahkah kamu sengaja membuat caption atau story yang ditujukan ke satu orang tertentu?" },
+    { level: 2, text: "Pernahkah kamu menyukai seseorang lebih lama dari yang pernah kamu akui ke siapapun?" },
+    { level: 2, text: "Apakah kamu pernah pura-pura sudah move on padahal belum?" },
+    { level: 2, text: "Pernahkah kamu membandingkan orang yang kamu pacari dengan seseorang dari masa lalumu?" },
+    { level: 2, text: "Apakah kamu pernah tetap dalam sebuah hubungan yang sudah tidak kamu yakini hanya karena tidak mau sendirian?" },
+    { level: 2, text: "Pernahkah kamu menyukai seseorang tapi sengaja tidak melakukan apapun karena takut ditolak?" },
+    { level: 2, text: "Apakah kamu pernah sadar bahwa kamu memperlakukan seseorang lebih baik di depan umum daripada saat berdua?" },
+    { level: 2, text: "Pernahkah kamu pernah terlibat situasi yang secara teknis bukan selingkuh, tapi kamu tahu rasanya seperti itu?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam membandingkan dirimu dengan mantan pasangan seseorang?" },
+    { level: 2, text: "Pernahkah kamu bilang \"aku baik-baik saja\" setelah putus padahal sama sekali tidak?" },
+    { level: 2, text: "Apakah kamu pernah memulai percakapan dengan seseorang bukan karena kamu peduli, tapi karena kamu bosan?" },
+    { level: 2, text: "Pernahkah kamu jatuh cinta dengan cara seseorang berbicara sebelum benar-benar mengenal orangnya?" },
+    { level: 2, text: "Apakah kamu pernah sengaja tidak memberi kejelasan kepada seseorang karena nyaman dengan situasi yang menggantung?" },
+    { level: 2, text: "Pernahkah kamu sadar bahwa kamu lebih menyukai ide tentang seseorang daripada orangnya sendiri?" },
+    { level: 2, text: "Apakah kamu pernah mempertahankan hubungan yang sudah selesai jauh lebih lama dari yang seharusnya?" },
+    { level: 2, text: "Pernahkah kamu merasa cemburu pada seseorang yang tidak punya hak untuk membuatmu cemburu?" },
+    { level: 2, text: "Apakah kamu pernah dengan sengaja tidak memberikan kepastian kepada seseorang yang jelas-jelas menyukaimu?" },
+    { level: 2, text: "Pernahkah kamu mencari tahu kabar mantan lewat orang ketiga karena tidak mau terlihat peduli?" },
+    { level: 2, text: "Apakah kamu pernah memulai perasaan untuk seseorang yang baru sebagai cara untuk melupakan yang sebelumnya?" },
+    { level: 2, text: "Pernahkah kamu tidak jujur soal perasaanmu karena takut mengubah dinamika yang sudah nyaman?" },
+    { level: 2, text: "Apakah kamu pernah berharap seseorang yang sudah pergi dari hidupmu tiba-tiba menghubungi duluan?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa orang yang paling kamu sukai justru yang paling tidak kamu tunjukkan perasaanmu?" },
+    { level: 3, text: "Apakah kamu pernah mencintai seseorang dengan cara yang tidak pernah mereka sadari?" },
+    { level: 3, text: "Pernahkah kamu menyesal tidak mengatakannya — bukan karena waktunya sudah berlalu, tapi karena kamu yang memilih diam?" },
+    { level: 3, text: "Apakah kamu pernah memilih pergi dari seseorang bukan karena tidak sayang, tapi karena takut pada apa yang bisa terjadi kalau kamu tetap tinggal?" },
+    { level: 3, text: "Pernahkah kamu jatuh cinta pada waktu yang salah dengan orang yang mungkin benar?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu lebih mudah mencintai seseorang dari jauh daripada saat mereka benar-benar ada?" },
+    { level: 3, text: "Pernahkah kamu sadar bahwa kamu menyabotase sebuah hubungan yang sebenarnya baik karena kamu tidak percaya itu bisa bertahan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa cara kamu mencintai seseorang justru membuat mereka pergi?" },
+    { level: 3, text: "Pernahkah kamu berharap bisa kembali ke satu momen tertentu bersama seseorang — bukan untuk mengubahnya, tapi hanya untuk merasakannya sekali lagi?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa ada satu orang yang sampai sekarang belum benar-benar selesai di dalam dirimu?" },
+    { level: 1, text: "Pernahkah kamu pura-pura tidak ingat sesuatu agar tidak perlu menjelaskan panjang lebar?" },
+    { level: 1, text: "Apakah kamu pernah sengaja menghindari seseorang di tempat umum agar tidak perlu menyapa?" },
+    { level: 1, text: "Pernahkah kamu berbohong soal sudah membaca buku atau menonton film yang sedang dibahas?" },
+    { level: 1, text: "Apakah kamu pernah punya pendapat kuat tentang sesuatu yang belum pernah kamu coba sendiri?" },
+    { level: 1, text: "Pernahkah kamu setuju dengan sesuatu di depan umum tapi diam-diam mencarinya di Google setelahnya?" },
+    { level: 1, text: "Apakah kamu pernah berpura-pura lebih sibuk dari yang sebenarnya agar terlihat penting?" },
+    { level: 1, text: "Pernahkah kamu menghindari cermin selama beberapa hari berturut-turut?" },
+    { level: 1, text: "Apakah kamu pernah sengaja datang terlambat ke sebuah acara agar tidak perlu duduk canggung sendirian?" },
+    { level: 1, text: "Pernahkah kamu mendengarkan percakapan orang lain di tempat umum dan tidak berhenti meski sudah tahu itu tidak sopan?" },
+    { level: 1, text: "Apakah kamu pernah berpura-pura sibuk saat seseorang yang tidak ingin kamu temui berjalan mendekat?" },
+    { level: 1, text: "Pernahkah kamu sengaja tidak menghabiskan makanan di piring agar tidak ditawari tambahan?" },
+    { level: 1, text: "Apakah kamu pernah berbohong soal harga barang yang kamu beli — entah dikecilkan atau dibesarkan?" },
+    { level: 2, text: "Pernahkah kamu menyadari bahwa kamu lebih keras menghakimi orang lain atas kesalahan yang pernah kamu lakukan sendiri?" },
+    { level: 2, text: "Apakah kamu pernah dengan sengaja tidak mengoreksi asumsi orang tentang dirimu karena asumsi itu menguntungkanmu?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa versi terbaikmu hanya muncul di depan orang yang tidak terlalu mengenalmu?" },
+    { level: 2, text: "Apakah kamu pernah berpura-pura sudah move on dari sesuatu — bukan kepada orang lain, tapi kepada dirimu sendiri?" },
+    { level: 2, text: "Pernahkah kamu sengaja membuat seseorang merasa kamu tidak butuh mereka, padahal sebaliknya?" },
+    { level: 2, text: "Apakah kamu pernah memilih versi cerita yang membuat kamu terlihat lebih baik saat menceritakan konflik kepada orang lain?" },
+    { level: 2, text: "Pernahkah kamu sadar bahwa kamu lebih sering hadir untuk orang lain daripada untuk dirimu sendiri?" },
+    { level: 2, text: "Apakah kamu pernah diam-diam iri pada seseorang yang hidupnya terlihat lebih sederhana dari hidupmu?" },
+    { level: 2, text: "Pernahkah kamu sengaja tidak menunjukkan kemampuan penuhmu agar tidak dibebani ekspektasi?" },
+    { level: 2, text: "Apakah kamu pernah merasa lega ketika seseorang yang kamu anggap lebih baik darimu ternyata juga punya masalah?" },
+    { level: 2, text: "Pernahkah kamu pernah pura-pura tidak butuh validasi dari siapapun padahal sangat membutuhkannya?" },
+    { level: 2, text: "Apakah kamu pernah memilih diam bukan karena tidak punya pendapat, tapi karena tidak ingin menanggung konsekuensinya?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa kamu lebih mudah baik kepada orang asing daripada kepada orang yang paling dekat denganmu?" },
+    { level: 2, text: "Apakah kamu pernah dengan sadar membiarkan seseorang salah paham tentang niatmu karena meluruskannya terlalu rumit?" },
+    { level: 2, text: "Pernahkah kamu merasa bahwa kamu sudah terlalu lama menjadi versi dirimu yang kamu ciptakan untuk orang lain?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa ketakutanmu yang paling besar bukan soal gagal, tapi soal berhasil lalu tetap merasa kosong?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu tidak benar-benar tahu apa yang kamu inginkan dari hidupmu sendiri?" },
+    { level: 3, text: "Pernahkah kamu sadar bahwa ada satu keputusan dalam hidupmu yang sampai sekarang masih kamu pertanyakan?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa semakin banyak orang mengenalmu, semakin sedikit yang benar-benar memahaminya?" },
+    { level: 3, text: "Pernahkah kamu berpikir bahwa versi dirimu lima tahun lagi akan menilai keputusanmu hari ini dengan sangat keras?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu sedang menjalani hidup yang sebenarnya bukan milikmu sepenuhnya?" },
+    { level: 3, text: "Pernahkah kamu merasa bahwa hal yang paling kamu takuti bukan kehilangan orang lain, tapi kehilangan dirimu sendiri?" },
+    { level: 3, text: "Apakah kamu pernah merasa bahwa kamu belum pernah benar-benar jujur — bahkan dalam satu percakapan pun — tentang siapa kamu sebenarnya?" },
+    { level: 1, text: "Pernah nggak kamu merasa iri sama sepupu yang selalu dibanggain sama keluarga besar?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura tidur pas kumpul keluarga biar nggak disuruh bantu-bantu?" },
+    { level: 1, text: "Pernah nggak kamu diam-diam tahu rahasia besar salah satu sepupu tapi kamu tutup mulut sampai sekarang?" },
+    { level: 1, text: "Pernah nggak kamu malas datang ke acara keluarga karena males ditanya \"kapan nikah/lulus\"?" },
+    { level: 1, text: "Pernah nggak kamu makan makanan di kulkas yang sebenarnya bukan jatahmu, terus pura-pura nggak tahu?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura nggak denger pas dipanggil orang tua atau om/tante?" },
+    { level: 1, text: "Pernah nggak kamu dibanding-bandingin sama sepupu lain dan dalam hati kamu ngumpat?" },
+    { level: 1, text: "Pernah nggak kamu diam-diam ikut ngegosipin keluarga sendiri di belakang mereka?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura akrab sama saudara jauh pas Lebaran padahal lupa namanya siapa?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa orang tuamu lebih sayang sama saudaramu daripada kamu?" },
+    { level: 1, text: "Pernah nggak kamu dapet angpao Lebaran, tapi kamu bohong soal jumlahnya ke orang tua biar nggak disita?" },
+    { level: 1, text: "Pernah nggak kamu ngumpet di kamar atau toilet biar nggak ketemu tamu atau saudara yang datang ke rumah?" },
+    { level: 1, text: "Pernah nggak kamu nyalahin saudaramu atau sepupumu atas barang yang sebenarnya kamu rusakin?" },
+    { level: 1, text: "Pernah nggak kamu punya grup chat keluarga tanpa satu atau dua anggota keluarga tertentu?" },
+    { level: 1, text: "Pernah nggak kamu merasa diam-diam lebih sukses/lebih pintar dari sepupu yang dulu sering pamer?" },
+    { level: 1, text: "Pernah nggak kamu memihak salah satu tante/om pas mereka lagi ada drama keluarga?" },
+    { level: 1, text: "Pernah nggak kamu sengaja nggak angkat telepon dari keluarga karena lagi malas ngomong?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa kumpul keluarga itu lebih banyak pamer harta/pencapaian daripada silaturahmi?" },
+    { level: 1, text: "Pernah nggak kamu kabur duluan pas acara keluarga lagi sesi foto-foto atau doa bersama?" },
+    { level: 1, text: "Pernah nggak kamu diem-diem ngetawain gaya baju atau dandan sepupu pas lagi Lebaran/kondangan?" },
+    { level: 1, text: "Pernah nggak kamu nyontek pas ujian tapi sok-sokan bilang ke teman kalau kamu ngerjain sendiri?" },
+    { level: 1, text: "Pernah nggak kamu palsuin tanda tangan orang tua di buku PR atau surat izin?" },
+    { level: 1, text: "Pernah nggak kamu nyembunyiin kertas ulangan yang nilainya jelek biar nggak dimarahin?" },
+    { level: 1, text: "Pernah nggak kamu bolos sekolah/les tapi pamitnya berangkat ke orang tua?" },
+    { level: 1, text: "Pernah nggak kamu suka sama pacar temen sekelasmu sendiri?" },
+    { level: 1, text: "Pernah nggak kamu nangis di sekolah cuma gara-gara caper sama seseorang?" },
+    { level: 1, text: "Pernah nggak kamu ikut nge-bully atau ngatain temen karena takut dijauhin gengmu?" },
+    { level: 1, text: "Pernah nggak kamu nyuri mainan temen pas masih SD terus pura-pura ikut nyariin pas dia kehilangan?" },
+    { level: 1, text: "Pernah nggak kamu naksir kakak kelas tapi cuma berani ngeliatin dari jauh selama bertahun-tahun?" },
+    { level: 1, text: "Pernah nggak kamu bikin alasan sakit perut/pusing biar bisa rebahan di UKS?" },
+    { level: 1, text: "Pernah nggak kamu ngambil uang kembalian emak sehabis disuruh ke warung?" },
+    { level: 1, text: "Pernah nggak kamu nahan pipis/BAB di sekolah karena jijik sama WC-nya sampai akhirnya sakit?" },
+    { level: 1, text: "Pernah nggak kamu nangis pas diputusin cinta monyet zaman SMP/SMA?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura kesurupan atau sakit pas lagi ekskul/pramuka biar bisa pulang?" },
+    { level: 1, text: "Pernah nggak kamu ngirim surat cinta/SMS romantis jaman dulu yang kalau diinget sekarang bikin cringe banget?" },
+    { level: 1, text: "Pernah nggak kamu berantem fisik sama temen sekolah gara-gara masalah sepele?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa jadi anak paling keren di sekolah, tapi pas sadar sekarang ternyata alay banget?" },
+    { level: 1, text: "Pernah nggak kamu diem-diem naksir sama guru atau guru PPL di sekolah?" },
+    { level: 1, text: "Pernah nggak kamu ngerusak barang fasilitas sekolah (kayak meja, kursi, alat lab) terus diam aja?" },
+    { level: 1, text: "Pernah nggak kamu sengaja nunggu di gerbang atau kantin cuma buat papasan sama gebetan?" },
+    { level: 1, text: "Pernah nggak kamu stalking sosmed seseorang sampai scroll ke postingan bertahun-tahun lalu?" },
+    { level: 1, text: "Pernah nggak kamu kepencet \"like\" pas lagi stalking akun mantan atau gebetan, terus panik sendiri?" },
+    { level: 1, text: "Pernah nggak kamu bikin fake account (akun bodong) cuma buat stalking orang tanpa ketahuan?" },
+    { level: 1, text: "Pernah nggak kamu bikin IG Story yang sebenarnya cuma ditujukan buat dilihat sama SATU ORANG?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura nggak baca chat (padahal udah baca dari notif) karena malas balas?" },
+    { level: 1, text: "Pernah nggak kamu nge-mute atau nge-hide story teman atau saudara sendiri karena muak lihatnya?" },
+    { level: 1, text: "Pernah nggak kamu ngedit foto mati-matian (pake filter/facetune) sebelum diposting biar keliatan cakep?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa insecure parah habis lihat kehidupan orang di Instagram/TikTok?" },
+    { level: 1, text: "Pernah nggak kamu sengaja nunda bales chat orang biar keliatan sibuk dan nggak \"murahan\"?" },
+    { level: 1, text: "Pernah nggak kamu nge-post quotes galau padahal hidupmu lagi baik-baik aja cuma pengen caper?" },
+    { level: 1, text: "Pernah nggak kamu screenshot chat orang terus di-forward ke grup lain buat digibahin?" },
+    { level: 1, text: "Pernah nggak kamu hapus postingan karena yang nge-like atau komen dikit banget?" },
+    { level: 1, text: "Pernah nggak kamu ngetik \"wkwkwk\" atau \"hahaha\" padahal muka kamu datar aja pas baca chatnya?" },
+    { level: 1, text: "Pernah nggak kamu unsend (tarik pesan) karena gengsi atau takut salah ngomong?" },
+    { level: 1, text: "Pernah nggak kamu stalking pacar barunya mantan buat ngebandingin cakepan mana sama kamu?" },
+    { level: 1, text: "Pernah nggak kamu bikin second account (second ig) isinya cuma buat ngeluh dan misuh-misuh?" },
+    { level: 1, text: "Pernah nggak kamu sengaja nge-read doang pesan dari seseorang biar dia ngerasa bersalah?" },
+    { level: 1, text: "Pernah nggak kamu ngirim chat typo dengan sengaja biar ada bahan obrolan?" },
+    { level: 1, text: "Pernah nggak kamu overthinking mikirin kenapa story kamu nggak di-view sama gebetan?" },
+    { level: 1, text: "Pernah nggak kamu block orang di sosmed, tapi besoknya kamu unblock lagi karena penasaran?" },
+    { level: 1, text: "Pernah nggak kamu ngeluh soal kerjaan/kuliah di sosmed, tapi pas di-reply bos/dosen langsung kamu hapus?" },
+    { level: 1, text: "Pernah nggak kamu pakai foto profil yang bukan wajah aslimu karena kurang pede?" },
+    { level: 1, text: "Pernah nggak kamu scroll TikTok/IG reels sampai pagi padahal besok ada acara penting?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura sibuk main HP di tempat umum biar nggak keliatan canggung sendirian?" },
+    { level: 1, text: "Pernah nggak kamu nyari nama kamu sendiri di Google buat lihat apa yang muncul?" },
+    { level: 2, text: "Pernah nggak kamu nitip absen/titip absen ke temen karena ketiduran?" },
+    { level: 2, text: "Pernah nggak kamu ngerjain tugas kelompok pakai sistem \"numpang nama\" doang?" },
+    { level: 2, text: "Pernah nggak kamu pakai alasan \"laptop rusak/wifi mati\" ke dosen/bos padahal kamu yang lupa ngerjain?" },
+    { level: 2, text: "Pernah nggak kamu pinjam uang ke temen dan pura-pura lupa bayar sampai ditagih?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura sibuk ngetik di depan komputer kantor padahal lagi buka sosmed/olshop?" },
+    { level: 2, text: "Pernah nggak kamu ngomongin bos atau dosen dari belakang sama temen, eh orangnya lewat?" },
+    { level: 2, text: "Pernah nggak kamu bohong soal gajimu pas ditanya sama keluarga atau teman (dinaikin atau diturunin)?" },
+    { level: 2, text: "Pernah nggak kamu iri sama karir temen yang kayaknya jauh lebih mulus dari kamu?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa salah jurusan tapi tetep dilanjutin karena udah terlanjur?" },
+    { level: 2, text: "Pernah nggak kamu copas (copy-paste) kerjaan atau tugas orang lain terus cuma diganti kata-katanya dikit?" },
+    { level: 2, text: "Pernah nggak kamu nangis di kamar mandi kantor/kampus karena tekanan mental?" },
+    { level: 2, text: "Pernah nggak kamu nyesel beli barang mahal yang sebenernya nggak kamu butuhin, cuma demi gengsi?" },
+    { level: 2, text: "Pernah nggak kamu ngaku \"lagi di jalan\" padahal baru keluar dari kamar mandi?" },
+    { level: 2, text: "Pernah nggak kamu belanja online pakai paylater padahal tau bulan depan bakal pusing bayarnya?" },
+    { level: 2, text: "Pernah nggak kamu bawa pulang barang fasilitas kantor/kampus (pulpen, tisu, kertas) buat dipakai di rumah?" },
+    { level: 2, text: "Pernah nggak kamu ngilang (ghosting) dari kerjaan kelompok karena males sama anggotanya?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura sakit perut biar bisa bolos kerja atau kuliah?" },
+    { level: 2, text: "Pernah nggak kamu ngeliat lowongan kerja lain padahal lagi pakai fasilitas internet kantor saat jam kerja?" },
+    { level: 2, text: "Pernah nggak kamu merasa kamu sebenernya kurang pintar tapi jago pura-pura pinter (imposter syndrome)?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa gengsi buat ngaku kalau kamu lagi bokek banget ke temen-temen tongkrongan?" },
+    { level: 2, text: "Pernah nggak kamu ghosting orang padahal dia baik banget, cuma karena kamu ngerasa bosan?" },
+    { level: 2, text: "Pernah nggak kamu nangisin orang yang bahkan statusnya bukan pacar kamu (cuma HTS/situationship)?" },
+    { level: 2, text: "Pernah nggak kamu pacaran sama orang yang kamu tahu nggak disetujui sama keluargamu?" },
+    { level: 2, text: "Pernah nggak kamu diam-diam nge-cek HP pacar/gebetan pas dia lagi tidur atau ke toilet?" },
+    { level: 2, text: "Pernah nggak kamu balikan sama mantan padahal tahu ujungnya bakal disakitin lagi?" },
+    { level: 2, text: "Pernah nggak kamu cemburu buta padahal status kalian belum resmi jadian?" },
+    { level: 2, text: "Pernah nggak kamu ilfeel sama gebetan cuma gara-gara hal sepele (misal: cara ngetik, cara makan)?" },
+    { level: 2, text: "Pernah nggak kamu bohong soal status \"single\" ke orang baru padahal kamu lagi punya pacar/HTS?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa nyesel pernah pacaran sama mantanmu yang terakhir?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura suka sama hal yang disukai gebetanmu (misal: musik/film) biar dibilang nyambung?" },
+    { level: 2, text: "Pernah nggak kamu pacaran sama seseorang cuma pelarian karena pengen cepet move on?" },
+    { level: 2, text: "Pernah nggak kamu overthinking ngira diselingkuhin, tapi ternyata dianya emang ketiduran aja?" },
+    { level: 2, text: "Pernah nggak kamu membandingkan pacarmu yang sekarang sama mantanmu?" },
+    { level: 2, text: "Pernah nggak kamu tetap bertahan di hubungan yang toxic karena takut nggak laku atau takut kesepian?" },
+    { level: 2, text: "Pernah nggak kamu naksir sahabatmu sendiri tapi nggak berani bilang sampai sekarang?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura budek pas pasangan lagi ngomel panjang lebar?" },
+    { level: 2, text: "Pernah nggak kamu berharap mantanmu hidupnya nggak bahagia setelah putus dari kamu?" },
+    { level: 2, text: "Pernah nggak kamu godain cowok/cewek lain padahal kamu udah punya pasangan?" },
+    { level: 2, text: "Pernah nggak kamu bohong bilang \"aku nggak cemburu kok\", padahal dalam hati udah mendidih?" },
+    { level: 2, text: "Pernah nggak kamu nyimpen barang dari mantan diam-diam dan pacarmu yang sekarang nggak tahu?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa kamu yang jadi \"red flag\" dalam sebuah hubungan?" },
+    { level: 2, text: "Pernah nggak kamu jatuh cinta lewat aplikasi dating tapi pas ketemu aslinya zonk banget?" },
+    { level: 2, text: "Pernah nggak kamu mutusin pacar pakai chat doang karena nggak berani ngomong langsung?" },
+    { level: 2, text: "Pernah nggak kamu pernah deketin dua orang di waktu yang bersamaan buat cari cadangan?" },
+    { level: 2, text: "Pernah nggak kamu memanipulasi pasanganmu biar seolah-olah dia yang salah pas kalian berantem?" },
+    { level: 2, text: "Pernah nggak kamu batalin janjian di hari H dengan alasan \"ada urusan mendadak\" padahal aslinya cuma mager?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura nelpon/main HP pas papasan sama orang yang kamu kenal di jalan biar nggak usah nyapa?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa energi kamu terkuras habis gara-gara nongkrong terlalu lama?" },
+    { level: 2, text: "Pernah nggak kamu ngetawain jokes tongkrongan yang kamu nggak ngerti sama sekali biar dianggap asyik?" },
+    { level: 2, text: "Pernah nggak kamu ngomong sendiri di depan kaca seolah-olah lagi di-interview podcast?" },
+    { level: 2, text: "Pernah nggak kamu lupa nama orang yang lagi ngobrol sama kamu, tapi kamu gengsi nanya namanya lagi?" },
+    { level: 2, text: "Pernah nggak kamu nyalahin zodiak atau MBTI atas kelakuan burukmu?" },
+    { level: 2, text: "Pernah nggak kamu setuju sama pendapat orang yang salah total, cuma karena males berdebat?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura udah nonton film/dengerin lagu indie yang lagi dibahas biar kelihatan gaul?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa lega banget pas denger sebuah acara atau bukber dibatalin?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa paling pinter di antara temen-temen tongkronganmu?" },
+    { level: 2, text: "Pernah nggak kamu pakai headset tapi nggak ada lagunya cuma biar orang nggak ngajak ngobrol?" },
+    { level: 2, text: "Pernah nggak kamu nge-judge outfit orang asing yang lewat di depan kamu?" },
+    { level: 2, text: "Pernah nggak kamu ngasih saran bijak ke temen yang curhat, padahal pas kamu yang ngalamin kamu juga hancur?" },
+    { level: 2, text: "Pernah nggak kamu senyum-senyum sendiri ngingetin kejadian canggung di masa lalu pas lagi mau tidur?" },
+    { level: 2, text: "Pernah nggak kamu masuk ke toko baju/sepatu mahal, cuma lihat-lihat, terus keluar pura-pura ada telepon?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura ngerti arah jalan pas temen nanya, padahal kamu nyasar?" },
+    { level: 2, text: "Pernah nggak kamu diam-diam bersyukur nggak lahir jadi temen sebangkumu karena ngerasa hidupnya ribet?" },
+    { level: 2, text: "Pernah nggak kamu ngelakuin kebaikan cuma buat dapet pujian, bukan bener-bener ikhlas?" },
+    { level: 2, text: "Pernah nggak kamu nge-ghosting temen lama karena merasa frekuensi kalian udah nggak nyambung?" },
+    { level: 3, text: "Pernah nggak kamu punya rahasia besar yang kalau keluarga tau, mereka bakal kecewa banget?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kamu ini orang jahat yang cuma kebetulan jago pura-pura baik?" },
+    { level: 3, text: "Pernah nggak kamu sengaja menjauh dari seseorang karena kamu merasa nggak pantes buat dia?" },
+    { level: 3, text: "Pernah nggak kamu bohong tentang kondisi mentalmu (bilang gapapa) padahal lagi butuh banget pertolongan?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa pengen kabur dari kehidupanmu yang sekarang dan mulai hidup baru di tempat tak dikenal?" },
+    { level: 3, text: "Pernah nggak kamu mengkhianati kepercayaan sahabatmu sendiri dan dia belum tau sampai detik ini?" },
+    { level: 3, text: "Pernah nggak kamu secara sadar nyabotase hal baik dalam hidupmu (karir/asmara) karena takut gagal di akhir?" },
+    { level: 3, text: "Pernah nggak kamu merasa iri melihat sahabatmu sendiri lebih sukses/bahagia darimu?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa nggak ada satu pun orang di dunia ini yang bener-bener kenal sifat aslimu 100%?" },
+    { level: 3, text: "Pernah nggak kamu nangis tanpa alasan yang jelas pas lagi sendirian di kamar malam-malam?" },
+    { level: 3, text: "Pernah nggak kamu nyesel banget pernah kenal sama satu orang dalam hidupmu?" },
+    { level: 3, text: "Pernah nggak kamu punya phobia atau ketakutan aneh yang nggak berani kamu ceritain ke siapa-siapa karena takut diketawain?" },
+    { level: 3, text: "Pernah nggak kamu ngelakuin hal ilegal atau ngelanggar hukum yang nggak pernah ketahuan polisi?" },
+    { level: 3, text: "Pernah nggak kamu berbohong demi nyelamatin diri sendiri, padahal itu bikin orang lain yang kena masalah?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa masa depanmu suram banget dan nggak tau hidupmu arahnya ke mana?" },
+    { level: 3, text: "Pernah nggak kamu punya keinginan buat bales dendam yang kejam ke orang yang nyakitin kamu?" },
+    { level: 3, text: "Pernah nggak kamu ngomong kasar atau bentak orang tua, terus nyeselnya sampai berhari-hari?" },
+    { level: 3, text: "Pernah nggak kamu kehilangan jati diri cuma buat diterima di sebuah circle pertemanan?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kalau kamu meninggal besok, banyak orang yang aslinya nggak peduli?" },
+    { level: 3, text: "Pernah nggak kamu nutupin aib orang lain yang sebenernya sangat fatal, karena kamu sayang sama dia?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura mabuk darat biar bisa duduk di depan atau duduk pinggir jendela?" },
+    { level: 1, text: "Pernah nggak kamu ngeluh capek banget dalam hati karena temen liburanmu terlalu ambis ngunjungin banyak tempat?" },
+    { level: 1, text: "Pernah nggak kamu masukin diam-diam barang hotel (sabun, teh, sendal) ke tas sebelum check out?" },
+    { level: 1, text: "Pernah nggak kamu males mandi pas lagi liburan di hawa dingin dan cuma ganti baju doang?" },
+    { level: 1, text: "Pernah nggak kamu ngerusak fasilitas hotel/villa tapi diem aja pas check out?" },
+    { level: 1, text: "Pernah nggak kamu kentut di kendaraan umum yang pakai AC terus pura-pura tidur?" },
+    { level: 1, text: "Pernah nggak kamu diam-diam ilfeel sama temen liburanmu gara-gara dia ribet banget soal makanan?" },
+    { level: 1, text: "Pernah nggak kamu bawa koper segede gaban buat liburan 3 hari, padahal yang dipakai cuma itu-itu aja?" },
+    { level: 1, text: "Pernah nggak kamu sengaja molor pas janjian kumpul liburan biar nggak disuruh nunggu duluan?" },
+    { level: 1, text: "Pernah nggak kamu nyasar pakai Google Maps tapi sok tau ngeyakinin orang se-mobil?" },
+    { level: 1, text: "Pernah nggak kamu batalin puasa diem-diem (minum air keran/makan di kamar) terus pura-pura lemes pas kumpul keluarga?" },
+    { level: 1, text: "Pernah nggak kamu pamit tarawih ke masjid padahal aslinya main sama temen/pacar?" },
+    { level: 1, text: "Pernah nggak kamu bilang udah sholat 5 waktu ke orang tua padahal bolong-bolong?" },
+    { level: 1, text: "Pernah nggak kamu curi pandang makanannya orang pas siang bolong di bulan puasa?" },
+    { level: 1, text: "Pernah nggak kamu ikut sahur on the road atau bagi takjil cuma buat konten sosmed aja?" },
+    { level: 1, text: "Pernah nggak kamu nyalah-nyalahin setan pas kamu berbuat dosa padahal emang niatmu sendiri?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura halangan (buat cewek) atau pura-pura sakit (buat cowok) biar ada alasan nggak puasa?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa ibadahmu rajin kalau pas lagi banyak masalah doang?" },
+    { level: 1, text: "Pernah nggak kamu ngambil porsi takjil dobel padahal masih ada orang yang belum kebagian?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa capek banget dengerin ceramah agama tapi pura-pura khusyuk?" },
+    { level: 2, text: "Pernah nggak kamu males banget diajak nongkrong karena ada satu orang di circle itu yang kamu nggak suka?" },
+    { level: 2, text: "Pernah nggak kamu \"patungan\" tapi diam-diam kurangin nominalmu dan berharap nggak ketahuan?" },
+    { level: 2, text: "Pernah nggak kamu di-chat temen \"apa kabar?\" dan kamu udah tau ujung-ujungnya dia mau pinjam duit?" },
+    { level: 2, text: "Pernah nggak kamu nge-gosipin aib teman yang harusnya kamu simpan sebagai rahasia?" },
+    { level: 2, text: "Pernah nggak kamu jadi \"orang ketiga\" alias nyamuk pas temenmu pacaran di tongkrongan?" },
+    { level: 2, text: "Pernah nggak kamu ngomongin orang yang baru aja pulang dari tongkrongan begitu dia balik badan?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa jadi teman \"back-up\" doang yang cuma dicari pas mereka lagi butuh?" },
+    { level: 2, text: "Pernah nggak kamu punya julukan jelek buat seseorang di tongkrongan, yang orangnya nggak tau?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa paling \"glow up\" di antara temen-temen lama pas lagi reuni?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura dompet ketinggalan/HP error pas waktu disuruh bayar duluan?" },
+    { level: 2, text: "Pernah nggak kamu manfaatin fasilitas temen (nebeng mobil, minta hotspot terus-terusan) tanpa tau diri?" },
+    { level: 2, text: "Pernah nggak kamu nyomotin makanan temen pakai alasan \"minta dikit\", padahal ambilnya banyak?" },
+    { level: 2, text: "Pernah nggak kamu iri sama pacarnya sahabatmu karena ngerasa sahabatmu lebih mentingin pacarnya?" },
+    { level: 2, text: "Pernah nggak kamu nggak ngundang satu teman tertentu ke acaramu padahal semua circle diundang?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa temen-temenmu ini toxic tapi kamu males nyari teman baru?" },
+    { level: 1, text: "Pernah nggak kamu ngupil terus upilnya kamu tempelin di bawah meja/kursi?" },
+    { level: 1, text: "Pernah nggak kamu nyium ketiak sendiri buat ngecek bau badan pas lagi di keramaian?" },
+    { level: 1, text: "Pernah nggak kamu pakai celana dalam yang sama dua hari berturut-turut karena males nyuci/ngambil?" },
+    { level: 1, text: "Pernah nggak kamu nelen ludah sendiri abis lihat sesuatu yang menjijikkan karena males meludah?" },
+    { level: 1, text: "Pernah nggak kamu jatuh di tempat umum terus pura-pura ngecek HP biar nggak malu?" },
+    { level: 1, text: "Pernah nggak kamu bersendawa keras banget pas suasana lagi hening banget?" },
+    { level: 1, text: "Pernah nggak kamu masuk WC umum, taunya bau banget, tapi kamu tetep pakai karena udah kebelet?" },
+    { level: 1, text: "Pernah nggak kamu ketiduran sampai ngiler di kelas/kantor/kendaraan umum dan diliatin orang?" },
+    { level: 1, text: "Pernah nggak kamu pakai baju yang belom dicuci dari keranjang baju kotor, disemprot parfum, terus dipakai lagi?" },
+    { level: 1, text: "Pernah nggak kamu lupa sikat gigi sebelum ketemu orang tapi pura-pura pede ngomong jarak dekat?" },
+    { level: 1, text: "Pernah nggak kamu nge-stalk akun sosmed pacarnya artis sampai sejam lebih?" },
+    { level: 1, text: "Pernah nggak kamu tiba-tiba lupa PIN ATM pas lagi di depan mesin dan antrian panjang?" },
+    { level: 1, text: "Pernah nggak kamu nyanyi lagu di kamar mandi seolah-olah lagi konser di GBK?" },
+    { level: 1, text: "Pernah nggak kamu bohong ke abang potong rambut/salon bilang \"bagus mas\", padahal di dalem hati kamu pengen nangis liat hasilnya?" },
+    { level: 1, text: "Pernah nggak kamu kepikiran skenario ngelawan perampok pas lagi bengong di jalan?" },
+    { level: 1, text: "Pernah nggak kamu sok kenal sok dekat sama hewan peliharaan orang di jalan, tapi hewannya malah ngeong/gonggong galak?" },
+    { level: 1, text: "Pernah nggak kamu ngobrol sama tanaman atau barang mati karena saking gabutnya?" },
+    { level: 1, text: "Pernah nggak kamu pencet tombol lift berkali-kali padahal tau itu nggak bikin liftnya lebih cepet turun?" },
+    { level: 1, text: "Pernah nggak kamu pura-pura lagi baca buku atau koran di tempat umum, padahal matamu ngeliatin gebetan?" },
+    { level: 1, text: "Pernah nggak kamu diem-diem baca chat di HP orang asing yang duduk di sebelahmu pas di kendaraan umum?" },
+    { level: 1, text: "Pernah nggak kamu ketawa ngakak sendirian pas inget memori lucu di tengah keramaian?" },
+    { level: 1, text: "Pernah nggak kamu ngerasa kalau kamu bisa baca pikiran orang, kamu bakal nangis tau apa yang mereka pikirin tentangmu?" },
+    { level: 1, text: "Pernah nggak kamu ngaku-ngaku suka dengerin lagu The Beatles/Nirvana/band legend lain biar dibilang anak skena, padahal taunya cuma satu lagu?" },
+    { level: 1, text: "Pernah nggak kamu beli buku tebel-tebel, difoto estetik buat sosmed, tapi aslinya nggak pernah dibaca?" },
+    { level: 1, text: "Pernah nggak kamu ketahuan nangis karena nonton drakor/film, terus alasan kelilipan?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa lega pas tau temenmu putus sama pacarnya yang emang red flag?" },
+    { level: 2, text: "Pernah nggak kamu nyimpen nomor seseorang di kontak dengan nama ejekan (misal: \"Si Pelit\", \"Orang Gila\")?" },
+    { level: 2, text: "Pernah nggak kamu ngasih kado ke orang hasil dari barang pemberian/kado dari orang lain (re-gifting)?" },
+    { level: 2, text: "Pernah nggak kamu sengaja nggak angkat video call karena rambut lagi lepek atau belom mandi?" },
+    { level: 2, text: "Pernah nggak kamu merasa kamu adalah anak favorit/kesayangan di antara saudara kandungmu?" },
+    { level: 2, text: "Pernah nggak kamu nyari tau gaji rekan kerja/sepupu secara diam-diam?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa gagal ngewujudin cita-cita masa kecilmu?" },
+    { level: 2, text: "Pernah nggak kamu dengerin satu lagu yang sama di-looping berjam-jam karena lagi galau parah?" },
+    { level: 2, text: "Pernah nggak kamu punya folder tersembunyi di HP/Laptop yang isinya pantang dilihat siapapun?" },
+    { level: 2, text: "Pernah nggak kamu diem aja pas kasir salah ngasih kembalian lebih ke kamu?" },
+    { level: 2, text: "Pernah nggak kamu ngeliat temenmu ngelakuin kesalahan konyol, tapi kamu biarin aja biar ada bahan tawaan?" },
+    { level: 2, text: "Pernah nggak kamu merasa kalau sifat aslimu lebih jahat dari penampilan luarmu yang kalem?" },
+    { level: 2, text: "Pernah nggak kamu nyesel ikut nongkrong karena ternyata obrolannya ngebosenin banget?" },
+    { level: 2, text: "Pernah nggak kamu senyum-senyum ngetik chat padahal isi chatnya cuma debat berantem?" },
+    { level: 2, text: "Pernah nggak kamu bohongin adik/anak kecil dengan hal-hal nggak masuk akal buat nakut-nakutin mereka?" },
+    { level: 2, text: "Pernah nggak kamu bikin janji mau \"nongkrong kapan-kapan\" padahal tau nggak bakal pernah terjadi?" },
+    { level: 2, text: "Pernah nggak kamu sengaja bikin cemburu pasangan buat ngetes apakah dia masih peduli?" },
+    { level: 2, text: "Pernah nggak kamu beli barang murah tapi kalau ditanya orang bilangnya merk mahal?" },
+    { level: 2, text: "Pernah nggak kamu nge-spam chat orang lagi tidur cuma biar dia bangun dan nemenin kamu?" },
+    { level: 2, text: "Pernah nggak kamu ngarep ada kejadian darurat (ringan) biar kamu ada alasan batalin rapat/kelas?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa paling menderita di dunia ini pas lagi patah hati?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura kesurupan atau sakit pas mau dipanggil maju ke depan kelas?" },
+    { level: 2, text: "Pernah nggak kamu ngebuka lemari es bolak-balik tanpa ngambil apa-apa?" },
+    { level: 2, text: "Pernah nggak kamu sengaja ngelewatin gang muter-muter karena ada mantan/orang yang pengen kamu hindari?" },
+    { level: 2, text: "Pernah nggak kamu nangis di jalan sambil naik motor pakai helm dan ditutup kaca biar dramatis?" },
+    { level: 2, text: "Pernah nggak kamu kepikiran pengen hidup tanpa HP dan sosmed sama sekali, tapi baru tahan 2 jam udah nyerah?" },
+    { level: 2, text: "Pernah nggak kamu marah-marah di dalem hati ke pelayan resto yang lama, tapi pas ditanya bilangnya \"Iya mbak, santai aja gapapa\"?" },
+    { level: 2, text: "Pernah nggak kamu diem-diem ngarep temen yang pamer mulu di sosmed dapet karma atau masalah?" },
+    { level: 2, text: "Pernah nggak kamu salah kirim chat gibah ke orang yang lagi kamu gibahin?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura paham arah pembicaraan orang berbahasa Inggris/bahasa daerah padahal blank sama sekali?" },
+    { level: 2, text: "Pernah nggak kamu sengaja datang telat ke acara keluarga biar pas dateng udah waktunya makan?" },
+    { level: 2, text: "Pernah nggak kamu diomelin orang tuamu cuma gara-gara kelakuan sepupumu yang ngeselin?" },
+    { level: 2, text: "Pernah nggak kamu merasa risih kalau ada sepupu yang pinjem barang/baju kamu tanpa izin?" },
+    { level: 2, text: "Pernah nggak kamu diam-diam saling saingan nilai raport/IPK sama sepupu seumuranmu?" },
+    { level: 2, text: "Pernah nggak kamu dipaksa nge-follow akun bisnis/olshop punya sepupu padahal kamu nggak minat?" },
+    { level: 2, text: "Pernah nggak kamu ngomongin kelakuan aneh om atau tante bareng sepupu-sepupumu?" },
+    { level: 2, text: "Pernah nggak kamu bohong pas ditanya nenek/kakek udah makan atau belum biar nggak dipaksa makan lagi?" },
+    { level: 2, text: "Pernah nggak kamu pura-pura udah punya pacar di depan keluarga biar berhenti ditanyain jomblo?" },
+    { level: 2, text: "Pernah nggak kamu punya sepupu favorit yang selalu kamu cari pertama kali pas acara keluarga?" },
+    { level: 2, text: "Pernah nggak kamu ngarep cepat-cepat pulang pas lagi kumpul lebaran di rumah keluarga jauh?" },
+    { level: 2, text: "Pernah nggak kamu dikasih barang lungsuran dari sepupu yang ukurannya kegedean tapi kamu pura-pura suka?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa canggung berduaan doang di ruang tamu sama sepupu yang jarang ketemu?" },
+    { level: 2, text: "Pernah nggak kamu menutupi kenakalan sepupumu (misal ketahuan ngerokok/pacaran) dari orang tuanya?" },
+    { level: 2, text: "Pernah nggak kamu dibanding-bandingin soal fisik (gendutan/kurusan/jerawatan) sama keluarga besar?" },
+    { level: 2, text: "Pernah nggak kamu makan jajanan/kue Lebaran yang harganya mahal doang, yang murah nggak disentuh?" },
+    { level: 2, text: "Pernah nggak kamu diam-diam ngerasa acara keluarga itu toxic karena banyak yang suka pamer harta?" },
+    { level: 2, text: "Pernah nggak kamu sengaja nggak nimbrung ngobrol keluarga karena topiknya masalah politik?" },
+    { level: 2, text: "Pernah nggak kamu disuruh jagain anak sepupu/tante (keponakan) yang rewel banget dan kamu pengen nangis?" },
+    { level: 2, text: "Pernah nggak kamu kepikiran buat nginep di rumah sepupu tapi pas udah di sana malah nyesel pengen pulang?" },
+    { level: 2, text: "Pernah nggak kamu ngerasa diam-diam bahagia ngeliat sepupu yang dulu suka pamer ternyata hidupnya lagi struggle?" },
+    { level: 3, text: "Pernah nggak kamu sengaja unfollow mantan biar kelihatan udah move on, tapi aslinya masih sering nyari akunnya?" },
+    { level: 3, text: "Pernah nggak kamu pura-pura salah kirim DM/WA ke gebetan biar bisa mulai obrolan?" },
+    { level: 3, text: "Pernah nggak kamu nyesel nyatain cinta karena ternyata hal itu malah ngerusak pertemanan kalian?" },
+    { level: 3, text: "Pernah nggak kamu nangis gara-gara cemburu padahal sadar kamu itu bukan siapa-siapanya dia?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kalau kamu nggak akan pernah bisa nemuin orang sebaik cinta pertamamu?" },
+    { level: 3, text: "Pernah nggak kamu dapet firasat diselingkuhin, dan ternyata firasat kamu bener?" },
+    { level: 3, text: "Pernah nggak kamu ngarep ada cowok/cewek yang tiba-tiba nembak kamu romantis kayak di film-film?" },
+    { level: 3, text: "Pernah nggak kamu di-ghosting pas lagi sayang-sayangnya?" },
+    { level: 3, text: "Pernah nggak kamu naruh ekspektasi tinggi ke gebetan, tapi pas tau sifat aslinya langsung mundur teratur?" },
+    { level: 3, text: "Pernah nggak kamu punya \"back-up plan\" (orang cadangan) kalau hubunganmu yang sekarang gagal?" },
+    { level: 3, text: "Pernah nggak kamu stalking selingkuhannya pasanganmu dan mikir \"kok selingkuhannya downgrade banget\"?" },
+    { level: 3, text: "Pernah nggak kamu pura-pura suka bola/K-Pop/Game cuma biar ada bahan obrolan sama doi?" },
+    { level: 3, text: "Pernah nggak kamu berharap bisa amnesia ngelupain satu mantan yang bikin trauma?" },
+    { level: 3, text: "Pernah nggak kamu membohongi diri sendiri dengan bilang \"dia pasti berubah kok\" padahal tau dia toxic?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa capek banget jatuh cinta dan pengen dijodohin aja biar praktis?" },
+    { level: 3, text: "Pernah nggak kamu sengaja bikin story WA/IG disembunyikan (hide) dari semua orang KECUALI dia?" },
+    { level: 3, text: "Pernah nggak kamu pakai akun temen buat nonton story IG mantan biar nggak masuk viewers?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa insecure pas diajak jalan sama gebetan yang circle-nya kelihatan \"hedon/kaya\"?" },
+    { level: 3, text: "Pernah nggak kamu putus sama orang gara-gara omongan keluarga atau temanmu yang nggak setuju?" },
+    { level: 3, text: "Pernah nggak kamu kepikiran mau balikan, udah ngetik panjang lebar, tapi akhirnya dihapus dan nggak jadi dikirim?" },
+    { level: 3, text: "Pernah nggak kamu membenci dirimu sendiri karena selalu mengulangi kesalahan yang sama?" },
+    { level: 3, text: "Pernah nggak kamu memaafkan seseorang secara langsung, tapi di dalam hati dendamnya belum hilang?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa bahwa hari-hari yang kamu jalani sekarang cuma mode \"autopilot\" (kosong tanpa arah)?" },
+    { level: 3, text: "Pernah nggak kamu berharap bisa balik ke masa SMA/Kuliah karena ngerasa itulah puncak kebahagiaanmu?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa nggak pantes dapet cinta dari orang tua atau pasanganmu?" },
+    { level: 3, text: "Pernah nggak kamu menyabotase pertemanan karena merasa \"dia terlalu baik buat temenan sama gue\"?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kalau orang-orang mulai menjauh saat tau betapa rusaknya mentalmu?" },
+    { level: 3, text: "Pernah nggak kamu takut banget jadi dewasa karena ngerasa belum siap tanggung jawab?" },
+    { level: 3, text: "Pernah nggak kamu memendam rasa iri dengki ke saudara kandung sendiri?" },
+    { level: 3, text: "Pernah nggak kamu sadar bahwa kelemahan terbesarmu adalah selalu butuh validasi dari orang lain?" },
+    { level: 3, text: "Pernah nggak kamu merasa kesepian justru pas lagi kumpul bareng sahabat/keluarga besar?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam nangis di kamar mandi habis dapet kritik pedas dari atasan/dosen?" },
+    { level: 3, text: "Pernah nggak kamu punya trauma masa lalu yang nggak pernah kamu ceritain ke psikolog atau orang terdekat?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kalau kamu nggak pernah benar-benar mencintai diri sendiri?" },
+    { level: 3, text: "Pernah nggak kamu menyesali satu keputusan besar di masa lalu yang ngeubah seluruh jalan hidupmu sekarang?" },
+    { level: 3, text: "Pernah nggak kamu kepikiran apa jadinya kalau kamu nggak pernah dilahirkan ke dunia ini?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa hidupmu ini bohong, kayak kamu pakai topeng senyum tiap hari padahal hancur?" },
+    { level: 3, text: "Pernah nggak kamu takut sukses karena takut orang-orang bakal nyamperin cuma pas ada maunya?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa kalau doamu nggak pernah didenger sama Tuhan?" },
+    { level: 3, text: "Pernah nggak kamu akhirnya ikhlas ngelepasin impian besarmu karena sadar realita hidup nggak mendukung?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa temen kerjamu ada yang caper banget ke atasan sampai bikin mual?" },
+    { level: 3, text: "Pernah nggak kamu nyesel ngambil jurusan kuliahmu yang sekarang/yang dulu?" },
+    { level: 3, text: "Pernah nggak kamu beli kopi mahal (Starbucks dkk) cuma buat update story, padahal uang lagi pas-pasan?" },
+    { level: 3, text: "Pernah nggak kamu nahan laper di kosan karena duit bener-bener abis dan gengsi mau minta orang tua?" },
+    { level: 3, text: "Pernah nggak kamu ngambil makanan rapat/konsumsi sisa di kampus buat dibawa balik ke kosan?" },
+    { level: 3, text: "Pernah nggak kamu ngejelekin dosen/bos di grup chat, tapi salah kirim ke grup yang ada dosen/bosnya?" },
+    { level: 3, text: "Pernah nggak kamu kerja cuma karena butuh duit, tapi sebenernya benci banget sama kerjaannya?" },
+    { level: 3, text: "Pernah nggak kamu \"nyolong\" ilmu atau portofolio orang lain pas interview kerja biar kelihatan jago?" },
+    { level: 3, text: "Pernah nggak kamu ngantuk berat pas meeting Zoom, terus pura-pura off cam karena \"sinyal jelek\"?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam nyari kerjaan baru pas lagi jam kerja di kantor lama?" },
+    { level: 3, text: "Pernah nggak kamu pinjam duit pinjol (pinjaman online) demi gaya hidup atau nongkrong?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa atasanmu itu bodoh banget dan kamu yang lebih pantes ada di posisi dia?" },
+    { level: 3, text: "Pernah nggak kamu nangis gara-gara lihat saldo ATM yang isinya tinggal belasan ribu?" },
+    { level: 3, text: "Pernah nggak kamu nyalahin sistem/pemerintah padahal aslinya kamu yang emang males kerja?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa jadi beban keluarga karena belum lulus atau belum dapet kerja?" },
+    { level: 3, text: "Pernah nggak kamu resign/keluar dari kampus gara-gara nggak kuat sama toxicnya lingkungan di sana?" },
+    { level: 3, text: "Pernah nggak kamu nge-mark up (naikin harga) uang SPP/uang buku buat jajan pas jaman kuliah?" },
+    { level: 3, text: "Pernah nggak kamu merasa terintimidasi sama anak magang/junior yang lebih pintar dari kamu?" },
+    { level: 3, text: "Pernah nggak kamu kepikiran buat nikah sama orang kaya aja biar nggak usah mikirin kerja lagi?" },
+    { level: 3, text: "Pernah nggak kamu beli barang branded KW tapi ngakunya ori ke temen-temen tongkrongan?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam menyukai salah satu orang yang lagi main Kotak Hitam bareng kamu sekarang ini?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa paling cakep/ganteng di antara semua sepupu/teman yang ada di ruangan ini?" },
+    { level: 3, text: "Pernah nggak kamu ngomongin kejelekan salah satu orang di ruangan ini di belakangnya?" },
+    { level: 3, text: "Pernah nggak kamu pura-pura bahagia atas pencapaian orang yang ada di sini, padahal dalam hati kamu iri berat?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam bersyukur hidupmu lebih baik daripada salah satu orang di circle ini?" },
+    { level: 3, text: "Pernah nggak kamu nganggap salah satu orang di ruangan ini terlalu berisik dan pengen nyuruh dia diam?" },
+    { level: 3, text: "Pernah nggak kamu ngerasa punya rahasia yang kalau ketahuan bakal bikin salah satu orang di ruangan ini benci sama kamu?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam setuju sama pendapat \"kamu lebih milih uang daripada cinta\"?" },
+    { level: 3, text: "Pernah nggak kamu merasa kalau dunia ini bakal lebih tenang kalau nggak ada sosmed sama sekali?" },
+    { level: 3, text: "Pernah nggak kamu secara sadar nge-friendzone seseorang karena seneng dapet perhatiannya doang?" },
+    { level: 3, text: "Pernah nggak kamu ngasih saran hubungan yang jelek ke temen biar mereka ikutan putus/jomblo kayak kamu?" },
+    { level: 3, text: "Pernah nggak kamu pura-pura udah paham jokes tongkrongan padahal dalem hati mikir \"ini apanya yang lucu dah\"?" },
+    { level: 3, text: "Pernah nggak kamu berantem sama orang di kolom komentar TikTok/IG pakai akun fake?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam nge-save foto aib teman buat dijadikan stiker WhatsApp tanpa izin?" },
+    { level: 3, text: "Pernah nggak kamu ketahuan bohong tapi tetap ngotot bertahan sama kebohonganmu sampai akhir?" },
+    { level: 3, text: "Pernah nggak kamu diam-diam pakai produk skincare/parfum pacar/saudara karena sayang uang buat beli sendiri?" },
+    { level: 3, text: "Pernah nggak kamu numpang toilet di minimarket/pom bensin terus kabur tanpa beli barang satupun atau bayar kotak uang?" },
+    { level: 3, text: "Pernah nggak kamu sengaja nutupin layar laptop/HP pas ada orang lewat karena tontonanmu memalukan?" },
+    { level: 3, text: "Pernah nggak kamu nggak keramas berhari-hari terus pakai bedak tabur di rambut biar nggak kelihatan lepek?" },
+    { level: 3, text: "Pernah nggak kamu ngereply story mantan secara nggak sengaja terus buru-buru kamu blokir akunnya?" },
+    { level: 3, text: "Pernah nggak kamu marah pas temen nggak ngetag fotomu di IG cuma gara-gara di foto itu kamu keliatan jelek?" },
+    { level: 3, text: "Pernah nggak kamu merasa bangga pas dapet barang diskonan murah tapi ngaku belinya harga normal?" },
+    { level: 3, text: "Pernah nggak kamu ngirim voice note panjang lebar padahal bisa diketik 1 baris doang?" },
+    { level: 3, text: "Pernah nggak kamu dengerin obrolan rahasia orang di meja sebelah kafe terus kamu jadiin bahan gibah sama temenmu?" },
+    { level: 3, text: "Pernah nggak kamu bilang \"otw\" padahal kenyataannya kamu masih tiduran sambil handukan?" },
+    { level: 3, text: "Pernah nggak kamu merasa kalau kamu itu aslinya ekstrovert, tapi lingkungan yang bikin kamu jadi pendiam?" },
+    { level: 3, text: "Pernah nggak kamu berbohong saat menjawab salah satu pertanyaan Kotak Hitam sebelumnya di sesi ini?" },
+    { level: 3, text: "Pernah nggak kamu ngarep game ini cepetan kelar karena kamu takut pertanyaan makin menjurus ke kamu?" },
+    { level: 3, text: "Pernah nggak kamu deg-degan karena ada satu aib besarmu yang kamu takut banget kebaca di game ini?" },
+    { level: 3, text: "Pernah nggak kamu merasa kalau setelah main game ini, cara kamu memandang sepupu-sepupumu bakal berubah total?" }
+];
+        // === FIREBASE INIT & AUDIO CONFIG ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGEwGVEVM0lUcUF6_wJbc4rmVgp8XG6_g",
+            authDomain: "kotakhitam-33e4a.firebaseapp.com",
+            databaseURL: "https://kotakhitam-33e4a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kotakhitam-33e4a",
+            storageBucket: "kotakhitam-33e4a.firebasestorage.app",
+            messagingSenderId: "1069156640677",
+            appId: "1:1069156640677:web:3a4bb5d5ead8f215beaa4c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let audioCtx;
+        let noiseBuffer;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if (!noiseBuffer && audioCtx) {
+                const bufferSize = audioCtx.sampleRate * 0.15;
+                noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+            }
+        }
+
+        function playTickSound() {
+            if (!audioCtx || !noiseBuffer) return;
+            const noiseSrc = audioCtx.createBufferSource();
+            noiseSrc.buffer = noiseBuffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1200, audioCtx.currentTime); 
+            filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05); 
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(1.5, audioCtx.currentTime + 0.005);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08); 
+            noiseSrc.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            noiseSrc.start(audioCtx.currentTime);
+            noiseSrc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playStopSound() {
+            if (!audioCtx) return;
+            const frequencies = [146.83, 174.61, 220.00]; 
+            frequencies.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                const startTime = audioCtx.currentTime + (index * 0.05); 
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.9, startTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 2.5); 
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + 3.0);
+            });
+        }
+
+        // === MULTIPLAYER STATE ===
+        // Restore session from sessionStorage if available (survive refresh)
+        const _saved = JSON.parse(sessionStorage.getItem('khSession') || 'null');
+        let myPlayerId = (_saved && _saved.pid) ? _saved.pid : ('p_' + Math.random().toString(36).substr(2, 9));
+        let myName    = (_saved && _saved.name) ? _saved.name : '';
+        let myRoomCode = '';
+        let isModerator = false;
+        let roomRef = null;
+        let pRef = null; // player ref
+        let currentRoomData = null;
+        
+        let shuffledDeck = [];
+        let deckIndex = 0;
+        let isShuffling = false;
+        let lastProcessedShuffleSignalId = null;
+
+        function saveSession() {
+            sessionStorage.setItem('khSession', JSON.stringify({
+                pid: myPlayerId,
+                name: myName,
+                roomCode: myRoomCode,
+                isModerator: isModerator
+            }));
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem('khSession');
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function generateRoomCode() {
+            let result = '';
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        }
+
+        function createRoom() {
+            initAudio();
+            const pinInput = prompt("Masukkan PIN untuk membuat room:");
+            if (pinInput !== "183729") {
+                alert("PIN salah!");
+                return;
+            }
+            const nameInput = document.getElementById('player-name').value.trim();
+            if (!nameInput) return alert("Pilih nama dulu!");
+            myName = nameInput;
+            myRoomCode = generateRoomCode();
+            isModerator = true;
+            
+            roomRef = db.ref('rooms/' + myRoomCode);
+            roomRef.set({
+                moderator: myPlayerId,
+                status: 'lobby',
+                players: { [myPlayerId]: { name: myName } }
+            }).then(() => {
+                saveSession();
+                listenToRoom();
+            }).catch(e => alert("Gagal buat room: " + e.message));
+        }
+
+        function joinRoom() {
+            initAudio();
+            const nameInput = document.getElementById('player-name').value.trim();
+            const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
+            if (!nameInput) return alert("Pilih nama dulu!");
+            if (!codeInput || codeInput.length !== 4) return alert("Kode room tidak valid!");
+            
+            db.ref('rooms/' + codeInput).once('value', snapshot => {
+                if (!snapshot.exists()) return alert("Room tidak ditemukan!");
+                
+                myName = nameInput;
+                myRoomCode = codeInput;
+                isModerator = false;
+                
+                roomRef = db.ref('rooms/' + myRoomCode);
+                pRef = roomRef.child('players/' + myPlayerId);
+                
+                pRef.set({ name: myName }).then(() => {
+                    saveSession();
+                    listenToRoom();
+                }).catch(e => alert("Gagal gabung room: " + e.message));
+            });
+        }
+
+        function resetToHome() {
+            if (roomRef) roomRef.off();
+            roomRef = null;
+            pRef = null;
+            myRoomCode = '';
+            isModerator = false;
+            currentRoomData = null;
+            clearSession();
+            showScreen('home-screen');
+        }
+
+        // Hanya dipanggil saat tombol Keluar ditekan secara eksplisit
+        function leaveRoom() {
+            if (roomRef) {
+                if (isModerator) {
+                    roomRef.remove(); // tutup room, semua player otomatis ter-kick
+                } else {
+                    if (pRef) pRef.remove(); // hanya hapus diri sendiri
+                }
+            }
+            resetToHome();
+        }
+
+        function confirmLeave() {
+            if (isModerator) {
+                if (!confirm("Kamu adalah Moderator. Keluar akan MENUTUP ROOM dan mengeluarkan semua pemain. Yakin?")) return;
+            } else {
+                if (!confirm("Yakin mau keluar dari room?")) return;
+            }
+            leaveRoom();
+        }
+
+        function listenToRoom() {
+            roomRef.on('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    alert("Room telah ditutup!");
+                    resetToHome();
+                    return;
+                }
+                
+                // If moderator is no longer in players list, or data.moderator is gone, room is dead
+                if (!data.players || !data.players[data.moderator]) {
+                    alert("Moderator keluar. Room ditutup.");
+                    if (!isModerator) pRef.remove();
+                    resetToHome();
+                    return;
+                }
+                
+                isModerator = (data.moderator === myPlayerId);
+                currentRoomData = data;
+                updateUI(data);
+            });
+        }
+
+        function getCardHTML(level, text) {
+            let iconClass = "fa-solid fa-quote-left";
+            if(level === 2) iconClass = "fa-solid fa-user-secret";
+            else if(level === 3) iconClass = "fa-solid fa-skull";
+
+            return `
+                <div class="card-gradient"></div>
+                <div class="card-content-wrapper">
+                    <div class="q-top">
+                        <span class="q-level-badge">LVL ${level}</span>
+                    </div>
+                    <div class="q-mid">
+                        <i class="${iconClass} q-icon"></i>
+                        <p class="q-text">"${text}"</p>
+                    </div>
+                    <div class="q-bot">
+                        <span class="q-brand">KOTAK HITAM</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateUI(data) {
+            const playersCount = data.players ? Object.keys(data.players).length : 0;
+            
+            if (data.status === 'lobby') {
+                showScreen('lobby-screen');
+                document.getElementById('lobby-room-code').textContent = myRoomCode;
+                document.getElementById('player-count').textContent = playersCount;
+                
+                const pList = document.getElementById('player-list');
+                pList.innerHTML = '';
+                for (let pid in data.players) {
+                    const p = data.players[pid];
+                    const isMod = pid === data.moderator;
+                    pList.innerHTML += `
+                        <div class="player-list-item">
+                            <span>${p.name} ${pid === myPlayerId ? '(Kamu)' : ''}</span>
+                            ${isMod ? '<i class="fa-solid fa-crown crown-icon"></i>' : ''}
+                        </div>`;
+                }
+                
+                const modControls = document.getElementById('mod-lobby-controls');
+                if (isModerator) {
+                    modControls.style.display = 'flex';
+                    const btnStart = document.getElementById('btn-start-game');
+                    if (playersCount >= 3) {
+                        btnStart.disabled = false;
+                        btnStart.innerHTML = '<i class="fa-solid fa-play"></i> Mulai Permainan';
+                    } else {
+                        btnStart.disabled = true;
+                        btnStart.innerHTML = `Menunggu (Min. 3 Pemain, skrg ${playersCount})`;
+                    }
+                } else {
+                    modControls.style.display = 'none';
+                }
+            } else {
+                showScreen('play-screen');
+                document.getElementById('play-room-code').textContent = `ROOM: ${myRoomCode}`;
+                
+                const btnNext = document.getElementById('btn-next');
+                const votePanel = document.getElementById('vote-panel');
+                const resultsPanel = document.getElementById('results-panel');
+                
+                const modPlayControls = document.getElementById('mod-play-controls');
+                const btnStartVote = document.getElementById('btn-start-vote');
+                const btnRevealVote = document.getElementById('btn-reveal-vote');
+                const btnResetVote = document.getElementById('btn-reset-vote');
+                const voteStatus = document.getElementById('vote-status');
+                
+                if (isModerator) {
+                    modPlayControls.style.display = 'flex';
+                    btnStartVote.style.display = (data.status === 'playing') ? 'block' : 'none';
+                    btnRevealVote.style.display = (data.status === 'voting') ? 'block' : 'none';
+                    btnResetVote.style.display = (data.status === 'results') ? 'block' : 'none';
+                } else {
+                    modPlayControls.style.display = 'none';
+                }
+                
+                // Shuffle logic override disable
+                if (!isModerator) {
+                    btnNext.disabled = true;
+                } else {
+                    btnNext.disabled = (data.status === 'voting' || data.status === 'shuffling' || data.status === 'results');
+                }
+
+                if (data.status === 'playing') {
+                    votePanel.classList.remove('show');
+                    resultsPanel.classList.remove('show');
+                    if (data.currentCard && !isShuffling) {
+                        renderStaticCard(data.currentCard);
+                    }
+                } 
+                else if (data.status === 'shuffling') {
+                    votePanel.classList.remove('show');
+                    resultsPanel.classList.remove('show');
+                    if (!isShuffling && data.shuffleSignal) {
+                        handleShuffleSignal(data.shuffleSignal);
+                    }
+                } 
+                else if (data.status === 'voting') {
+                    votePanel.classList.add('show');
+                    resultsPanel.classList.remove('show');
+                    if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
+                    
+                    const votesCount = data.vote && data.vote.votes ? Object.keys(data.vote.votes).length : 0;
+                    voteStatus.textContent = `${votesCount} / ${playersCount} sudah vote`;
+                    
+                    if (isModerator) {
+                        btnRevealVote.disabled = (votesCount < playersCount);
+                        btnRevealVote.innerHTML = (votesCount >= playersCount) ? 'BUKA HASIL' : `BUKA (${votesCount}/${playersCount})`;
+                    }
+                    
+                    const myVote = (data.vote && data.vote.votes && data.vote.votes[myPlayerId]);
+                    document.getElementById('btn-vote-ya').disabled = !!myVote;
+                    document.getElementById('btn-vote-tidak').disabled = !!myVote;
+                } 
+                else if (data.status === 'results') {
+                    votePanel.classList.remove('show');
+                    resultsPanel.classList.add('show');
+                    if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
+                    
+                    let yaCount = 0;
+                    let noneCount = 0;
+                    if (data.vote && data.vote.votes) {
+                        for (let v in data.vote.votes) {
+                            if (data.vote.votes[v] === 'yes') yaCount++;
+                            else if (data.vote.votes[v] === 'no') noneCount++;
+                        }
+                    }
+                    document.getElementById('res-ya').textContent = `${yaCount} Orang`;
+                    document.getElementById('res-tidak').textContent = `${noneCount} Orang`;
+                }
+            }
+        }
+
+        function renderStaticCard(cardData) {
+            const cardView = document.getElementById('hp-card-view');
+            cardView.className = `card-hp lvl-${cardData.level}`;
+            cardView.innerHTML = getCardHTML(cardData.level, cardData.text);
+        }
+
+        function startGame() {
+            if (!isModerator) return;
+            // Generate shuffled deck once
+            shuffledDeck = [...questions];
+            for (let i = shuffledDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
+            }
+            deckIndex = 0;
+            
+            roomRef.update({
+                status: 'playing',
+                currentCard: { level: 0, text: "Gunakan tombol ACAK KARTU di bawah untuk membagikan kartu pertama." }
+            });
+        }
+
+        function triggerShuffle() {
+            if (!isModerator) return;
+            if (isShuffling) return;
+            if (currentRoomData.status !== 'playing') return;
+            
+            // Generate random card or Pick from deck
+            // Just use random directly to keep it simple and stateless
+            const randomCard = questions[Math.floor(Math.random() * questions.length)];
+            const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
+            
+            roomRef.update({
+                status: 'shuffling',
+                shuffleSignal: {
+                    id: signalId,
+                    card: randomCard
+                }
+            });
+        }
+
+        function handleShuffleSignal(signal) {
+            if (lastProcessedShuffleSignalId === signal.id) return;
+            lastProcessedShuffleSignalId = signal.id;
+            
+            const cardView = document.getElementById('hp-card-view');
+            isShuffling = true;
+            cardView.classList.add('animate-shuffle');
+            
+            let shuffleCount = 0;
+            const maxShuffles = 22; 
+            const shuffleSpeed = 90; 
+            
+            const shuffleInterval = setInterval(() => {
+                const randomCard = questions[Math.floor(Math.random() * questions.length)];
+                cardView.className = `card-hp lvl-${randomCard.level} animate-shuffle`;
+                cardView.innerHTML = getCardHTML(randomCard.level, randomCard.text);
+
+                if (window.navigator && window.navigator.vibrate) { window.navigator.vibrate(15); } 
+                playTickSound(); 
+
+                shuffleCount++;
+                if (shuffleCount >= maxShuffles) {
+                    clearInterval(shuffleInterval);
+
+                    cardView.className = `card-hp lvl-${signal.card.level}`;
+                    cardView.innerHTML = getCardHTML(signal.card.level, signal.card.text);
+                    void cardView.offsetWidth; 
+                    cardView.classList.add('animate-pop');
+
+                    if (window.navigator && window.navigator.vibrate) { window.navigator.vibrate([80, 40, 100]); }
+                    playStopSound(); 
+
+                    isShuffling = false;
+                    
+                    if (isModerator && currentRoomData && currentRoomData.status === 'shuffling') {
+                         roomRef.update({ status: 'playing', currentCard: signal.card });
+                    }
+                }
+            }, shuffleSpeed);
+        }
+
+        function startVote() {
+            if (!isModerator || currentRoomData.status !== 'playing') return;
+            roomRef.update({
+                status: 'voting',
+                vote: { active: true, votes: {} }
+            });
+        }
+
+        function submitVote(choice) {
+            if (currentRoomData.status !== 'voting') return;
+            roomRef.child(`vote/votes/${myPlayerId}`).set(choice);
+        }
+
+        function revealResults() {
+            if (!isModerator) return;
+            const playersCount = currentRoomData.players ? Object.keys(currentRoomData.players).length : 0;
+            const votesCount = currentRoomData.vote && currentRoomData.vote.votes ? Object.keys(currentRoomData.vote.votes).length : 0;
+            if (votesCount < playersCount) return; 
+            
+            roomRef.update({
+                status: 'results'
+            });
+        }
+
+        function resetVote() {
+            if (!isModerator) return;
+            roomRef.update({
+                status: 'playing',
+                vote: null
+            });
+        }
+
+    </script>
+</body>
+</html>
