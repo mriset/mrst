@@ -453,6 +453,8 @@
         .q-mid {
             flex: 1;
             padding: 20px 30px;
+            max-height: 45vh;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -663,6 +665,7 @@
                 <h1 id="lobby-room-code" style="font-size: 4rem; color: var(--pale-gold); letter-spacing: 10px; text-shadow: 0 0 20px rgba(212,175,55,0.4); margin: 10px 0;">----</h1>
                 
                 <h3 style="margin-top: 20px; font-weight: 600;">Daftar Pemain: <span id="player-count">0</span></h3>
+                <button class="btn btn-secondary" onclick="copyInviteLink()" style="margin-bottom: 20px; font-size: 0.85rem; display: inline-block; width: auto;"><i class="fa-solid fa-link"></i> Salin Link Invite</button>
                 <div class="player-list" id="player-list">
                     <!-- Pemain akan muncul disini -->
                 </div>
@@ -698,6 +701,7 @@
                 <div id="vote-panel" class="vote-panel">
                     <div class="panel-title">VOTE SEKARANG</div>
                     <div class="vote-status" id="vote-status">0/0 sudah vote</div>
+                    <div id="vote-timer-display" style="color: #ef4444; font-weight: bold; font-size: 1.2rem; margin: 10px 0; text-align: center;"></div>
                     <div class="vote-btns">
                         <button class="btn-vote btn-yes" id="btn-vote-ya" onclick="submitVote('yes')">YA</button>
                         <button class="btn-vote btn-no" id="btn-vote-tidak" onclick="submitVote('no')">TIDAK</button>
@@ -1397,6 +1401,12 @@
         let deckIndex = 0;
         let isShuffling = false;
         let lastProcessedShuffleSignalId = null;
+let voteTimerInterval = null;
+
+function copyInviteLink() {
+    const url = window.location.origin + window.location.pathname + '?room=' + myRoomCode;
+    navigator.clipboard.writeText(url).then(() => alert('Link invite berhasil disalin!\n' + url)).catch(err => alert('Gagal menyalin link: ' + err));
+}
 
         function saveSession() {
             sessionStorage.setItem('khSession', JSON.stringify({
@@ -1424,37 +1434,55 @@
         }
 
         function createRoom() {
-            initAudio();
-            const pinInput = prompt("Masukkan PIN untuk membuat room:");
-            if (pinInput !== "183729") {
-                alert("PIN salah!");
-                return;
-            }
-            const nameInput = document.getElementById('player-name').value.trim();
-            if (!nameInput) return alert("Pilih nama dulu!");
-            myName = nameInput;
-            myRoomCode = generateRoomCode();
+    initAudio();
+    const pin = prompt('Masukkan PIN untuk membuat room:');
+    if (pin !== '183729') { alert('PIN salah!'); return; }
+    const nameInput = document.getElementById('player-name').value.trim();
+    if (!nameInput) { alert('Masukkan nama dulu!'); return; }
+    
+    const btn = document.getElementById('btn-create-room');
+    if(btn) { btn.disabled = true; btn.innerHTML = 'Menghubungkan...'; }
+    
+    myName = nameInput;
+    verifyAndCreateRoom();
+}
+
+function verifyAndCreateRoom() {
+    myRoomCode = generateRoomCode();
+    db.ref('rooms/' + myRoomCode).once('value', snapshot => {
+        if (snapshot.exists()) {
+            verifyAndCreateRoom();
+        } else {
             isModerator = true;
-            
             roomRef = db.ref('rooms/' + myRoomCode);
             roomRef.set({
                 moderator: myPlayerId,
                 status: 'lobby',
                 players: { [myPlayerId]: { name: myName } }
             }).then(() => {
+                roomRef.onDisconnect().remove();
                 saveSession();
                 listenToRoom();
-            }).catch(e => alert("Gagal buat room: " + e.message));
+            }).catch(e => {
+                const btn = document.getElementById('btn-create-room');
+                if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-plus-circle"></i> Buat Room'; }
+                alert('Gagal buat room: ' + e.message);
+            });
         }
+    });
+}
 
-        function joinRoom() {
-            initAudio();
-            const nameInput = document.getElementById('player-name').value.trim();
-            const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
-            if (!nameInput) return alert("Pilih nama dulu!");
-            if (!codeInput || codeInput.length !== 4) return alert("Kode room tidak valid!");
-            
-            db.ref('rooms/' + codeInput).once('value', snapshot => {
+function joinRoom() {
+    initAudio();
+    const nameInput = document.getElementById('player-name').value.trim();
+    const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
+    if (!nameInput) { alert('Masukkan nama dulu!'); return; }
+    if (!codeInput || codeInput.length !== 4) { alert('Kode room tidak valid! Harus 4 huruf.'); return; }
+    
+    const btn = document.getElementById('btn-join-room');
+    if(btn) { btn.disabled = true; btn.innerHTML = 'Menghubungkan...'; }
+
+    db.ref('rooms/' + codeInput).once('value', snapshot => {
                 if (!snapshot.exists()) return alert("Room tidak ditemukan!");
                 
                 myName = nameInput;
@@ -1533,6 +1561,34 @@
                 isModerator = (data.moderator === myPlayerId);
                 currentRoomData = data;
                 updateUI(data);
+
+        // Timer Logic
+        if (data.status === 'voting' && data.vote && data.vote.startTime) {
+            if (!voteTimerInterval) {
+                voteTimerInterval = setInterval(() => {
+                    const elapsed = Date.now() - data.vote.startTime;
+                    const remaining = Math.max(0, 30 - Math.floor(elapsed / 1000));
+                    const timerEl = document.getElementById('vote-timer-display');
+                    if (timerEl) {
+                        timerEl.textContent = "Sisa Waktu: " + remaining + "s";
+                    }
+                    if (remaining <= 0) {
+                        clearInterval(voteTimerInterval);
+                        voteTimerInterval = null;
+                        if (isModerator && currentRoomData && currentRoomData.status === 'voting') {
+                            revealResults(true);
+                        }
+                    }
+                }, 1000);
+            }
+        } else {
+            if (voteTimerInterval) {
+                clearInterval(voteTimerInterval);
+                voteTimerInterval = null;
+            }
+            const timerEl = document.getElementById('vote-timer-display');
+            if (timerEl && data.status !== 'voting') timerEl.textContent = "";
+        }
             });
         }
 
@@ -1575,10 +1631,10 @@
                     const showKick = isModerator && !isMod && !isMe;
                     pList.innerHTML += `
                         <div class="player-list-item">
-                            <span>${p.name} ${isMe ? '(Kamu)' : ''}</span>
+                            <span>${escapeHTML(p.name)} ${isMe ? '(Kamu)' : ''}</span>
                             <span style="display:flex;align-items:center;gap:8px;">
                                 ${isMod ? '<i class="fa-solid fa-crown crown-icon"></i>' : ''}
-                                ${showKick ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${p.name}')">KICK</button>` : ''}
+                                ${showKick ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${escapeHTML(p.name)}')">KICK</button>` : ''}
                             </span>
                         </div>`;
                 }
@@ -1641,9 +1697,9 @@
                     }
                 } 
                 else if (data.status === 'voting') {
-                    votePanel.classList.add('show');
                     resultsPanel.classList.remove('show');
                     if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
+                    setTimeout(() => votePanel.classList.add('show'), 300);
                     
                     const votesCount = data.vote && data.vote.votes ? Object.keys(data.vote.votes).length : 0;
                     voteStatus.textContent = `${votesCount} / ${playersCount} sudah vote`;
@@ -1659,8 +1715,8 @@
                 } 
                 else if (data.status === 'results') {
                     votePanel.classList.remove('show');
-                    resultsPanel.classList.add('show');
                     if (data.currentCard && !isShuffling) renderStaticCard(data.currentCard);
+                    setTimeout(() => resultsPanel.classList.add('show'), 300);
                     
                     let yaCount = 0;
                     let noneCount = 0;
@@ -1699,64 +1755,98 @@
         }
 
         function triggerShuffle() {
-            if (!isModerator) return;
-            if (isShuffling) return;
-            if (currentRoomData.status !== 'playing') return;
+    if (!isModerator || isShuffling) return;
+    if (!currentRoomData || currentRoomData.status !== 'playing') return;
 
-            initAudio(); // pastikan AudioContext aktif saat user gesture
+    initAudio(); // pastikan AudioContext aktif saat user gesture
 
-            const randomCard = questions[Math.floor(Math.random() * questions.length)];
-            const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
+    const catId = currentRoomData.selectedCategory;
+    const cat   = categoriesConfig.find(c => c.id === catId);
+    let deck  = getCategDeck(catId);
+    if (!deck.length) return;
+    
+    let usedCards = currentRoomData.usedCards || [];
+    let availableDeck = deck.filter(q => !usedCards.includes(q));
+    
+    if (!availableDeck.length) {
+        alert("Semua kartu di kategori ini sudah dimainkan! Mengacak ulang deck.");
+        availableDeck = deck;
+        usedCards = [];
+    }
 
-            roomRef.update({
-                status: 'shuffling',
-                shuffleSignal: {
-                    id: signalId,
-                    card: randomCard
-                }
-            });
+    const randomQ  = availableDeck[Math.floor(Math.random() * availableDeck.length)];
+    usedCards.push(randomQ);
+    const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
+    const startTimeStamp = firebase.database.ServerValue.TIMESTAMP;
+
+    roomRef.update({
+        status: 'shuffling',
+        usedCards: usedCards,
+        shuffleSignal: {
+            id: signalId,
+            startAt: startTimeStamp,
+            card: {
+                text: randomQ,
+                categoryId: catId,
+                categoryName: cat.name,
+                categoryHexColor: cat.hexColor,
+                categoryIcon: cat.icon,
+                isIntro: false
+            }
         }
+    });
+}
 
         function handleShuffleSignal(signal) {
-            if (lastProcessedShuffleSignalId === signal.id) return;
-            lastProcessedShuffleSignalId = signal.id;
+    if (lastProcessedShuffleSignalId === signal.id) return;
+    lastProcessedShuffleSignalId = signal.id;
 
-            initAudio(); // fallback untuk pemain non-moderator
+    initAudio();
 
-            const cardView = document.getElementById('hp-card-view');
-            isShuffling = true;
-            cardView.classList.add('animate-shuffle');
-            
-            let shuffleCount = 0;
-            const maxShuffles = 22; 
-            const shuffleSpeed = 90; 
-            
-            const shuffleInterval = setInterval(() => {
-                const randomCard = questions[Math.floor(Math.random() * questions.length)];
-                cardView.className = `card-hp lvl-${randomCard.level} animate-shuffle`;
-                cardView.innerHTML = getCardHTML(randomCard.level, randomCard.text);
+    const catId = currentRoomData ? currentRoomData.selectedCategory : 'level1';
+    const deck  = getCategDeck(catId);
+    const cardEl = document.getElementById('sp-card');
+    const textEl = document.getElementById('sp-card-text');
 
-                playTickSound();
+    isShuffling = true;
+    cardEl.classList.add('animate-shuffle');
 
-                shuffleCount++;
-                if (shuffleCount >= maxShuffles) {
-                    clearInterval(shuffleInterval);
+    // Disable Acak Kartu during shuffle
+    const btnAcak = document.getElementById('btn-acak');
+    if (btnAcak) btnAcak.disabled = true;
 
-                    cardView.className = `card-hp lvl-${signal.card.level}`;
-                    cardView.innerHTML = getCardHTML(signal.card.level, signal.card.text);
-                    void cardView.offsetWidth; 
-                    cardView.classList.add('animate-pop');
+    const shuffleSpeed = 100;
+    const duration = 2000;
+    
+    const localStart = Date.now();
 
-                    playStopSound();
+    const interval = setInterval(() => {
+        const randomQ = deck[Math.floor(Math.random() * deck.length)];
+        textEl.textContent = '...' + randomQ;
+        playTickSound();
 
-                    isShuffling = false;
-                    
-                    if (isModerator && currentRoomData && currentRoomData.status === 'shuffling') {
-                         roomRef.update({ status: 'playing', currentCard: signal.card });
-                    }
-                }
-            }, shuffleSpeed);
+        if (Date.now() - localStart >= duration) {
+            clearInterval(interval);
+
+            // Final reveal
+            textEl.textContent = '...' + signal.card.text;
+            cardEl.classList.remove('animate-shuffle');
+            cardEl.classList.remove('animate-pop');
+            void cardEl.offsetWidth; // reflow
+            cardEl.classList.add('animate-pop');
+
+            playStopSound();
+
+            isShuffling = false;
+            if (btnAcak) btnAcak.disabled = false;
+
+            // Moderator writes final state to Firebase
+            if (isModerator && currentRoomData && currentRoomData.status === 'shuffling') {
+                roomRef.update({ status: 'playing', currentCard: signal.card });
+            }
         }
+    }, shuffleSpeed);
+}
 
         function startVote() {
             if (!isModerator || currentRoomData.status !== 'playing') return;
@@ -1771,11 +1861,11 @@
             roomRef.child(`vote/votes/${myPlayerId}`).set(choice);
         }
 
-        function revealResults() {
+        function revealResults(force = false) {
             if (!isModerator) return;
             const playersCount = currentRoomData.players ? Object.keys(currentRoomData.players).length : 0;
             const votesCount = currentRoomData.vote && currentRoomData.vote.votes ? Object.keys(currentRoomData.vote.votes).length : 0;
-            if (votesCount < playersCount) return; 
+            if (!force && votesCount < playersCount) return; 
             
             roomRef.update({
                 status: 'results'
@@ -1795,6 +1885,7 @@
             if (!confirm(`Kick "${name}" dari room?`)) return;
             roomRef.child('kickedPlayers/' + pid).set(true);
             roomRef.child('players/' + pid).remove();
+    roomRef.child('vote/votes/' + pid).remove();
             // Tutup overlay setelah kick
             const overlay = document.getElementById('players-overlay');
             if (overlay.classList.contains('show')) togglePlayersOverlay();
@@ -1823,10 +1914,10 @@
                             ? '<i class="fa-solid fa-crown" style="color:var(--pale-gold);"></i>'
                             : '<i class="fa-solid fa-user" style="color:#666;"></i>'
                         }
-                        ${p.name}${isMe ? ' <span style="font-size:0.72rem;color:#666;">(Kamu)</span>' : ''}
+                        ${escapeHTML(p.name)}${isMe ? ' <span style="font-size:0.72rem;color:#666;">(Kamu)</span>' : ''}
                     </span>
                     ${(!isMod && !isMe)
-                        ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${p.name}')">KICK</button>`
+                        ? `<button class="btn-kick" onclick="kickPlayer('${pid}','${escapeHTML(p.name)}')">KICK</button>`
                         : `<span style="font-size:0.72rem;color:var(--pale-gold);letter-spacing:1px;">${isMod ? 'MOD' : ''}</span>`
                     }
                 `;
@@ -1859,15 +1950,25 @@
 
                 if (!isModerator) {
                     pRef = roomRef.child('players/' + myPlayerId);
-                    // Re-assert keberadaan player di Firebase agar tidak hilang setelah refresh
-                    pRef.set({ name: _saved.name });
+                    pRef.set({ name: myName }); 
                 }
+
                 listenToRoom();
+                updateUI(data);
             });
         }
 
         // Jalankan restore saat halaman selesai load
-        restoreSession();
+        window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('room');
+    if (roomFromUrl) {
+        const input = document.getElementById('room-code-input');
+        if (input) input.value = roomFromUrl.toUpperCase();
+    }
+};
+
+restoreSession();
 
     </script>
 </body>
