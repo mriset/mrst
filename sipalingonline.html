@@ -2054,7 +2054,7 @@
 
             // Mini question
             const qt = data.currentCard ? data.currentCard.text : '';
-            document.getElementById('vote-mini-q').textContent = 'Siapa yang ' + (qt.length > 75 ? qt.substring(0, 75) + '...' : qt);
+            document.getElementById('vote-mini-q').textContent = 'Siapa yang ' + qt;
             document.getElementById('vote-status-label').textContent = votesCount + '/' + playersCount + ' sudah vote';
 
             // Build player buttons grid
