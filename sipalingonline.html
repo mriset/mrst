@@ -606,7 +606,10 @@
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
             <div class="counter-badge" id="play-room-badge">ROOM: ----</div>
-            <div style="width:40px;"></div>
+            <button class="pop-btn" id="btn-back-to-category" onclick="backToCategory()" title="Ganti Kategori"
+                style="display:none;background:#E0F2FE;border:2px solid #0369A1;color:#0369A1;width:40px;height:40px;border-radius:10px;align-items:center;justify-content:center;font-size:1rem;box-shadow:3px 3px 0 #0369A1;flex-shrink:0;">
+                <i class="ph-bold ph-squares-four"></i>
+            </button>
         </div>
 
         <!-- Card Area -->
@@ -1591,6 +1594,19 @@ function playAgain() {
     roomRef.update({ status: 'playing', vote: null });
 }
 
+function backToCategory() {
+    if (!isModerator) return;
+    if (!confirm('Ganti kategori? Kartu saat ini dan sesi vote akan direset.')) return;
+    roomRef.update({
+        status: 'category',
+        vote: null,
+        currentCard: null,
+        shuffleSignal: null,
+        selectedCategory: null,
+        usedCards: null
+    });
+}
+
 function backToLobbyFromGame() {
     if (!isModerator) return;
     if (!confirm('Kembali ke Lobby? Sesi vote aktif akan dihapus dan semua pemain kembali ke lobby.')) return;
@@ -1729,6 +1745,8 @@ function renderPlay(data) {
     modPlayControls.style.display  = isModerator ? 'flex' : 'none';
     if (modVoteControls)  modVoteControls.style.display  = isModerator ? 'block' : 'none';
     if (modResultsCtrls)  modResultsCtrls.style.display  = isModerator ? 'flex'  : 'none';
+    const btnBackCat = document.getElementById('btn-back-to-category');
+    if (btnBackCat) btnBackCat.style.display = isModerator ? 'flex' : 'none';
 
     // Keep overlay player list fresh (if open)
     const overlay = document.getElementById('players-overlay');
