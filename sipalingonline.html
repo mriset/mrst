@@ -2074,9 +2074,7 @@
             const myVote = votes[myPlayerId];
             const hasVoted = !!myVote;
 
-            // Mini question
-            const qt = data.currentCard ? data.currentCard.text : '';
-            document.getElementById('vote-mini-q').textContent = 'Siapa yang ' + (qt.length > 55 ? qt.substring(0, 55) + '...' : qt);
+            // Mini status label
             document.getElementById('vote-status-label').textContent = votesCount + '/' + playersCount + ' sudah vote';
 
             // Build player buttons grid
@@ -2109,9 +2107,7 @@
             const players = data.players || {};
             const votes = (data.vote && data.vote.votes) ? data.vote.votes : {};
 
-            // Mini question
-            const qt = data.currentCard ? data.currentCard.text : '';
-            document.getElementById('results-mini-q').textContent = 'Siapa yang ' + (qt.length > 55 ? qt.substring(0, 55) + '...' : qt);
+
 
             // Count votes per player
             const voteCounts = {};
