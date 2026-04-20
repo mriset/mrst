@@ -733,7 +733,7 @@
                         <button class="btn btn-secondary" id="btn-start-vote" onclick="startVote()" style="flex:1;">
                             MULAI VOTE
                         </button>
-                        <button class="btn btn-secondary" id="btn-reveal-vote" onclick="revealResults()" style="display: none; flex:1;">
+                        <button class="btn btn-secondary" id="btn-reveal-vote" onclick="revealResults(true)" style="display: none; flex:1;">
                             BUKA HASIL
                         </button>
                         <button class="btn btn-secondary" id="btn-reset-vote" onclick="resetVote()" style="display: none; flex:1;">
@@ -1711,8 +1711,8 @@ function joinRoom() {
                     voteStatus.textContent = `${votesCount} / ${playersCount} sudah vote`;
                     
                     if (isModerator) {
-                        btnRevealVote.disabled = (votesCount < playersCount);
-                        btnRevealVote.innerHTML = (votesCount >= playersCount) ? 'BUKA HASIL' : `BUKA (${votesCount}/${playersCount})`;
+                        btnRevealVote.disabled = false;
+                        btnRevealVote.innerHTML = (votesCount >= playersCount) ? 'BUKA HASIL' : `BUKA HASIL (${votesCount}/${playersCount})`;
                     }
                     
                     const myVote = (data.vote && data.vote.votes && data.vote.votes[myPlayerId]);
