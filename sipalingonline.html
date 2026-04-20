@@ -1717,10 +1717,9 @@ function renderCategory(data) {
         if (isModerator) {
             btn.onclick = () => selectCategory(cat.id);
         } else {
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-            btn.style.cursor = 'not-allowed';
-            btn.style.filter = 'grayscale(20%)';
+            btn.style.pointerEvents = 'none';
+            btn.style.userSelect = 'none';
+            btn.style.cursor = 'default';
         }
 
         btn.innerHTML = `
