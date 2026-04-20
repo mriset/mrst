@@ -2090,7 +2090,7 @@
 
             // Mini question
             const qt = data.currentCard ? data.currentCard.text : '';
-            document.getElementById('results-mini-q').textContent = 'Siapa yang ' + (qt.length > 55 ? qt.substring(0, 55) + '...' : qt);
+            document.getElementById('results-mini-q').textContent = 'Siapa yang ' + (qt.length > 95 ? qt.substring(0, 95) + '...' : qt);
 
             // Count votes per player
             const voteCounts = {};
