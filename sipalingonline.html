@@ -20,6 +20,9 @@
     <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { outfit: ['Outfit', 'sans-serif'] } } } }
@@ -673,6 +676,171 @@
         .animate-shuffle {
             animation: shufflePulse 0.25s ease-in-out infinite;
         }
+
+        /* === LEADERBOARD OVERLAY === */
+        #leaderboard-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 950;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        #leaderboard-overlay.show {
+            pointer-events: all;
+            opacity: 1;
+        }
+
+        #leaderboard-overlay-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        #leaderboard-overlay-sheet {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 448px;
+            background: white;
+            border-top: 4px solid #1A1A1A;
+            border-left: 4px solid #1A1A1A;
+            border-right: 4px solid #1A1A1A;
+            border-radius: 24px 24px 0 0;
+            padding: 10px 18px 28px;
+            box-shadow: 0 -6px 0 #1A1A1A;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #leaderboard-overlay.show #leaderboard-overlay-sheet {
+            transform: translateY(0);
+        }
+
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 13px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            border: 2px solid #E2E8F0;
+            background: #F8FAFC;
+            transition: background 0.2s;
+        }
+
+        .lb-row.lb-gold {
+            background: #FFB800;
+            border: 3px solid #1A1A1A;
+            box-shadow: 3px 3px 0 #1A1A1A;
+        }
+
+        .lb-row.lb-silver {
+            background: #E2E8F0;
+            border: 2px solid #94A3B8;
+        }
+
+        .lb-row.lb-bronze {
+            background: #FED7AA;
+            border: 2px solid #C2410C;
+        }
+
+        .lb-rank {
+            font-size: 1.3rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .lb-name {
+            flex: 1;
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: #1A1A1A;
+            text-transform: uppercase;
+        }
+
+        .lb-score {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .lb-wins {
+            font-weight: 900;
+            font-size: 0.82rem;
+            background: #1A1A1A;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .lb-row.lb-gold .lb-wins {
+            background: white;
+            color: #1A1A1A;
+        }
+
+        .lb-empty {
+            text-align: center;
+            color: #94A3B8;
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 24px 0;
+        }
+
+        /* === CUSTOM OVERLAY === */
+        #custom-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 960;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        #custom-overlay.show {
+            pointer-events: all;
+            opacity: 1;
+        }
+
+        #custom-overlay-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        #custom-overlay-sheet {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 448px;
+            background: white;
+            border-top: 4px solid #1A1A1A;
+            border-left: 4px solid #1A1A1A;
+            border-right: 4px solid #1A1A1A;
+            border-radius: 24px 24px 0 0;
+            padding: 10px 18px 28px;
+            box-shadow: 0 -6px 0 #1A1A1A;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #custom-overlay.show #custom-overlay-sheet {
+            transform: translateY(0);
+        }
+        
+        #custom-card-input:focus {
+            box-shadow: 5px 5px 0 #FFB800;
+            border-color: #FFB800;
+        }
     </style>
 </head>
 
@@ -870,18 +1038,53 @@
                             style="flex:1;background:#FFB800;color:#1A1A1A;padding:15px;border-radius:12px;font-size:0.92rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;">
                             <i class="ph-bold ph-cards"></i> Acak!
                         </button>
+                        <button class="pop-btn" id="btn-custom" onclick="toggleCustomOverlay()"
+                            style="flex:1;background:#C7D2FE;color:#1A1A1A;padding:15px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <i class="ph-bold ph-pencil-simple"></i> Tulis
+                        </button>
                         <button class="pop-btn" id="btn-show-players" onclick="togglePlayersOverlay()"
-                            style="flex:1;background:white;color:#1A1A1A;padding:15px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:6px;">
-                            <i class="ph-bold ph-users"></i> Pemain
+                            style="background:white;color:#1A1A1A;padding:14px;border-radius:12px;font-size:1.1rem;font-weight:900;align-items:center;justify-content:center;box-shadow:4px 4px 0 #1A1A1A;flex-shrink:0;min-width:50px;width:50px;" title="Pemain">
+                            <i class="ph-bold ph-users"></i>
                         </button>
                     </div>
-                    <button class="pop-btn" id="btn-start-vote" onclick="startVote()"
-                        style="display:none;width:100%;background:white;color:#1A1A1A;padding:14px;border-radius:12px;font-size:0.88rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;align-items:center;justify-content:center;gap:8px;">
-                        <i class="ph-bold ph-hand-pointing"></i> Mulai Vote
-                    </button>
+                    <div class="row-btns">
+                        <button class="pop-btn" id="btn-start-vote" onclick="startVote()"
+                            style="display:none;flex:1;background:white;color:#1A1A1A;padding:14px;border-radius:12px;font-size:0.88rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;align-items:center;justify-content:center;gap:8px;">
+                            <i class="ph-bold ph-hand-pointing"></i> Mulai Vote
+                        </button>
+                        <button class="pop-btn" id="btn-leaderboard-mod" onclick="toggleLeaderboard()"
+                            style="display:none;background:#1A1A1A;color:#FFB800;padding:14px;border-radius:12px;font-size:1.1rem;font-weight:900;align-items:center;justify-content:center;box-shadow:4px 4px 0 #FFB800;flex-shrink:0;min-width:50px;width:50px;" title="Papan Skor">
+                            <i class="ph-bold ph-trophy"></i>
+                        </button>
+                    </div>
                 </div>
+                <!-- Player leaderboard button -->
+                <button class="pop-btn" id="btn-leaderboard-player" onclick="toggleLeaderboard()"
+                    style="display:none;width:100%;background:#1A1A1A;color:#FFB800;padding:14px;border-radius:12px;font-size:0.88rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 #FFB800;">
+                    <i class="ph-bold ph-trophy"></i> Papan Skor Akumulasi
+                </button>
+            </div>
+        </div>
 
-
+        <!-- =========================================================== -->
+        <!--                   LEADERBOARD OVERLAY                       -->
+        <!-- =========================================================== -->
+        <div id="leaderboard-overlay">
+            <div id="leaderboard-overlay-backdrop" onclick="toggleLeaderboard()"></div>
+            <div id="leaderboard-overlay-sheet">
+                <div class="overlay-pill"></div>
+                <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
+                    <span style="font-size:1.5rem;">🏆</span>
+                    <span style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1A1A1A;letter-spacing:1px;">PAPAN SKOR AKUMULASI</span>
+                </div>
+                <div style="font-size:0.72rem;font-weight:800;color:#94A3B8;text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;" id="lb-round-info">0 ronde dimainkan</div>
+                <div style="max-height:280px;overflow-y:auto;" id="leaderboard-list">
+                    <!-- rendered by JS -->
+                </div>
+                <button class="pop-btn" onclick="toggleLeaderboard()"
+                    style="width:100%;margin-top:14px;background:#1A1A1A;color:white;padding:13px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 #FFB800;">
+                    <i class="ph-bold ph-x"></i> Tutup
+                </button>
             </div>
         </div>
 
@@ -900,6 +1103,31 @@
                     style="width:100%;margin-top:14px;background:#1A1A1A;color:white;padding:13px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 #FFB800;">
                     <i class="ph-bold ph-x"></i> Tutup
                 </button>
+            </div>
+        </div>
+
+        <!-- =========================================================== -->
+        <!--                   CUSTOM CARD OVERLAY                       -->
+        <!-- =========================================================== -->
+        <div id="custom-overlay">
+            <div id="custom-overlay-backdrop" onclick="toggleCustomOverlay()"></div>
+            <div id="custom-overlay-sheet">
+                <div class="overlay-pill"></div>
+                <div class="overlay-title" style="margin-bottom:14px;">✍️ Tulis Pertanyaan</div>
+                <div style="margin-bottom:14px;">
+                    <textarea id="custom-card-input" placeholder="Siapa di antara kita yang..." 
+                        style="width:100%;height:100px;padding:15px;border-radius:12px;border:3px solid #1A1A1A;background:white;color:#1A1A1A;font-size:1rem;font-family:'Outfit', sans-serif;font-weight:700;box-shadow:3px 3px 0 #1A1A1A;outline:none;resize:none;"></textarea>
+                </div>
+                <div class="row-btns">
+                    <button class="pop-btn" onclick="toggleCustomOverlay()"
+                        style="flex:1;background:#FEE2E2;color:#DC2626;border:3px solid #EF4444;padding:13px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 #EF4444;">
+                        Batal
+                    </button>
+                    <button class="pop-btn" onclick="submitCustomCard()"
+                        style="flex:2;background:#1A1A1A;color:white;padding:13px;border-radius:12px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 #FFB800;">
+                        <i class="ph-bold ph-paper-plane-right"></i> Kirim
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1349,6 +1577,7 @@
         const db = firebase.database();
 
         // ============================================================
+        // ============================================================
         //                        AUDIO SYSTEM
         // ============================================================
         let audioCtx, noiseBuffer;
@@ -1356,49 +1585,113 @@
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            // Build a 1-second noise buffer once
             if (!noiseBuffer && audioCtx) {
-                const bufferSize = audioCtx.sampleRate * 0.1;
+                const bufferSize = audioCtx.sampleRate;
                 noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 const output = noiseBuffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
             }
         }
 
+        // 🃏 Card flip (noise burst with high-to-mid sweep)
         function playTickSound() {
             if (!audioCtx || !noiseBuffer) return;
+            const t = audioCtx.currentTime;
             const noiseSrc = audioCtx.createBufferSource();
             noiseSrc.buffer = noiseBuffer;
+            noiseSrc.loop = true;
+
             const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(4000, audioCtx.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.005);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(3000, t);
+            filter.frequency.exponentialRampToValueAtTime(600, t + 0.06);
+            filter.Q.value = 0.8;
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(1.0, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+
             noiseSrc.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            noiseSrc.start(audioCtx.currentTime);
-            noiseSrc.stop(audioCtx.currentTime + 0.06);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noiseSrc.start(t);
+            noiseSrc.stop(t + 0.07);
         }
 
+        // 💨 Whoosh + soft pop when card stops
         function playStopSound() {
             if (!audioCtx) return;
-            const frequencies = [523.25, 659.25, 783.99];
-            frequencies.forEach((freq, idx) => {
+            const t = audioCtx.currentTime;
+
+            // Whoosh (noise sweep down)
+            if (noiseBuffer) {
+                const noiseSrc = audioCtx.createBufferSource();
+                noiseSrc.buffer = noiseBuffer;
+                noiseSrc.loop = true;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(5000, t);
+                filter.frequency.exponentialRampToValueAtTime(200, t + 0.18);
+                const gainN = audioCtx.createGain();
+                gainN.gain.setValueAtTime(1.0, t);
+                gainN.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                noiseSrc.connect(filter); filter.connect(gainN); gainN.connect(audioCtx.destination);
+                noiseSrc.start(t); noiseSrc.stop(t + 0.18);
+            }
+
+            // Pop chord: C5 E5 G5 with sine waves
+            [[523.25, 0.0], [659.25, 0.06], [783.99, 0.12]].forEach(([freq, delay]) => {
                 const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, t + delay);
+                gain.gain.linearRampToValueAtTime(1.0, t + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.5);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(t + delay); osc.stop(t + delay + 0.5);
+            });
+        }
+
+        // 🖱️ Soft pop when player casts a vote
+        function playVoteSubmitSound() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, t);
+            osc.frequency.exponentialRampToValueAtTime(440, t + 0.08);
+            gain.gain.setValueAtTime(1.0, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.15);
+        }
+
+        // 🎉 Tada! fanfare arpeggio
+        function playTadaSound() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            // Rising arpeggio: C4 E4 G4 C5 + final chord sustain
+            const notes = [
+                { freq: 261.63, start: 0.0,  dur: 0.12 },
+                { freq: 329.63, start: 0.11, dur: 0.12 },
+                { freq: 392.00, start: 0.22, dur: 0.12 },
+                { freq: 523.25, start: 0.33, dur: 0.6 },
+                { freq: 659.25, start: 0.38, dur: 0.55 },
+                { freq: 783.99, start: 0.43, dur: 0.5 },
+            ];
+            notes.forEach(({ freq, start, dur }) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                const startTime = audioCtx.currentTime + (idx * 0.05);
-                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.15, startTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.6);
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                osc.start(startTime);
-                osc.stop(startTime + 0.6);
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, t + start);
+                gain.gain.linearRampToValueAtTime(1.0, t + start + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + start + dur);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(t + start); osc.stop(t + start + dur);
             });
         }
 
@@ -1418,6 +1711,36 @@
         let currentRoomData = null;
         let isShuffling = false;
         let lastProcessedShuffleSignalId = null;
+        let lastFiredConfettiVoteId = null;
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Screen Wake Lock released');
+                    });
+                    console.log('Screen Wake Lock active');
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                }
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => {
+                    wakeLock = null;
+                });
+            }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
 
 
         function copyInviteLink() {
@@ -1518,6 +1841,7 @@
         }
 
         function resetToHome() {
+            releaseWakeLock();
             if (roomRef) roomRef.off();
             roomRef = null; pRef = null; myRoomCode = ''; isModerator = false; currentRoomData = null;
             clearSession();
@@ -1548,6 +1872,7 @@
         }
 
         function listenToRoom() {
+            requestWakeLock();
             roomRef.on('value', snapshot => {
                 const data = snapshot.val();
                 if (!data) {
@@ -1560,6 +1885,7 @@
                 if (!isModerator && data.kickedPlayers && data.kickedPlayers[myPlayerId]) {
                     alert('Kamu telah di-kick dari room oleh Moderator.');
                     clearSession();
+                    releaseWakeLock();
                     roomRef.off();
                     roomRef = null; pRef = null; myRoomCode = ''; currentRoomData = null;
                     document.getElementById('vote-panel').classList.remove('show');
@@ -1780,6 +2106,8 @@
             if (!currentRoomData || currentRoomData.status !== 'voting') return;
             const alreadyVoted = currentRoomData.vote && currentRoomData.vote.votes && currentRoomData.vote.votes[myPlayerId];
             if (alreadyVoted) return;
+            initAudio();
+            playVoteSubmitSound();
             roomRef.child('vote/votes/' + myPlayerId).set(targetPlayerId);
         }
 
@@ -1788,7 +2116,32 @@
             const playersCount = currentRoomData.players ? Object.keys(currentRoomData.players).length : 0;
             const votesCount = currentRoomData.vote && currentRoomData.vote.votes ? Object.keys(currentRoomData.vote.votes).length : 0;
             if (!force && votesCount < playersCount) return;
-            roomRef.update({ status: 'results' });
+
+            initAudio();
+            playTadaSound();
+
+            // Accumulate leaderboard score for winner(s) of this round
+            const players = currentRoomData.players || {};
+            const votes = (currentRoomData.vote && currentRoomData.vote.votes) ? currentRoomData.vote.votes : {};
+            const voteCounts = {};
+            for (let pid in players) voteCounts[pid] = 0;
+            for (let voter in votes) {
+                const target = votes[voter];
+                if (voteCounts[target] !== undefined) voteCounts[target]++;
+            }
+            const maxVotes = Math.max(...Object.values(voteCounts), 0);
+            const updates = { status: 'results' };
+            if (maxVotes > 0) {
+                const roundsPlayed = (currentRoomData.leaderboard && currentRoomData.leaderboard._rounds) ? currentRoomData.leaderboard._rounds + 1 : 1;
+                updates['leaderboard/_rounds'] = roundsPlayed;
+                for (let pid in voteCounts) {
+                    if (voteCounts[pid] === maxVotes) {
+                        const prevWins = (currentRoomData.leaderboard && currentRoomData.leaderboard[pid]) ? currentRoomData.leaderboard[pid] : 0;
+                        updates['leaderboard/' + pid] = prevWins + 1;
+                    }
+                }
+            }
+            roomRef.update(updates);
         }
 
         function playAgain() {
@@ -1806,6 +2159,56 @@
                 shuffleSignal: null,
                 selectedCategory: null,
                 usedCards: null
+            });
+        }
+
+        // ============================================================
+        //                       CUSTOM CARD
+        // ============================================================
+        function toggleCustomOverlay() {
+            if (!isModerator) return;
+            const overlay = document.getElementById('custom-overlay');
+            const isShown = overlay.classList.toggle('show');
+            if (isShown) {
+                const input = document.getElementById('custom-card-input');
+                input.value = '';
+                setTimeout(() => input.focus(), 100);
+            }
+        }
+
+        function submitCustomCard() {
+            if (!isModerator || isShuffling) return;
+            if (!currentRoomData || currentRoomData.status !== 'playing') return;
+
+            const text = document.getElementById('custom-card-input').value.trim();
+            if (!text) {
+                alert("Tulis pertanyaan dulu!");
+                return;
+            }
+            toggleCustomOverlay();
+            
+            initAudio();
+
+            const catId = currentRoomData.selectedCategory;
+            const cat = categoriesConfig.find(c => c.id === catId) || categoriesConfig[0];
+            
+            const signalId = 'sig_' + Math.random().toString(36).substr(2, 9);
+            const startTimeStamp = firebase.database.ServerValue.TIMESTAMP;
+
+            roomRef.update({
+                status: 'shuffling',
+                shuffleSignal: {
+                    id: signalId,
+                    startAt: startTimeStamp,
+                    card: {
+                        text: text,
+                        categoryId: catId,
+                        categoryName: cat.name,
+                        categoryHexColor: cat.hexColor,
+                        categoryIcon: cat.icon,
+                        isIntro: false
+                    }
+                }
             });
         }
 
@@ -1946,6 +2349,7 @@
             const resultsPanel = document.getElementById('results-panel');
             const modPlayControls = document.getElementById('mod-play-controls');
             const btnAcak = document.getElementById('btn-acak');
+            const btnCustom = document.getElementById('btn-custom');
             const btnStartVote = document.getElementById('btn-start-vote');
             const modVoteControls = document.getElementById('mod-vote-controls');
             const modResultsCtrls = document.getElementById('mod-results-controls');
@@ -1955,6 +2359,22 @@
             if (modResultsCtrls) modResultsCtrls.style.display = isModerator ? 'flex' : 'none';
             const btnBackCat = document.getElementById('btn-back-to-category');
             if (btnBackCat) btnBackCat.style.display = isModerator ? 'flex' : 'none';
+
+            // Leaderboard buttons visibility
+            const hasLeaderboard = data.leaderboard && data.leaderboard._rounds > 0;
+            const btnLbMod = document.getElementById('btn-leaderboard-mod');
+            const btnLbPlayer = document.getElementById('btn-leaderboard-player');
+            if (isModerator) {
+                if (btnLbMod) btnLbMod.style.display = hasLeaderboard ? 'flex' : 'none';
+                if (btnLbPlayer) btnLbPlayer.style.display = 'none';
+            } else {
+                if (btnLbMod) btnLbMod.style.display = 'none';
+                if (btnLbPlayer) btnLbPlayer.style.display = hasLeaderboard ? 'flex' : 'none';
+            }
+
+            // Keep leaderboard overlay fresh if open
+            const lbOverlay = document.getElementById('leaderboard-overlay');
+            if (lbOverlay && lbOverlay.classList.contains('show')) renderLeaderboard(data);
 
             // Keep overlay player list fresh (if open)
             const overlay = document.getElementById('players-overlay');
@@ -1972,9 +2392,15 @@
                 if (isModerator) {
                     btnAcak.disabled = false;
                     btnAcak.style.display = 'flex';
-                    // Show "Mulai Vote" only after a real card is revealed
+                    if (btnCustom) {
+                        btnCustom.disabled = false;
+                        btnCustom.style.display = 'flex';
+                    }
+                    // Show "Mulai Vote" and leaderboard btn only after a real card is revealed
                     const showVote = data.currentCard && !data.currentCard.isIntro;
                     btnStartVote.style.display = showVote ? 'flex' : 'none';
+                    btnStartVote.disabled = false;
+                    if (btnLbMod) btnLbMod.style.display = (showVote && hasLeaderboard) ? 'flex' : (hasLeaderboard ? 'flex' : 'none');
                 }
             }
             else if (st === 'shuffling') {
@@ -1984,7 +2410,12 @@
                 if (isModerator) {
                     btnAcak.disabled = true;
                     btnAcak.style.display = 'flex';
-                    btnStartVote.style.display = 'none';
+                    if (btnCustom) {
+                        btnCustom.disabled = true;
+                        btnCustom.style.display = 'flex';
+                    }
+                    btnStartVote.style.display = 'flex';
+                    btnStartVote.disabled = true;
                 }
                 if (!isShuffling && data.shuffleSignal) {
                     handleShuffleSignal(data.shuffleSignal);
@@ -2003,6 +2434,10 @@
                 if (isModerator) {
                     btnAcak.disabled = true;
                     btnAcak.style.display = 'flex';
+                    if (btnCustom) {
+                        btnCustom.disabled = true;
+                        btnCustom.style.display = 'flex';
+                    }
                     btnStartVote.style.display = 'none';
                 }
             }
@@ -2018,6 +2453,7 @@
                 }
                 if (isModerator) {
                     btnAcak.style.display = 'none';
+                    if (btnCustom) btnCustom.style.display = 'none';
                     btnStartVote.style.display = 'none';
                 }
             }
@@ -2069,7 +2505,7 @@
             if (isModerator) {
                 const btnReveal = document.getElementById('btn-reveal-vote');
                 const canReveal = votesCount >= playersCount;
-                btnReveal.disabled = false; // Always enabled for moderator to allow force reveal
+                btnReveal.disabled = false;
                 btnReveal.innerHTML = canReveal
                     ? '<i class="ph-bold ph-chart-bar"></i> Buka Hasil Vote'
                     : `<i class="ph-bold ph-chart-bar"></i> Buka Hasil (${votesCount}/${playersCount})`;
@@ -2107,6 +2543,13 @@
                 return;
             }
 
+            const isMeWinner = sorted.length > 0 && voteCounts[myPlayerId] === maxVotes && maxVotes > 0;
+            const currentVoteId = data.vote && data.vote.startTime ? data.vote.startTime : null;
+            if (isMeWinner && currentVoteId && currentVoteId !== lastFiredConfettiVoteId) {
+                lastFiredConfettiVoteId = currentVoteId;
+                triggerConfetti();
+            }
+
             let rank = 0;
             let prevCount = -1;
             sorted.forEach(pid => {
@@ -2129,6 +2572,75 @@
             <div class="result-vote-badge">${count} vote${count !== 1 ? 's' : ''}</div>
         `;
                 list.appendChild(item);
+            });
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    zIndex: 2000,
+                    colors: ['#FFB800', '#10b981', '#3b82f6', '#ec4899', '#f97316']
+                });
+            }
+        }
+
+        // ============================================================
+        //                     LEADERBOARD
+        // ============================================================
+        function toggleLeaderboard() {
+            const overlay = document.getElementById('leaderboard-overlay');
+            const isShown = overlay.classList.toggle('show');
+            if (isShown && currentRoomData) renderLeaderboard(currentRoomData);
+        }
+
+        function renderLeaderboard(data) {
+            const players = data.players || {};
+            const lb = data.leaderboard || {};
+            const rounds = lb._rounds || 0;
+
+            document.getElementById('lb-round-info').textContent = rounds + ' ronde dimainkan';
+
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+
+            // Build entries for players currently in room
+            const entries = [];
+            for (let pid in players) {
+                entries.push({ pid, name: players[pid].name, wins: lb[pid] || 0, isMe: pid === myPlayerId });
+            }
+
+            if (entries.length === 0) {
+                list.innerHTML = '<div class="lb-empty">Belum ada data pemain.</div>';
+                return;
+            }
+
+            // Sort by wins desc, then name asc
+            entries.sort((a, b) => b.wins - a.wins || a.name.localeCompare(b.name));
+
+            if (entries.every(e => e.wins === 0)) {
+                list.innerHTML = '<div class="lb-empty">Belum ada ronde selesai.\n\nMainkan beberapa ronde dulu! 🎮</div>';
+                return;
+            }
+
+            let rank = 0;
+            let prevWins = -1;
+            entries.forEach(entry => {
+                if (entry.wins !== prevWins) { rank++; prevWins = entry.wins; }
+                const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank + '.';
+                const rowClass = rank === 1 ? 'lb-gold' : rank === 2 ? 'lb-silver' : rank === 3 ? 'lb-bronze' : '';
+                const row = document.createElement('div');
+                row.className = 'lb-row ' + rowClass;
+                row.innerHTML = `
+                    <div class="lb-rank">${rankEmoji}</div>
+                    <div class="lb-name">${escapeHTML(entry.name)}${entry.isMe ? ' <span style="font-size:0.65rem;opacity:0.7;">(Kamu)</span>' : ''}</div>
+                    <div class="lb-score">
+                        <div class="lb-wins">${entry.wins}x 🏆</div>
+                    </div>
+                `;
+                list.appendChild(row);
             });
         }
 
