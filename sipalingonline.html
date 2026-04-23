@@ -88,8 +88,14 @@
             left: 0;
         }
 
+        @keyframes screenIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
         .screen.active-screen {
             display: flex;
+            animation: screenIn 0.3s ease-out forwards;
         }
 
         /* === BUTTONS === */
@@ -145,6 +151,71 @@
         input[type="text"]::placeholder {
             color: #94A3B8;
             font-weight: 600;
+        }
+
+        /* === HOME REDESIGN & EMOJI === */
+        .how-to-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: white;
+            border: 2px solid #1A1A1A;
+            border-radius: 12px;
+            box-shadow: 3px 3px 0 #1A1A1A;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        .how-to-num {
+            width: 32px; height: 32px;
+            background: #FFB800;
+            border: 2px solid #1A1A1A;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-8deg); }
+            50% { transform: translateY(-10px) rotate(-8deg); }
+        }
+        .home-float-card { animation: float 3s ease-in-out infinite; }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-height: 260px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .emoji-btn {
+            font-size: 1.8rem;
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .emoji-btn.selected {
+            background: #FFB800;
+            border: 2px solid #1A1A1A;
+            box-shadow: 3px 3px 0 #1A1A1A;
+            transform: scale(1.1);
+        }
+
+        .emoji-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            filter: grayscale(100%);
         }
 
         /* === PLAYER LIST === */
@@ -793,6 +864,98 @@
             padding: 24px 0;
         }
 
+        /* === SECRET VOTE PANEL === */
+        #secret-vote-panel {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.75);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #secret-vote-panel.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #secret-vote-sheet {
+            background: #1A1A1A;
+            border: 3px solid #FFB800;
+            border-radius: 20px;
+            box-shadow: 6px 6px 0 #FFB800;
+            padding: 20px;
+            width: 90%;
+            max-width: 360px;
+            max-height: 75vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .secret-panel-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.1rem;
+            color: #FFB800;
+            text-align: center;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .secret-panel-subtitle {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748B;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .secret-vote-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            background: #2D2D2D;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            border: 1px solid #3D3D3D;
+        }
+
+        .secret-voter-name {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #E2E8F0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .secret-arrow {
+            color: #64748B;
+            font-size: 0.75rem;
+        }
+
+        .secret-target-name {
+            font-size: 0.82rem;
+            font-weight: 900;
+            color: #FFB800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .secret-no-vote {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #475569;
+            font-style: italic;
+        }
+
         /* === CUSTOM OVERLAY === */
         #custom-overlay {
             position: fixed;
@@ -880,15 +1043,11 @@
                             style="font-size:36px;color:#FFB800;-webkit-text-stroke:2px #1A1A1A;"></i></div>
                 </div>
 
-                <p
-                    style="font-weight:700;font-size:0.9rem;color:#1A1A1A;margin-bottom:20px;line-height:1.5;opacity:0.85;max-width:256px;">
-                    Main bareng teman secara online!<br>Vote siapa yang paling...!
-                </p>
 
                 <!-- Form -->
                 <div style="width:100%;max-width:292px;">
-                    <input type="text" id="player-name" placeholder="Nama Kamu (Max 12 huruf)" maxlength="12"
-                        autocomplete="off">
+                    <input type="text" id="player-name" placeholder="Nama (huruf saja, max 12)" maxlength="12"
+                        pattern="[A-Za-z]+" autocomplete="off">
 
                     <button class="pop-btn" onclick="createRoom()"
                         style="width:100%;background:#FFB800;color:#1A1A1A;padding:15px;border-radius:12px;font-size:0.92rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
@@ -907,9 +1066,26 @@
                 </div>
             </div>
 
-            <p
-                style="text-align:center;color:#94A3B8;font-size:0.6rem;font-weight:900;letter-spacing:3px;padding-bottom:18px;text-transform:uppercase;">
-                VERSI DIGITAL MULTIPLAYER</p>
+            <div style="text-align:center;color:#94A3B8;font-size:0.65rem;font-weight:900;letter-spacing:1px;padding-bottom:18px;text-transform:uppercase;">
+                7 Level • 350+ Kartu • Max 25 Pemain
+            </div>
+        </div>
+
+        <!-- =========================================================== -->
+        <!--                      EMOJI OVERLAY                          -->
+        <!-- =========================================================== -->
+        <div id="emoji-overlay" class="screen" style="z-index:980;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+            <div style="background:white;width:90%;max-width:320px;border-radius:24px;border:4px solid #1A1A1A;box-shadow:6px 6px 0 #1A1A1A;padding:20px;text-align:center;transform:translateY(20px);animation:slideUp 0.3s ease forwards;">
+                <h3 style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:#1A1A1A;margin-bottom:6px;">Pilih Avatarmu</h3>
+                <p style="font-size:0.8rem;font-weight:700;color:#64748B;margin-bottom:16px;">Biar gampang dikenali pas ngevote!</p>
+                <div class="emoji-grid" id="emoji-grid">
+                    <!-- JS generated emojis -->
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="pop-btn" onclick="closeEmojiPicker()" style="flex:1;background:#FEE2E2;color:#DC2626;border:3px solid #EF4444;padding:12px;border-radius:12px;font-size:0.85rem;font-weight:900;box-shadow:3px 3px 0 #EF4444;">Batal</button>
+                    <button class="pop-btn" id="btn-confirm-emoji" onclick="confirmEmojiSelection()" style="flex:2;background:#FFB800;color:#1A1A1A;padding:12px;border-radius:12px;font-size:0.85rem;font-weight:900;">Lanjut <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
         </div>
 
         <!-- =========================================================== -->
@@ -1001,8 +1177,8 @@
                     style="background:#FEE2E2;border:2px solid #EF4444;color:#DC2626;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:3px 3px 0 #EF4444;flex-shrink:0;">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
-                <div class="counter-badge" id="play-room-badge">ROOM: ----</div>
-                <button class="pop-btn" id="btn-back-to-category" onclick="backToCategory()" title="Ganti Kategori"
+                <div class="counter-badge" id="play-room-badge" onclick="handleRoomBadgeTap()" style="cursor:pointer; user-select:none;">ROOM: ----</div>
+                <button class="pop-btn" id="btn-back-to-category" onclick="backToLobbyFromGame()" title="Ganti Kategori"
                     style="display:none;background:#E0F2FE;border:2px solid #0369A1;color:#0369A1;width:40px;height:40px;border-radius:10px;align-items:center;justify-content:center;font-size:1rem;box-shadow:3px 3px 0 #0369A1;flex-shrink:0;">
                     <i class="ph-bold ph-squares-four"></i>
                 </button>
@@ -1061,7 +1237,7 @@
                 <!-- Player leaderboard button -->
                 <button class="pop-btn" id="btn-leaderboard-player" onclick="toggleLeaderboard()"
                     style="display:none;width:100%;background:#1A1A1A;color:#FFB800;padding:14px;border-radius:12px;font-size:0.88rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 #FFB800;">
-                    <i class="ph-bold ph-trophy"></i> Papan Skor Akumulasi
+                    <i class="ph-bold ph-trophy"></i> Papan Skor Sipaling
                 </button>
             </div>
         </div>
@@ -1075,7 +1251,7 @@
                 <div class="overlay-pill"></div>
                 <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
                     <span style="font-size:1.5rem;">🏆</span>
-                    <span style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1A1A1A;letter-spacing:1px;">PAPAN SKOR AKUMULASI</span>
+                    <span style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:#1A1A1A;letter-spacing:1px;">PAPAN SKOR SIPALING</span>
                 </div>
                 <div style="font-size:0.72rem;font-weight:800;color:#94A3B8;text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;" id="lb-round-info">0 ronde dimainkan</div>
                 <div style="max-height:280px;overflow-y:auto;" id="leaderboard-list">
@@ -1172,6 +1348,23 @@
                         <i class="ph-bold ph-list"></i> Ganti Kategori
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- =========================================================== -->
+        <!--                   SECRET VOTE PANEL                         -->
+        <!-- =========================================================== -->
+        <div id="secret-vote-panel" onclick="closeSecretPanel()">
+            <div id="secret-vote-sheet" onclick="event.stopPropagation()">
+                <div class="secret-panel-title">🔐 PANEL RAHASIA</div>
+                <div class="secret-panel-subtitle">Siapa yang vote siapa</div>
+                <div id="secret-vote-list">
+                    <!-- Rendered by JS -->
+                </div>
+                <button class="pop-btn" onclick="closeSecretPanel()"
+                    style="width:100%;margin-top:14px;background:#FFB800;color:#1A1A1A;padding:12px;border-radius:10px;font-size:0.85rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:2px solid #1A1A1A;box-shadow:3px 3px 0 #1A1A1A;">
+                    Tutup
+                </button>
             </div>
         </div>
 
@@ -1699,13 +1892,23 @@
         //                    STATE & SESSION
         // ============================================================
         function escapeHTML(str) { return String(str).replace(/[&<>'"']/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[tag]); }
+        function isValidName(name) { return /^[A-Za-z]{1,12}$/.test(name); }
+        const AVATAR_EMOJIS = [
+            '🦁','🐯','🦊','🐼','🐨','🦄','🐸','🦋',
+            '🦉','🐙','🦀','🐬','🦚','🦜','🦩','🐧',
+            '🐳','🦈','🦞','🦦','🐺','🦝','🦡','🦌',
+            '🐘','🦏','🦛','🦒','🦓','🐪'
+        ];
+
         const SESSION_KEY = 'spOnlineSession';
         const _saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
 
-        let myPlayerId = (_saved && _saved.pid) ? _saved.pid : ('p_' + Math.random().toString(36).substr(2, 9));
+        let myPlayerId = (_saved && _saved.pid) ? _saved.pid : ('p_' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'').substring(0,12) : Math.random().toString(36).substr(2, 9)));
         let myName = (_saved && _saved.name) ? _saved.name : '';
+        let myEmoji = (_saved && _saved.emoji) ? _saved.emoji : '';
         let myRoomCode = '';
         let isModerator = false;
+        let myJoinedMidGame = false;
         let roomRef = null;
         let pRef = null;
         let currentRoomData = null;
@@ -1750,7 +1953,7 @@
 
         function saveSession() {
             sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-                pid: myPlayerId, name: myName, roomCode: myRoomCode, isModerator
+                pid: myPlayerId, name: myName, emoji: myEmoji, roomCode: myRoomCode, isModerator
             }));
         }
         function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
@@ -1778,13 +1981,22 @@
             const pin = prompt('Masukkan PIN untuk membuat room:');
             if (pin !== '183729') { alert('PIN salah!'); return; }
             const nameInput = document.getElementById('player-name').value.trim();
-            if (!nameInput) { alert('Masukkan nama dulu!'); return; }
+            if (!nameInput || !isValidName(nameInput)) { alert('Nama hanya boleh huruf (A-Z), tanpa angka/spasi, max 12 huruf!'); return; }
 
-            const btn = document.getElementById('btn-create-room');
-            if (btn) { btn.disabled = true; btn.innerHTML = 'Menghubungkan...'; }
+            const btn = document.querySelector('button[onclick="createRoom()"]');
+            if (btn) { btn.disabled = true; btn.innerHTML = 'Memeriksa...'; }
 
-            myName = nameInput;
-            verifyAndCreateRoom();
+            // Check max 2 rooms
+            db.ref('rooms').once('value', snapshot => {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Buat Room'; }
+                const totalRooms = snapshot.numChildren();
+                if (totalRooms >= 2) {
+                    alert('Jumlah room aktif sudah mencapai batas maksimum (2). Coba lagi nanti.');
+                    return;
+                }
+                myName = nameInput;
+                showEmojiPicker(true, null, null);
+            });
         }
 
         function verifyAndCreateRoom() {
@@ -1798,14 +2010,11 @@
                     roomRef.set({
                         moderator: myPlayerId,
                         status: 'lobby',
-                        players: { [myPlayerId]: { name: myName } }
+                        players: { [myPlayerId]: { name: myName, emoji: myEmoji } }
                     }).then(() => {
-                        // roomRef.onDisconnect().remove(); // Dihapus agar tidak langsung keluar room saat refresh
                         saveSession();
                         listenToRoom();
                     }).catch(e => {
-                        const btn = document.getElementById('btn-create-room');
-                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-plus-circle"></i> Buat Room'; }
                         alert('Gagal buat room: ' + e.message);
                     });
                 }
@@ -1816,34 +2025,108 @@
             initAudio();
             const nameInput = document.getElementById('player-name').value.trim();
             const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
-            if (!nameInput) { alert('Masukkan nama dulu!'); return; }
+            if (!nameInput || !isValidName(nameInput)) { alert('Nama hanya boleh huruf (A-Z), tanpa angka/spasi, max 12 huruf!'); return; }
             if (!codeInput || codeInput.length !== 4) { alert('Kode room tidak valid! Harus 4 huruf.'); return; }
 
-            const btn = document.getElementById('btn-join-room');
-            if (btn) { btn.disabled = true; btn.innerHTML = 'Menghubungkan...'; }
+            const btn = document.querySelector('button[onclick="joinRoom()"]');
+            if (btn) { btn.disabled = true; btn.innerHTML = 'Memeriksa...'; }
 
             db.ref('rooms/' + codeInput).once('value', snapshot => {
-                if (!snapshot.exists()) { const btn = document.getElementById('btn-join-room'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-sign-in"></i> Masuk Room'; } alert('Room tidak ditemukan!'); return; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Gabung Room'; }
+                if (!snapshot.exists()) { alert('Room tidak ditemukan!'); return; }
                 const data = snapshot.val();
-                if (data.status !== 'lobby') { const btn = document.getElementById('btn-join-room'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-sign-in"></i> Masuk Room'; } alert('Room sedang dalam permainan. Tidak bisa bergabung sekarang.'); return; }
+                
+                const playerCount = data.players ? Object.keys(data.players).length : 0;
+                if (playerCount >= 25) { alert('Room sudah penuh! Maksimal 25 pemain.'); return; }
 
                 myName = nameInput;
                 myRoomCode = codeInput;
                 isModerator = false;
-
-                roomRef = db.ref('rooms/' + myRoomCode);
-                pRef = roomRef.child('players/' + myPlayerId);
-                pRef.set({ name: myName }).then(() => {
-                    saveSession();
-                    listenToRoom();
-                }).catch(e => { const btn = document.getElementById('btn-join-room'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-sign-in"></i> Masuk Room'; } alert('Gagal gabung room: ' + e.message); });
+                
+                if (data.status !== 'lobby') {
+                    myJoinedMidGame = true;
+                } else {
+                    myJoinedMidGame = false;
+                }
+                
+                showEmojiPicker(false, codeInput, data);
             });
         }
 
+        function verifyAndJoinRoom() {
+            roomRef = db.ref('rooms/' + myRoomCode);
+            pRef = roomRef.child('players/' + myPlayerId);
+            const playerData = { name: myName, emoji: myEmoji };
+            if (myJoinedMidGame) {
+                playerData.joinedMidGame = true;
+            }
+            pRef.set(playerData).then(() => {
+                saveSession();
+                listenToRoom();
+            }).catch(e => { alert('Gagal gabung room: ' + e.message); });
+        }
+
+        // ============================================================
+        //                      EMOJI PICKER
+        // ============================================================
+        let pendingEmojiAction = null; // 'create' or 'join'
+        function showEmojiPicker(isCreating, codeInput, roomData) {
+            pendingEmojiAction = isCreating ? 'create' : 'join';
+            const grid = document.getElementById('emoji-grid');
+            grid.innerHTML = '';
+            
+            let usedEmojis = [];
+            if (!isCreating && roomData && roomData.players) {
+                usedEmojis = Object.values(roomData.players).map(p => p.emoji).filter(Boolean);
+            }
+
+            myEmoji = ''; // reset selection
+            const btnConfirm = document.getElementById('btn-confirm-emoji');
+            btnConfirm.disabled = true;
+
+            AVATAR_EMOJIS.forEach(emoji => {
+                const isUsed = usedEmojis.includes(emoji);
+                const btn = document.createElement('div');
+                btn.className = 'emoji-btn';
+                btn.textContent = emoji;
+                if (isUsed) {
+                    btn.style.opacity = '0.3';
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.filter = 'grayscale(100%)';
+                } else {
+                    btn.onclick = () => {
+                        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        myEmoji = emoji;
+                        btnConfirm.disabled = false;
+                        initAudio(); playTickSound();
+                    };
+                }
+                grid.appendChild(btn);
+            });
+            
+            showScreen('emoji-overlay');
+        }
+
+        function closeEmojiPicker() {
+            showScreen('home-screen');
+        }
+
+        function confirmEmojiSelection() {
+            if (!myEmoji) return;
+            initAudio(); playVoteSubmitSound();
+            if (pendingEmojiAction === 'create') {
+                verifyAndCreateRoom();
+            } else if (pendingEmojiAction === 'join') {
+                verifyAndJoinRoom();
+            }
+        }
+
         function resetToHome() {
+            if (typeof closeSecretPanel === 'function') closeSecretPanel();
             releaseWakeLock();
             if (roomRef) roomRef.off();
-            roomRef = null; pRef = null; myRoomCode = ''; isModerator = false; currentRoomData = null;
+            roomRef = null; pRef = null; myRoomCode = ''; isModerator = false; myJoinedMidGame = false; currentRoomData = null;
             clearSession();
             // Hide panels
             document.getElementById('vote-panel').classList.remove('show');
@@ -2099,11 +2382,22 @@
             if (!isModerator) return;
             if (!currentRoomData || currentRoomData.status !== 'playing') return;
             if (!currentRoomData.currentCard || currentRoomData.currentCard.isIntro) return;
-            roomRef.update({ status: 'voting', vote: { active: true, votes: {}, startTime: firebase.database.ServerValue.TIMESTAMP } });
+            
+            const players = currentRoomData.players || {};
+            const updates = { status: 'voting', vote: { active: true, votes: {}, startTime: firebase.database.ServerValue.TIMESTAMP } };
+            for (let pid in players) {
+                updates[`players/${pid}/joinedMidGame`] = null;
+            }
+            roomRef.update(updates);
         }
 
         function submitVote(targetPlayerId) {
             if (!currentRoomData || currentRoomData.status !== 'voting') return;
+            const myPlayerData = currentRoomData.players && currentRoomData.players[myPlayerId];
+            if (myPlayerData && myPlayerData.joinedMidGame) {
+                showInfoToast('⏳ Kamu bergabung di tengah sesi vote ini. Tunggu sesi berikutnya!');
+                return;
+            }
             const alreadyVoted = currentRoomData.vote && currentRoomData.vote.votes && currentRoomData.vote.votes[myPlayerId];
             if (alreadyVoted) return;
             initAudio();
@@ -2225,6 +2519,76 @@
         }
 
         // ============================================================
+        //                   SECRET PANEL
+        // ============================================================
+        let secretTapCount = 0;
+        let secretTapTimer = null;
+
+        function handleRoomBadgeTap() {
+            if (!isModerator) return;
+            if (!currentRoomData || (currentRoomData.status !== 'voting' && currentRoomData.status !== 'results')) return;
+
+            secretTapCount++;
+            clearTimeout(secretTapTimer);
+
+            if (secretTapCount >= 5) {
+                secretTapCount = 0;
+                openSecretPanel();
+            } else {
+                secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1500);
+            }
+        }
+
+        function openSecretPanel() {
+            if (!isModerator) return;
+            if (!currentRoomData || (currentRoomData.status !== 'voting' && currentRoomData.status !== 'results')) return;
+            
+            renderSecretVoteList(currentRoomData);
+            document.getElementById('secret-vote-panel').classList.add('show');
+        }
+
+        function closeSecretPanel() {
+            document.getElementById('secret-vote-panel').classList.remove('show');
+        }
+
+        function renderSecretVoteList(data) {
+            if (!isModerator) return;
+            
+            const players = data.players || {};
+            const votes = (data.vote && data.vote.votes) ? data.vote.votes : {};
+            const list = document.getElementById('secret-vote-list');
+            list.innerHTML = '';
+            
+            for (let pid in players) {
+                const p = players[pid];
+                const votedForId = votes[pid];
+                const votedFor = votedForId ? players[votedForId] : null;
+                
+                const row = document.createElement('div');
+                row.className = 'secret-vote-row';
+                
+                const voterEmoji = p.emoji || '👤';
+                const voterName = escapeHTML(p.name);
+                
+                let targetHTML = '';
+                if (votedFor) {
+                    const targetEmoji = votedFor.emoji || '👤';
+                    const targetName = escapeHTML(votedFor.name);
+                    targetHTML = `<span class="secret-target-name">${targetEmoji} ${targetName}</span>`;
+                } else {
+                    targetHTML = `<span class="secret-no-vote">belum vote</span>`;
+                }
+                
+                row.innerHTML = `
+                    <span class="secret-voter-name"><span style="font-size:1.1rem;">${voterEmoji}</span> ${voterName}</span>
+                    <span class="secret-arrow">→</span>
+                    ${targetHTML}
+                `;
+                list.appendChild(row);
+            }
+        }
+
+        // ============================================================
         //                       UI RENDERING
         // ============================================================
         function updateUI(data) {
@@ -2269,6 +2633,7 @@
                 item.innerHTML = `
             <span style="display:flex;align-items:center;gap:6px;">
                 ${isMod ? '<i class="fa-solid fa-crown" style="color:#FFB800;font-size:0.9rem;"></i>' : '<i class="fa-solid fa-user" style="color:#94A3B8;font-size:0.85rem;"></i>'}
+                <span style="font-size:1.2rem;line-height:1;">${p.emoji || '👤'}</span>
                 ${escapeHTML(p.name)}${isMe ? ' <span style="font-size:0.7rem;color:#94A3B8;">(Kamu)</span>' : ''}
             </span>
             <span>
@@ -2313,8 +2678,21 @@
         `;
             }
 
+            const usedCards = data.usedCards || [];
+
             // Semua pemain lihat daftar kategori
             categoriesConfig.forEach(cat => {
+                let total, used;
+                if (cat.id === 'all') {
+                    total = Object.values(database).reduce((s, arr) => s + arr.length, 0);
+                    used = usedCards.length;
+                } else {
+                    const deck = database[cat.id] || [];
+                    total = deck.length;
+                    used = usedCards.filter(q => deck.includes(q)).length;
+                }
+                const pct = total > 0 ? Math.round((used / total) * 100) : 0;
+
                 const btn = document.createElement('button');
                 btn.className = 'category-btn';
                 btn.style.background = cat.hexColor;
@@ -2331,9 +2709,15 @@
             <div class="cat-icon-box">
                 <i class="ph-bold ${cat.icon}" style="font-size:22px;color:${cat.hexColor};"></i>
             </div>
-            <div style="text-align:left;">
+            <div style="text-align:left;flex:1;">
                 <div style="font-size:0.88rem;font-weight:900;color:white;text-transform:uppercase;text-shadow:1px 1px 0 rgba(0,0,0,0.4);line-height:1.2;">${cat.name}</div>
                 <div style="font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.9);margin-top:3px;line-height:1.3;">${cat.desc}</div>
+                <div style="margin-top:6px;background:rgba(0,0,0,0.2);border-radius:999px;height:4px;width:100%;">
+                    <div style="height:4px;border-radius:999px;background:rgba(255,255,255,0.9);width:${pct}%;transition:width 0.3s;"></div>
+                </div>
+                <div style="font-size:0.62rem;color:rgba(255,255,255,0.85);font-weight:800;margin-top:3px;">
+                    ${used}/${total} kartu dimainkan
+                </div>
             </div>
         `;
                 list.appendChild(btn);
@@ -2342,6 +2726,9 @@
 
         function renderPlay(data) {
             const st = data.status;
+            if (st !== 'voting' && st !== 'results') {
+                closeSecretPanel();
+            }
             document.getElementById('play-room-badge').textContent = 'ROOM: ' + myRoomCode;
             document.getElementById('sp-card-room').textContent = myRoomCode;
 
@@ -2396,9 +2783,9 @@
                         btnCustom.disabled = false;
                         btnCustom.style.display = 'flex';
                     }
-                    // Show "Mulai Vote" and leaderboard btn only after a real card is revealed
+                    // Show "Mulai Vote" always when playing (even before first card)
                     const showVote = data.currentCard && !data.currentCard.isIntro;
-                    btnStartVote.style.display = showVote ? 'flex' : 'none';
+                    btnStartVote.style.display = 'flex';
                     btnStartVote.disabled = false;
                     if (btnLbMod) btnLbMod.style.display = (showVote && hasLeaderboard) ? 'flex' : (hasLeaderboard ? 'flex' : 'none');
                 }
@@ -2485,6 +2872,11 @@
 
             // Mini status label
             document.getElementById('vote-status-label').textContent = votesCount + '/' + playersCount + ' sudah vote';
+            
+            const myPlayerData = players[myPlayerId];
+            if (myPlayerData && myPlayerData.joinedMidGame) {
+                document.getElementById('vote-status-label').textContent = 'Kamu bergabung di tengah sesi. Tunggu sesi berikutnya!';
+            }
 
             // Build player buttons grid
             const grid = document.getElementById('vote-player-grid');
@@ -2495,9 +2887,18 @@
                 const isChosen = myVote === pid;
                 const btn = document.createElement('button');
                 btn.className = 'btn-vote-player' + (isChosen ? ' voted-mine' : '');
-                btn.textContent = p.name + (isSelf ? ' (Kamu)' : '');
-                btn.disabled = hasVoted;
-                if (!hasVoted) btn.onclick = () => submitVote(pid);
+                btn.innerHTML = `
+                    <span style="font-size:1.3rem;line-height:1;">${p.emoji || '👤'}</span>
+                    <span style="display:block;font-size:0.72rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        ${escapeHTML(p.name)}${isSelf ? ' (Kamu)' : ''}
+                    </span>
+                `;
+                btn.style.display = 'flex';
+                btn.style.flexDirection = 'column';
+                btn.style.alignItems = 'center';
+                const isMidGame = myPlayerData && myPlayerData.joinedMidGame;
+                btn.disabled = hasVoted || isMidGame;
+                if (!hasVoted && !isMidGame) btn.onclick = () => submitVote(pid);
                 grid.appendChild(btn);
             }
 
@@ -2544,7 +2945,8 @@
             }
 
             const isMeWinner = sorted.length > 0 && voteCounts[myPlayerId] === maxVotes && maxVotes > 0;
-            const currentVoteId = data.vote && data.vote.startTime ? data.vote.startTime : null;
+            const rounds = (data.leaderboard && data.leaderboard._rounds) || 0;
+            const currentVoteId = data.vote && data.vote.startTime ? `${data.vote.startTime}_r${rounds}` : null;
             if (isMeWinner && currentVoteId && currentVoteId !== lastFiredConfettiVoteId) {
                 lastFiredConfettiVoteId = currentVoteId;
                 triggerConfetti();
@@ -2568,7 +2970,7 @@
                 item.className = 'result-item' + (isWinner ? ' winner' : '');
                 item.innerHTML = `
             <div class="result-rank">${rankSymbol}</div>
-            <div class="result-name">${escapeHTML(p.name)}${pid === myPlayerId ? ' <span style="font-size:0.65rem;opacity:0.7;">(Kamu)</span>' : ''}</div>
+            <div class="result-name"><span style="font-size:1rem;">${p.emoji || '👤'}</span> ${escapeHTML(p.name)}${pid === myPlayerId ? ' <span style="font-size:0.65rem;opacity:0.7;">(Kamu)</span>' : ''}</div>
             <div class="result-vote-badge">${count} vote${count !== 1 ? 's' : ''}</div>
         `;
                 list.appendChild(item);
@@ -2609,7 +3011,7 @@
             // Build entries for players currently in room
             const entries = [];
             for (let pid in players) {
-                entries.push({ pid, name: players[pid].name, wins: lb[pid] || 0, isMe: pid === myPlayerId });
+                entries.push({ pid, name: players[pid].name, emoji: players[pid].emoji, wins: lb[pid] || 0, isMe: pid === myPlayerId });
             }
 
             if (entries.length === 0) {
@@ -2635,7 +3037,7 @@
                 row.className = 'lb-row ' + rowClass;
                 row.innerHTML = `
                     <div class="lb-rank">${rankEmoji}</div>
-                    <div class="lb-name">${escapeHTML(entry.name)}${entry.isMe ? ' <span style="font-size:0.65rem;opacity:0.7;">(Kamu)</span>' : ''}</div>
+                    <div class="lb-name"><span style="font-size:1rem;">${entry.emoji || '👤'}</span> ${escapeHTML(entry.name)}${entry.isMe ? ' <span style="font-size:0.65rem;opacity:0.7;">(Kamu)</span>' : ''}</div>
                     <div class="lb-score">
                         <div class="lb-wins">${entry.wins}x 🏆</div>
                     </div>
@@ -2665,7 +3067,7 @@
 
                 if (!isModerator) {
                     pRef = roomRef.child('players/' + myPlayerId);
-                    pRef.set({ name: _saved.name }); // Re-assert presence
+                    pRef.set({ name: _saved.name, emoji: _saved.emoji || '' }); // Re-assert presence
                 }
 
                 listenToRoom();
@@ -2674,12 +3076,26 @@
         }
 
         // Init
+        function showInfoToast(msg) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:white;padding:10px 18px;border-radius:12px;font-size:0.8rem;font-weight:700;z-index:9999;border:2px solid #FFB800;box-shadow:3px 3px 0 #FFB800;`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const roomFromUrl = urlParams.get('room');
             if (roomFromUrl) {
                 const input = document.getElementById('room-code-input');
                 if (input) input.value = roomFromUrl.toUpperCase();
+                
+                if (_saved && _saved.roomCode === roomFromUrl.toUpperCase()) {
+                    showInfoToast('🔄 Melanjutkan sesi sebelumnya...');
+                } else {
+                    showInfoToast('👋 Masukkan nama untuk bergabung ke room ' + roomFromUrl.toUpperCase());
+                }
             }
         };
 
