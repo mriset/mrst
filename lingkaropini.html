@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lingkar Opini</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        dark: '#0a0a0c',
+                        cardBg: 'rgba(255, 255, 255, 0.05)',
+                        cardBorder: 'rgba(255, 255, 255, 0.1)',
+                        accent: '#d4af37', // Gold-ish
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0c;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a24 0%, #0a0a0c 70%);
+            color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 30, 36, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .screen {
+            display: none;
+            min-height: 100dvh;
+            /* Dynamic viewport height for mobile */
+            width: 100%;
+            max-width: 480px;
+            /* Mobile constraint on desktop */
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-enter {
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="antialiased overflow-x-hidden selection:bg-accent selection:text-dark">
+
+    <!-- APP CONTAINER -->
+    <main id="app">
+
+        <!-- ================= HOME SCREEN ================= -->
+        <section id="screen-home" class="screen active justify-center items-center p-6 text-center animate-fade-in">
+            <div class="mb-12 animate-slide-up">
+                <i class="ph ph-aperture text-6xl text-accent mb-6 mx-auto opacity-80"></i>
+                <h1 class="text-4xl font-serif font-bold tracking-wide mb-4 text-white">LINGKAR<br>OPINI</h1>
+                <div class="h-px w-16 bg-accent mx-auto mb-6 opacity-50"></div>
+                <p class="text-gray-400 text-sm leading-relaxed max-w-[280px] mx-auto italic">
+                    "Tidak ada jawaban benar atau salah,<br>yang ada hanya perspektif."
+                </p>
+            </div>
+
+            <div class="w-full max-w-sm space-y-4 mt-8 animate-slide-up" style="animation-delay: 0.2s;">
+                <button onclick="navTo('screen-rules')"
+                    class="w-full py-4 rounded-xl bg-white text-dark font-semibold text-lg transition active:scale-95 hover:bg-gray-100 flex items-center justify-center gap-2">
+                    Mulai Bermain <i class="ph-bold ph-arrow-right"></i>
+                </button>
+                <button onclick="navTo('screen-about')"
+                    class="w-full py-4 rounded-xl border border-gray-700 text-gray-300 font-medium transition active:scale-95 hover:bg-gray-800/50">
+                    Cara Bermain
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= ABOUT / CARA BERMAIN SCREEN ================= -->
+        <section id="screen-about" class="screen p-6 pt-12 animate-fade-in">
+            <button onclick="navTo('screen-home')"
+                class="absolute top-6 left-6 text-gray-400 hover:text-white flex items-center gap-2 transition">
+                <i class="ph ph-arrow-left text-xl"></i> Kembali
+            </button>
+
+            <div class="mt-12 flex-1 overflow-y-auto no-scrollbar pb-20">
+                <h2 class="text-3xl font-serif font-bold text-white mb-6">Tentang Permainan</h2>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                    Lingkar Opini adalah permainan kartu berbasis percakapan untuk menanggapi dilema etis, moral,
+                    sosial, dan filosofis. Fokus utamanya bukan kemenangan, melainkan eksplorasi cara berpikir dan
+                    empati.
+                </p>
+
+                <h3 class="text-xl font-serif font-semibold text-accent mb-4">Cara Kerja:</h3>
+                <ol class="space-y-4 text-sm text-gray-300">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold">1.</span>
+                        <p>Tentukan satu <b>Pemantik</b> untuk ronde ini.</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold">2.</span>
+                        <p>Pemantik membacakan kartu dilema dengan jelas kepada semua orang di lingkar.</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold">3.</span>
+                        <p>Pemantik wajib memberikan opininya terlebih dahulu (hak suara pertama).</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold">4.</span>
+                        <p>Pemain lain menanggapi. Boleh setuju, menolak, atau menambahkan konteks.</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold">5.</span>
+                        <p>Setelah diskusi dirasa cukup, ganti Pemantik ke orang di sebelah kiri, lalu tarik kartu baru.
+                        </p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ================= RULES (ATURAN EMAS) SCREEN ================= -->
+        <section id="screen-rules" class="screen p-6 justify-center animate-fade-in">
+            <div class="glass-card rounded-2xl p-8 animate-slide-up">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="ph-fill ph-warning-circle text-2xl text-accent"></i>
+                    <h2 class="text-2xl font-serif font-bold text-white">Aturan Emas</h2>
+                </div>
+
+                <p class="text-sm text-gray-400 mb-8 italic">
+                    Sebelum mulai, mari sepakati bersama: tujuan kita bukan menang debat, tapi saling memahami.
+                </p>
+
+                <ul class="space-y-6 text-sm text-gray-200 mb-10">
+                    <li>
+                        <strong class="block text-white mb-1 text-base">Serang Argumen, Bukan Orangnya</strong>
+                        <span class="text-gray-400">Tanggapi idenya, jangan menyerang karakter atau pengalaman pribadi
+                            lawan bicara.</span>
+                    </li>
+                    <li>
+                        <strong class="block text-white mb-1 text-base">Hak Untuk Pas</strong>
+                        <span class="text-gray-400">Setiap orang berhak berkata "Aku pas" jika kartu dirasa tidak
+                            nyaman, tanpa perlu menjelaskan alasannya.</span>
+                    </li>
+                    <li>
+                        <strong class="block text-white mb-1 text-base">Rahasia Meja</strong>
+                        <span class="text-gray-400">Cerita sensitif yang muncul di meja ini tidak boleh dijadikan bahan
+                            gosip di luar permainan.</span>
+                    </li>
+                </ul>
+
+                <button onclick="startGame()"
+                    class="w-full py-4 rounded-xl bg-accent text-dark font-semibold text-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    Saya Mengerti, Mulai <i class="ph-bold ph-play"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= GAME SCREEN ================= -->
+        <section id="screen-game" class="screen flex-col">
+
+            <!-- Header -->
+            <header class="flex justify-between items-center p-6 pb-2">
+                <button onclick="confirmEndSession()" class="text-gray-500 hover:text-white transition">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+                <div class="text-xs font-medium tracking-widest text-gray-400 uppercase flex items-center gap-2">
+                    <i class="ph-fill ph-cards"></i> Sisa Kartu: <span id="cards-left" class="text-white">0</span>
+                </div>
+            </header>
+
+            <!-- Card Area -->
+            <div class="flex-1 flex flex-col justify-center px-6 pb-6 relative z-10 perspective-1000">
+
+                <!-- The Card -->
+                <div id="dilemma-card"
+                    class="glass-card rounded-3xl p-8 w-full min-h-[420px] flex flex-col relative overflow-hidden transition-all duration-300">
+
+                    <!-- Decorative glowing blob -->
+                    <div
+                        class="absolute -top-20 -right-20 w-40 h-40 bg-accent rounded-full mix-blend-screen filter blur-[80px] opacity-20">
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="flex justify-between items-start mb-6">
+                        <span id="card-edition"
+                            class="text-xs font-semibold tracking-wider text-gray-400 uppercase">EDISI ESENSIAL</span>
+                        <div id="card-intensity"
+                            class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-800 text-gray-300 border border-gray-700">
+                            Menengah
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h2 id="card-title" class="text-2xl md:text-3xl font-serif font-bold text-white mb-4 leading-tight">
+                        Judul Kartu
+                    </h2>
+
+                    <!-- Scenario -->
+                    <p id="card-scenario" class="text-gray-300 text-sm md:text-base leading-relaxed mb-6 flex-1">
+                        Skenario dilema akan muncul di sini. Membaca dengan jelas akan membantu teman-temanmu memahami
+                        konteks.
+                    </p>
+
+                    <!-- The Core Question -->
+                    <div class="bg-black/30 border border-gray-800 rounded-xl p-5 mb-6">
+                        <p id="card-question" class="text-accent font-medium leading-snug">
+                            "Pertanyaan utama untuk didiskusikan?"
+                        </p>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-800">
+                        <span id="card-tags" class="text-xs text-gray-500 font-medium">#tag1 #tag2</span>
+                    </div>
+                </div>
+
+                <!-- Empty State (When cards run out) -->
+                <div id="empty-state" class="hidden text-center glass-card rounded-3xl p-8 w-full">
+                    <i class="ph-fill ph-check-circle text-5xl text-accent mb-4 mx-auto"></i>
+                    <h2 class="text-2xl font-serif font-bold text-white mb-2">Sesi Selesai</h2>
+                    <p class="text-gray-400 text-sm mb-8">Kalian telah membahas seluruh kartu di deck ini. Semoga
+                        percakapannya bermakna!</p>
+                    <button onclick="resetGame()"
+                        class="w-full py-3 rounded-xl border border-gray-700 text-white font-medium transition active:scale-95">
+                        Main Ulang Deck
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Controls -->
+            <div id="game-controls" class="p-6 pt-0 mt-auto">
+                <div class="flex gap-3">
+                    <button onclick="skipCard()"
+                        class="flex-1 py-4 rounded-xl border border-gray-800 text-gray-400 font-semibold text-sm transition active:scale-95 hover:bg-gray-900 flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-skip-forward"></i>
+                        <span>Lewati / Pas</span>
+                    </button>
+                    <button onclick="nextCard()"
+                        class="flex-[2] py-4 rounded-xl bg-white text-dark font-semibold text-base transition active:scale-95 hover:bg-gray-100 flex items-center justify-center gap-2 shadow-lg shadow-white/10">
+                        Lanjut Diskusi <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- End Session Modal (Hidden by default) -->
+            <div id="modal-end"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+                <div class="glass-card rounded-2xl p-6 w-full max-w-sm text-center transform scale-95 transition-transform duration-300"
+                    id="modal-end-content">
+                    <h3 class="text-xl font-serif font-bold text-white mb-2">Akhiri Sesi?</h3>
+                    <p class="text-gray-400 text-sm mb-6">Diskusi yang sedang berjalan akan dihentikan dan Anda akan
+                        kembali ke beranda.</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeModal()"
+                            class="flex-1 py-3 rounded-xl border border-gray-700 text-gray-300 font-medium transition active:scale-95">Batal</button>
+                        <button onclick="navTo('screen-home')"
+                            class="flex-1 py-3 rounded-xl bg-red-900/50 text-red-400 border border-red-900 font-medium transition active:scale-95">Ya,
+                            Akhiri</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // Data Kartu Berdasarkan Dokumen Panduan
+        const masterDeck = [
+            {
+                judul: "Kejujuran yang Menyakitkan",
+                skenario: "Teman baikmu menghabiskan tabungannya untuk bisnis yang menurutmu buruk dan berdasarkan risetmu kemungkinan besar akan gagal total.",
+                pertanyaan: "Apakah kamu akan jujur sekeras mungkin untuk mencegahnya, atau memberinya dukungan agar ia tetap percaya diri?",
+                tag: "#Persahabatan #Uang #Kejujuran",
+                intensitas: "Menengah",
+                edisi: "Esensial",
+                color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20"
+            },
+            {
+                judul: "Rahasia Perusahaan",
+                skenario: "Temanmu menyembunyikan kesalahan besar di kantor yang sebenarnya bisa menyelamatkan banyak orang dari PHK, tetapi tindakan itu melanggar hukum.",
+                pertanyaan: "Apakah kamu akan membocorkannya kepada manajemen?",
+                tag: "#Karier #Hukum #Integritas",
+                intensitas: "Berat",
+                edisi: "Karier & Realita",
+                color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20"
+            },
+            {
+                judul: "Keadilan vs Loyalitas",
+                skenario: "Saudaramu melakukan pelanggaran kecil yang bisa membuatnya kehilangan pekerjaan utamanya, dan saat ini ia memiliki cicilan rumah yang menunggak.",
+                pertanyaan: "Apakah kamu menutupinya demi keluarga, atau membiarkannya bertanggung jawab atas kesalahannya?",
+                tag: "#Keluarga #Moralitas #Loyalitas",
+                intensitas: "Menengah",
+                edisi: "Esensial",
+                color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20"
+            },
+            {
+                judul: "Privasi Pasangan",
+                skenario: "Pasanganmu meninggikan privasi. Suatu hari ponselnya tertinggal dalam keadaan tidak terkunci dan ada notifikasi aneh yang terus bermunculan.",
+                pertanyaan: "Apakah pasangan berhak tahu seluruh isi ponselmu jika kalian sudah menjalin hubungan yang serius?",
+                tag: "#Romansa #Privasi #Kepercayaan",
+                intensitas: "Sensitif",
+                edisi: "Romansa & Hubungan",
+                color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20"
+            },
+            {
+                judul: "Uang vs Makna",
+                skenario: "Kamu mendapatkan tawaran pekerjaan dengan gaji 3x lipat dari sekarang, tapi kamu tahu lingkungan kerjanya sangat beracun dan mematikan mimpimu.",
+                pertanyaan: "Jika pekerjaan bergaji tinggi membuatmu tidak bahagia, kapan titik masuk akal untuk memutuskan berhenti?",
+                tag: "#Karier #Ambisi #KesehatanMental",
+                intensitas: "Menengah",
+                edisi: "Karier & Realita",
+                color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20"
+            },
+            {
+                judul: "Moral Publik",
+                skenario: "Seseorang melakukan donasi jutaan rupiah untuk panti asuhan, namun terungkap bahwa uang itu ia dapatkan dari memanipulasi celah pajak.",
+                pertanyaan: "Apakah hasil akhir yang baik bisa membenarkan cara-cara yang manipulatif?",
+                tag: "#Hukum #EtikaSosial #Uang",
+                intensitas: "Berat",
+                edisi: "Sisi Gelap",
+                color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20"
+            },
+            {
+                judul: "AI dan Kejujuran",
+                skenario: "Rekan kerjamu memenangkan penghargaan karyawan terbaik karena presentasinya yang memukau. Belakangan ia mengaku 90% materi itu dibuat oleh AI.",
+                pertanyaan: "Apakah menggunakan AI untuk menyelesaikan pekerjaan utama termasuk efisiensi yang cerdas atau bentuk ketidakjujuran?",
+                tag: "#Teknologi #Karier #Etika",
+                intensitas: "Ringan",
+                edisi: "Esensial",
+                color: "text-teal-400", bg: "bg-teal-400/10", border: "border-teal-400/20"
+            },
+            {
+                judul: "Cancel Culture",
+                skenario: "Seorang figur publik yang sering menyuarakan kebaikan terbukti pernah melakukan perundungan parah 15 tahun lalu saat masih remaja. Ia sudah meminta maaf.",
+                pertanyaan: "Apakah seseorang harus terus dihukum secara sosial karena kesalahan masa lalunya, meskipun ia sudah berubah?",
+                tag: "#Sosial #MasaLalu #Pemaafan",
+                intensitas: "Berat",
+                edisi: "Sosial",
+                color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20"
+            },
+            {
+                judul: "Standar Ganda",
+                skenario: "Kamu mengetahui sahabatmu berselingkuh dari pasangannya. Namun, jika situasinya dibalik (pasangannya yang selingkuh), sahabatmu akan sangat hancur.",
+                pertanyaan: "Apakah kamu akan menegur sahabatmu secara keras, atau diam saja karena itu bukan urusanmu?",
+                tag: "#Romansa #Persahabatan #Moral",
+                intensitas: "Menengah",
+                edisi: "Romansa & Hubungan",
+                color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20"
+            },
+            {
+                judul: "Warisan Trauma",
+                skenario: "Orang tuamu mewariskan kebiasaan mendidik yang keras. Kamu membencinya, tapi kamu mulai menyadari bahwa tanpa sadar kamu memperlakukan adikmu dengan cara yang sama.",
+                pertanyaan: "Sejauh mana seseorang bisa menyalahkan pola asuh orang tua atas kesalahan yang ia lakukan di masa dewasa?",
+                tag: "#Keluarga #Trauma #TanggungJawab",
+                intensitas: "Sensitif",
+                edisi: "Sisi Gelap",
+                color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20"
+            }
+        ];
+
+        let playDeck = [];
+        let currentCardIndex = 0;
+
+        // UI Elements
+        const elTitle = document.getElementById('card-title');
+        const elScenario = document.getElementById('card-scenario');
+        const elQuestion = document.getElementById('card-question');
+        const elTags = document.getElementById('card-tags');
+        const elIntensity = document.getElementById('card-intensity');
+        const elEdition = document.getElementById('card-edition');
+        const elCardsLeft = document.getElementById('cards-left');
+        const elCardContainer = document.getElementById('dilemma-card');
+        const elEmptyState = document.getElementById('empty-state');
+        const elGameControls = document.getElementById('game-controls');
+        const modalEnd = document.getElementById('modal-end');
+
+        // Navigation
+        function navTo(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Show target screen
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+
+            if (screenId === 'screen-home') {
+                closeModal();
+            }
+        }
+
+        // Shuffle Array (Fisher-Yates)
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Game Logic
+        function startGame() {
+            playDeck = shuffle([...masterDeck]); // Clone and shuffle
+            currentCardIndex = 0;
+
+            elCardContainer.classList.remove('hidden');
+            elEmptyState.classList.add('hidden');
+            elGameControls.classList.remove('hidden');
+
+            renderCard();
+            navTo('screen-game');
+        }
+
+        function renderCard() {
+            if (currentCardIndex >= playDeck.length) {
+                showEmptyState();
+                return;
+            }
+
+            const card = playDeck[currentCardIndex];
+
+            // Animate out/in
+            elCardContainer.classList.remove('card-enter');
+            void elCardContainer.offsetWidth; // Trigger reflow
+            elCardContainer.classList.add('card-enter');
+
+            // Update content
+            elTitle.textContent = card.judul;
+            elScenario.textContent = card.skenario;
+            elQuestion.textContent = `"${card.pertanyaan}"`;
+            elTags.textContent = card.tag.split(' ').join('   ');
+            elEdition.textContent = `EDISI ${card.edisi}`;
+
+            // Update intensity badge
+            elIntensity.textContent = card.intensitas;
+            elIntensity.className = `px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${card.bg} ${card.color} border ${card.border}`;
+
+            // Update counter
+            elCardsLeft.textContent = playDeck.length - currentCardIndex - 1;
+        }
+
+        function nextCard() {
+            currentCardIndex++;
+            renderCard();
+        }
+
+        function skipCard() {
+            // Logika "Pas", sama dengan next card tapi bisa dikembangkan untuk statistik/animasi beda
+            nextCard();
+        }
+
+        function showEmptyState() {
+            elCardContainer.classList.add('hidden');
+            elGameControls.classList.add('hidden');
+            elEmptyState.classList.remove('hidden');
+
+            elEmptyState.classList.remove('card-enter');
+            void elEmptyState.offsetWidth;
+            elEmptyState.classList.add('card-enter');
+        }
+
+        function resetGame() {
+            startGame();
+        }
+
+        // Modal Logic
+        function confirmEndSession() {
+            modalEnd.classList.remove('hidden');
+            // Small delay to allow display block to apply before opacity transition
+            setTimeout(() => {
+                modalEnd.classList.remove('opacity-0');
+                document.getElementById('modal-end-content').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalEnd.classList.add('opacity-0');
+            document.getElementById('modal-end-content').classList.add('scale-95');
+            setTimeout(() => {
+                modalEnd.classList.add('hidden');
+            }, 300);
+        }
+
+    </script>
+</body>
+
+</html>
